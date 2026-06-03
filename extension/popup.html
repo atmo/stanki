@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stanki</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        width: 300px; margin: 0; padding: 14px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0f172a; color: #e2e8f0;
+      }
+      h1 { font-size: 1rem; margin: 0 0 10px; }
+      p { margin: 6px 0; font-size: 0.85rem; color: #94a3b8; }
+      input {
+        width: 100%; box-sizing: border-box; padding: 8px; margin: 4px 0 8px;
+        border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0;
+      }
+      button {
+        width: 100%; padding: 9px; border-radius: 8px; border: none; cursor: pointer;
+        background: #2563eb; color: white; font-size: 0.9rem; margin-top: 4px;
+      }
+      button.secondary { background: #273549; }
+      .count { font-weight: 700; color: #93c5fd; }
+      .status { min-height: 1.2em; font-size: 0.8rem; }
+      .ok { color: #86efac; }
+      .err { color: #fca5a5; }
+      hr { border: none; border-top: 1px solid #334155; margin: 12px 0; }
+      a { color: #93c5fd; }
+    </style>
+  </head>
+  <body>
+    <h1>📚 Stanki</h1>
+    <p><span class="count" id="count">0</span> card(s) waiting to sync.</p>
+
+    <button id="push">Connect Google &amp; push to Drive</button>
+    <div class="status" id="status"></div>
+
+    <hr />
+    <p>Google OAuth Client ID (one-time):</p>
+    <input id="clientId" placeholder="xxxxx.apps.googleusercontent.com" />
+    <button class="secondary" id="saveId">Save Client ID</button>
+
+    <hr />
+    <p>
+      Select a word on any page → right-click → <em>Add to Stanki</em>.
+      Cards land in your Drive <strong>Inbox</strong> deck and appear in the app on next sync.
+    </p>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

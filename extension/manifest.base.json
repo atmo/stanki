@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Stanki — Add Word",
+  "version": "0.1.0",
+  "description": "Select a word on any page and add it to your Stanki flashcards with sentence context.",
+  "permissions": ["contextMenus", "scripting", "activeTab", "storage", "identity"],
+  "host_permissions": ["https://www.googleapis.com/*"],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Stanki"
+  },
+  "icons": {
+    "48": "icon-48.png",
+    "128": "icon-128.png"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules
+dist
+dist-ssr
+*.local
+.env
+.DS_Store
+extension/node_modules
+extension/dist
+
+# Machine-specific local agent config (absolute paths)
+.claude/

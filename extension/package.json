@@ -1,0 +1,16 @@
+{
+  "name": "stanki-extension",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Add words from any webpage to Stanki flashcards (Chrome + Firefox)",
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.270",
+    "esbuild": "^0.23.1",
+    "typescript": "^5.6.2"
+  }
+}
