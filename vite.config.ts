@@ -8,6 +8,10 @@ export default defineConfig({
   // Base path. Locally './' works anywhere; CI sets VITE_BASE=/<repo>/ so the
   // PWA's assets and service-worker scope are correct on GitHub Project Pages.
   base: process.env.VITE_BASE ?? './',
+  // Pin the dev port so it always matches the registered OAuth origin
+  // (http://localhost:5173). strictPort fails loudly instead of silently
+  // moving to 5174 if the port is busy.
+  server: { port: 5173, strictPort: true },
   resolve: {
     alias: {
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
