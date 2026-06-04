@@ -3,7 +3,7 @@ import { extract } from '@shared/sentence';
 import { newCardState } from '@shared/sm2';
 import type { Card } from '@shared/types';
 import { addPending, flushPending, getPending, getTargetDeck } from './drive-ext';
-import { lookupWord, type LookupResult } from './lookup';
+import { lookupWord, type Lookups, type Sense } from './lookup';
 
 const ADD_MENU_ID = 'stanki-add-word';
 const LOOKUP_MENU_ID = 'stanki-lookup';
@@ -39,12 +39,14 @@ interface BubblePayload {
   url: string;
   title: string;
   loading?: boolean;
-  result: LookupResult | null;
+  lookups: Lookups;
 }
 
 /**
- * Renders the lookup result as a small Shadow-DOM card anchored to the selected
- * word. Self-contained (serialized into the page); only DOM + chrome messaging.
+ * Renders both lookup sources (ANW + Wiktionary) as a small Shadow-DOM card
+ * anchored to the selected word. Self-contained (serialized into the page);
+ * only DOM + chrome messaging. "Add" fills the card back from the Wiktionary
+ * (English) gloss.
  */
 function renderBubble(payload: BubblePayload) {
   const w = window as unknown as { __stankiBubbleClose?: () => void };
@@ -66,49 +68,42 @@ function renderBubble(payload: BubblePayload) {
   const style = document.createElement('style');
   style.textContent =
     ".card{all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" +
-    'display:block;width:300px;max-height:340px;overflow:auto;background:#0f172a;color:#e2e8f0;' +
+    'display:block;width:300px;max-height:360px;overflow:auto;background:#0f172a;color:#e2e8f0;' +
     'border:1px solid #334155;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);' +
     'padding:12px 14px;font-size:13px;line-height:1.45;box-sizing:border-box;}' +
-    '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}' +
+    '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}' +
     '.lemma{font-weight:700;font-size:15px;color:#fff;}' +
-    '.src{font-size:10px;color:#93c5fd;background:rgba(37,99,235,.2);padding:1px 6px;border-radius:999px;}' +
     '.x{margin-left:auto;cursor:pointer;color:#94a3b8;font-size:15px;line-height:1;background:none;border:none;}' +
-    '.sense{margin:6px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
+    '.slabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
+    'font-weight:700;margin:10px 0 3px;}' +
+    '.sense{margin:5px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
-    '.add{margin-top:10px;width:100%;padding:7px;border:none;border-radius:8px;' +
+    '.add{margin-top:12px;width:100%;padding:7px;border:none;border-radius:8px;' +
     'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}';
   shadow.appendChild(style);
 
   const card = document.createElement('div');
   card.className = 'card';
+  const { anw, free } = payload.lookups;
 
   const hd = document.createElement('div');
   hd.className = 'hd';
   const lemma = document.createElement('span');
   lemma.className = 'lemma';
-  lemma.textContent = payload.result ? payload.result.lemma : payload.word;
+  lemma.textContent = anw?.lemma || free?.lemma || payload.word;
   hd.appendChild(lemma);
-  if (payload.result) {
-    const src = document.createElement('span');
-    src.className = 'src';
-    src.textContent = payload.result.source;
-    hd.appendChild(src);
-  }
   const x = document.createElement('button');
   x.className = 'x';
   x.textContent = '✕';
   hd.appendChild(x);
   card.appendChild(hd);
 
-  let firstDef = '';
-  if (payload.loading) {
-    const p = document.createElement('div');
-    p.className = 'muted';
-    p.textContent = `Looking up “${payload.word}”…`;
-    card.appendChild(p);
-  } else if (payload.result && payload.result.senses.length) {
-    payload.result.senses.forEach((s, i) => {
-      if (i === 0) firstDef = s.definition;
+  const addSection = (label: string, senses: Sense[]) => {
+    const lab = document.createElement('div');
+    lab.className = 'slabel';
+    lab.textContent = label;
+    card.appendChild(lab);
+    senses.forEach((s, i) => {
       const row = document.createElement('div');
       row.className = 'sense';
       const n = document.createElement('span');
@@ -124,14 +119,25 @@ function renderBubble(payload: BubblePayload) {
       }
       card.appendChild(row);
     });
-  } else {
+  };
+
+  if (payload.loading) {
+    const p = document.createElement('div');
+    p.className = 'muted';
+    p.textContent = `Looking up “${payload.word}”…`;
+    card.appendChild(p);
+  } else if (!anw && !free) {
     const p = document.createElement('div');
     p.className = 'muted';
     p.textContent = `No definition found for “${payload.word}”.`;
     card.appendChild(p);
+  } else {
+    if (anw) addSection('ANW', anw.senses);
+    if (free) addSection('Wiktionary (EN)', free.senses);
   }
 
   if (!payload.loading) {
+    const back = free?.senses[0]?.definition ?? ''; // card back = Wiktionary gloss
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
@@ -144,7 +150,7 @@ function renderBubble(payload: BubblePayload) {
           payload: {
             word: payload.word,
             context: payload.context,
-            back: firstDef,
+            back,
             url: payload.url,
             title: payload.title,
           },
@@ -249,18 +255,18 @@ async function lookupAndShow(tabId: number): Promise<void> {
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
   const base = { word, context, url: info.url, title: info.title };
 
-  // Show a loading bubble immediately, then replace it with the result.
+  // Show a loading bubble immediately, then replace it with the results.
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
-    args: [{ ...base, loading: true, result: null }],
+    args: [{ ...base, loading: true, lookups: { anw: null, free: null } }],
   });
 
-  const lookup = await lookupWord(info.selectedText);
+  const lookups = await lookupWord(info.selectedText);
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
-    args: [{ ...base, loading: false, result: lookup }],
+    args: [{ ...base, loading: false, lookups }],
   });
 }
 

@@ -55,7 +55,7 @@ async function lookupAnw(word: string): Promise<LookupResult | null> {
     }
   }
   if (!senses.length) return null;
-  return { source: 'ANW', lemma: article.lemma ?? word, senses: senses.slice(0, 12) };
+  return { source: 'ANW', lemma: article.lemma ?? word, senses: senses.slice(0, 10) };
 }
 
 interface FreeDict {
@@ -75,22 +75,21 @@ async function lookupFreeDict(word: string): Promise<LookupResult | null> {
     }
   }
   if (!senses.length) return null;
-  return { source: 'Wiktionary (EN)', lemma: data.word ?? word, senses: senses.slice(0, 8) };
+  return { source: 'Wiktionary (EN)', lemma: data.word ?? word, senses: senses.slice(0, 6) };
 }
 
-/** Look up a word: ANW first, then the Wiktionary-based fallback. */
-export async function lookupWord(raw: string): Promise<LookupResult | null> {
+export interface Lookups {
+  anw: LookupResult | null;
+  free: LookupResult | null;
+}
+
+/** Look up a word in both sources (ANW + Wiktionary) in parallel. */
+export async function lookupWord(raw: string): Promise<Lookups> {
   const word = firstWord(raw);
-  if (!word) return null;
-  try {
-    const anw = await lookupAnw(word);
-    if (anw) return anw;
-  } catch {
-    /* fall through to fallback */
-  }
-  try {
-    return await lookupFreeDict(word);
-  } catch {
-    return null;
-  }
+  if (!word) return { anw: null, free: null };
+  const [anw, free] = await Promise.all([
+    lookupAnw(word).catch(() => null),
+    lookupFreeDict(word).catch(() => null),
+  ]);
+  return { anw, free };
 }
