@@ -181,7 +181,6 @@ function renderBubble(payload: BubblePayload) {
   const close = () => {
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('mousedown', onDown, true);
-    window.removeEventListener('scroll', close, true);
     window.removeEventListener('resize', close, true);
     host.remove();
     w.__stankiBubbleClose = undefined;
@@ -195,7 +194,6 @@ function renderBubble(payload: BubblePayload) {
   x.addEventListener('click', close);
   document.addEventListener('keydown', onKey, true);
   document.addEventListener('mousedown', onDown, true);
-  window.addEventListener('scroll', close, true);
   window.addEventListener('resize', close, true);
   w.__stankiBubbleClose = close;
 }
