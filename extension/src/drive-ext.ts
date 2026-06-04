@@ -7,12 +7,20 @@ import type { Card, Deck, DeckSnapshot } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
 import { buildSnapshot, mergeCards } from '@shared/snapshot';
 import {
+  listAppFiles,
   findFileByDeckId,
   downloadSnapshot,
   updateSnapshot,
   createSnapshot,
   type TokenProvider,
 } from '@shared/drive';
+
+export interface DeckRef {
+  id: string;
+  name: string;
+}
+
+const INBOX: DeckRef = { id: INBOX_DECK_ID, name: INBOX_DECK_NAME };
 
 let token: string | null = null;
 let tokenExp = 0;
@@ -35,6 +43,26 @@ async function getDeviceId(): Promise<string> {
   const id = uid();
   await storageLocal.set({ deviceId: id });
   return id;
+}
+
+// The remembered "add words to this deck by default" choice.
+export async function getTargetDeck(): Promise<DeckRef> {
+  const { targetDeck } = await storageLocal.get('targetDeck');
+  return (targetDeck as DeckRef) ?? INBOX;
+}
+export async function setTargetDeck(deck: DeckRef): Promise<void> {
+  await storageLocal.set({ targetDeck: deck });
+}
+
+// Cached deck list so the popup can render the picker without a network round-trip.
+export async function getDeckCache(): Promise<DeckRef[]> {
+  const { deckCache } = await storageLocal.get('deckCache');
+  const list = (deckCache as DeckRef[]) ?? [];
+  return withInbox(list);
+}
+
+function withInbox(list: DeckRef[]): DeckRef[] {
+  return list.some((d) => d.id === INBOX_DECK_ID) ? list : [INBOX, ...list];
 }
 
 export async function getPending(): Promise<Card[]> {
@@ -86,16 +114,36 @@ export function isConnected(): boolean {
   return !!token && Date.now() < tokenExp;
 }
 
-// ---- push pending captures to the Drive "Inbox" snapshot -------------------
+// ---- deck listing ----------------------------------------------------------
 
-function inboxDeck(): Deck {
+/** Fetch the user's decks from Drive (downloads each snapshot for its name). */
+export async function listRemoteDecks(interactive: boolean): Promise<DeckRef[]> {
+  const getTok: TokenProvider = () => getToken(interactive);
+  const files = await listAppFiles(getTok);
+
+  const decks: DeckRef[] = [];
+  for (const f of files) {
+    const snap = await downloadSnapshot(getTok, f.id);
+    if (!snap.deck.deleted) decks.push({ id: snap.deck.id, name: snap.deck.name });
+  }
+  decks.sort((a, b) => a.name.localeCompare(b.name));
+
+  const list = withInbox(decks);
+  await storageLocal.set({ deckCache: list });
+  return list;
+}
+
+// ---- push pending captures to their target deck's Drive snapshot -----------
+
+function newDeck(ref: DeckRef): Deck {
   const now = Date.now();
-  return { id: INBOX_DECK_ID, name: INBOX_DECK_NAME, createdAt: now, updatedAt: now };
+  return { id: ref.id, name: ref.name, createdAt: now, updatedAt: now };
 }
 
 /**
- * Append all pending captures to the Drive Inbox snapshot, then clear the queue.
- * Read-modify-write keeps concurrent captures from clobbering each other.
+ * Append pending captures to Drive, grouped by their target deck, then clear
+ * the queue. Read-modify-write per deck keeps concurrent captures from
+ * clobbering each other.
  */
 export async function flushPending(interactive: boolean): Promise<{ pushed: number }> {
   const pending = await getPending();
@@ -104,17 +152,33 @@ export async function flushPending(interactive: boolean): Promise<{ pushed: numb
   const getTok: TokenProvider = () => getToken(interactive);
   const deviceId = await getDeviceId();
 
-  const file = await findFileByDeckId(getTok, INBOX_DECK_ID);
-  const current: DeckSnapshot | undefined = file
-    ? await downloadSnapshot(getTok, file.id)
-    : undefined;
+  // Resolve deck names for any decks we may need to create (e.g. Inbox).
+  const nameById = new Map<string, string>([[INBOX_DECK_ID, INBOX_DECK_NAME]]);
+  for (const d of await getDeckCache()) nameById.set(d.id, d.name);
+  const target = await getTargetDeck();
+  nameById.set(target.id, target.name);
 
-  const deck = current?.deck ?? inboxDeck();
-  const cards = mergeCards(current?.cards ?? [], pending);
-  const snapshot = buildSnapshot(deck, cards, deviceId);
+  // Group captures by target deck.
+  const groups = new Map<string, Card[]>();
+  for (const card of pending) {
+    const g = groups.get(card.deckId) ?? [];
+    g.push(card);
+    groups.set(card.deckId, g);
+  }
 
-  if (file) await updateSnapshot(getTok, file.id, snapshot);
-  else await createSnapshot(getTok, INBOX_DECK_ID, `deck-${INBOX_DECK_ID}.json`, snapshot);
+  for (const [deckId, cards] of groups) {
+    const file = await findFileByDeckId(getTok, deckId);
+    const current: DeckSnapshot | undefined = file
+      ? await downloadSnapshot(getTok, file.id)
+      : undefined;
+
+    const deck = current?.deck ?? newDeck({ id: deckId, name: nameById.get(deckId) ?? deckId });
+    const merged = mergeCards(current?.cards ?? [], cards);
+    const snapshot = buildSnapshot(deck, merged, deviceId);
+
+    if (file) await updateSnapshot(getTok, file.id, snapshot);
+    else await createSnapshot(getTok, deckId, `deck-${deckId}.json`, snapshot);
+  }
 
   await setPending([]);
   return { pushed: pending.length };

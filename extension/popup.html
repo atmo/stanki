@@ -13,10 +13,11 @@
       }
       h1 { font-size: 1rem; margin: 0 0 10px; }
       p { margin: 6px 0; font-size: 0.85rem; color: #94a3b8; }
-      input {
+      input, select {
         width: 100%; box-sizing: border-box; padding: 8px; margin: 4px 0 8px;
         border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0;
       }
+      label { font-size: 0.85rem; color: #94a3b8; }
       button {
         width: 100%; padding: 9px; border-radius: 8px; border: none; cursor: pointer;
         background: #2563eb; color: white; font-size: 0.9rem; margin-top: 4px;
@@ -32,13 +33,22 @@
   </head>
   <body>
     <h1>📚 Stanki</h1>
+
+    <label for="deck">Add words to deck:</label>
+    <select id="deck"></select>
+    <button class="secondary" id="refreshDecks">Refresh deck list from Drive</button>
+
     <p><span class="count" id="count">0</span> card(s) waiting to sync.</p>
 
     <button id="push">Connect Google &amp; push to Drive</button>
     <div class="status" id="status"></div>
 
     <hr />
-    <p>Google OAuth Client ID (one-time):</p>
+    <p>1. Add this <strong>redirect URI</strong> to your Google OAuth Web client
+      (<em>Authorized redirect URIs</em>), then click to copy:</p>
+    <input id="redirect" readonly title="Click to copy" />
+
+    <p>2. Paste your Google OAuth <strong>Client ID</strong>:</p>
     <input id="clientId" placeholder="xxxxx.apps.googleusercontent.com" />
     <button class="secondary" id="saveId">Save Client ID</button>
 

@@ -1,9 +1,8 @@
 import { contextMenus, scripting, action, runtime } from './browserApi';
 import { extract } from '@shared/sentence';
 import { newCardState } from '@shared/sm2';
-import { INBOX_DECK_ID } from '@shared/types';
 import type { Card } from '@shared/types';
-import { addPending, flushPending, getPending } from './drive-ext';
+import { addPending, flushPending, getPending, getTargetDeck } from './drive-ext';
 
 const MENU_ID = 'stanki-add-word';
 
@@ -32,11 +31,11 @@ function grabSelectionInfo() {
   return { selectedText, blockText, url: location.href, title: document.title };
 }
 
-function makeCard(word: string, context: string, url: string, title: string): Card {
+function makeCard(deckId: string, word: string, context: string, url: string, title: string): Card {
   const now = Date.now();
   return {
     id: crypto.randomUUID(),
-    deckId: INBOX_DECK_ID,
+    deckId,
     front: word,
     back: '',
     context,
@@ -66,19 +65,31 @@ async function capture(tabId: number): Promise<void> {
   if (!info?.selectedText.trim()) return;
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
-  await addPending(makeCard(word, context, info.url, info.title));
+  const target = await getTargetDeck();
+  await addPending(makeCard(target.id, word, context, info.url, info.title));
   await updateBadge();
 
   // Best-effort silent push; if not yet authorized it stays queued for the popup.
   void flushPending(false).then(updateBadge).catch(() => {});
 }
 
-runtime.onInstalled.addListener(() => {
+// Reflect the remembered target deck in the right-click menu label.
+async function updateMenuTitle(): Promise<void> {
+  try {
+    const target = await getTargetDeck();
+    await contextMenus.update(MENU_ID, { title: `Add “%s” to ${target.name}` });
+  } catch {
+    /* menu may not exist yet; best-effort */
+  }
+}
+
+runtime.onInstalled.addListener(async () => {
   contextMenus.create({
     id: MENU_ID,
     title: 'Add “%s” to Stanki',
     contexts: ['selection'],
   });
+  await updateMenuTitle();
   void updateBadge();
 });
 
@@ -98,6 +109,9 @@ runtime.onMessage.addListener((msg: { type?: string }, _sender: unknown, sendRes
   }
   if (msg?.type === 'refreshBadge') {
     void updateBadge();
+  }
+  if (msg?.type === 'targetChanged') {
+    void updateMenuTitle();
   }
   return undefined;
 });
