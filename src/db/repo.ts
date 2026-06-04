@@ -127,6 +127,18 @@ export async function deleteCard(id: string): Promise<void> {
   await db.cards.update(id, { deleted: true, updatedAt: Date.now() });
 }
 
+/** Move cards to another deck (bumps updatedAt so the move syncs). */
+export async function moveCards(ids: string[], toDeckId: string): Promise<void> {
+  if (!ids.length) return;
+  await db.cards.where('id').anyOf(ids).modify({ deckId: toDeckId, updatedAt: Date.now() });
+}
+
+/** Soft-delete several cards at once. */
+export async function deleteCards(ids: string[]): Promise<void> {
+  if (!ids.length) return;
+  await db.cards.where('id').anyOf(ids).modify({ deleted: true, updatedAt: Date.now() });
+}
+
 /** Apply a review grade: reschedule, persist, and log it. */
 export async function gradeCard(card: Card, grade: Grade): Promise<Card> {
   const settings = await getSettings();

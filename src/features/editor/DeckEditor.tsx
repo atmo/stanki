@@ -2,10 +2,25 @@ import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { createCard, updateCard, deleteCard, renameDeck } from '../../db/repo';
-import type { Card } from '@shared/types';
+import {
+  createCard,
+  updateCard,
+  deleteCard,
+  deleteCards,
+  moveCards,
+  renameDeck,
+} from '../../db/repo';
+import type { Card, Deck } from '@shared/types';
 
-function CardRow({ card }: { card: Card }) {
+function CardRow({
+  card,
+  selected,
+  onToggle,
+}: {
+  card: Card;
+  selected: boolean;
+  onToggle: (id: string) => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
@@ -32,6 +47,13 @@ function CardRow({ card }: { card: Card }) {
 
   return (
     <li className="card-row">
+      <input
+        type="checkbox"
+        className="card-check"
+        checked={selected}
+        onChange={() => onToggle(card.id)}
+        aria-label="Select card"
+      />
       <div className="card-row-main">
         <strong>{card.front}</strong>
         <span className="muted"> — {card.back || '(no answer)'}</span>
@@ -52,13 +74,32 @@ export function DeckEditor() {
   const [context, setContext] = useState('');
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const data = useLiveQuery(async () => {
     const deck = await db.decks.get(id);
     const cards = await db.cards.where('deckId').equals(id).filter((c) => !c.deleted).toArray();
     cards.sort((a, b) => b.createdAt - a.createdAt);
-    return { deck, cards };
+    const allDecks = (await db.decks.filter((d) => !d.deleted).toArray()).sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
+    return { deck, cards, allDecks };
   }, [id]);
+
+  function toggle(cardId: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(cardId)) next.delete(cardId);
+      else next.add(cardId);
+      return next;
+    });
+  }
+
+  function toggleAll(cards: Card[]) {
+    setSelected((prev) =>
+      prev.size === cards.length ? new Set() : new Set(cards.map((c) => c.id)),
+    );
+  }
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
@@ -79,8 +120,23 @@ export function DeckEditor() {
     setShowBulk(false);
   }
 
+  async function moveSelected(toDeckId: string) {
+    if (!toDeckId) return;
+    await moveCards([...selected], toDeckId);
+    setSelected(new Set());
+  }
+
+  async function deleteSelected() {
+    if (!confirm(`Delete ${selected.size} selected card(s)?`)) return;
+    await deleteCards([...selected]);
+    setSelected(new Set());
+  }
+
   if (!data) return <p className="muted">Loading…</p>;
   if (!data.deck) return <p className="muted">Deck not found. <Link to="/">Back</Link></p>;
+
+  const otherDecks: Deck[] = data.allDecks.filter((d) => d.id !== id);
+  const allSelected = data.cards.length > 0 && selected.size === data.cards.length;
 
   return (
     <div>
@@ -113,9 +169,41 @@ export function DeckEditor() {
         </div>
       )}
 
-      <p className="muted">{data.cards.length} cards</p>
+      <div className="cards-head">
+        {data.cards.length > 0 && (
+          <label className="select-all">
+            <input type="checkbox" className="card-check" checked={allSelected} onChange={() => toggleAll(data.cards)} />
+            Select all
+          </label>
+        )}
+        <span className="muted">{data.cards.length} cards</span>
+      </div>
+
+      {selected.size > 0 && (
+        <div className="sel-bar">
+          <span><strong>{selected.size}</strong> selected</span>
+          <select
+            className="input sel-move"
+            value=""
+            onChange={(e) => void moveSelected(e.target.value)}
+            disabled={otherDecks.length === 0}
+          >
+            <option value="" disabled>
+              {otherDecks.length ? 'Move to…' : 'No other decks'}
+            </option>
+            {otherDecks.map((d) => (
+              <option key={d.id} value={d.id}>{d.name}</option>
+            ))}
+          </select>
+          <button className="btn btn-danger" onClick={() => void deleteSelected()}>Delete</button>
+          <button className="btn" onClick={() => setSelected(new Set())}>Clear</button>
+        </div>
+      )}
+
       <ul className="card-list">
-        {data.cards.map((c) => <CardRow key={c.id} card={c} />)}
+        {data.cards.map((c) => (
+          <CardRow key={c.id} card={c} selected={selected.has(c.id)} onToggle={toggle} />
+        ))}
       </ul>
     </div>
   );

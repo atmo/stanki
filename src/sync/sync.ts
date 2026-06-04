@@ -1,9 +1,14 @@
-// Sync orchestration: reconcile every local deck against its Drive snapshot.
-// Pull remote -> merge (LWW + tombstones) -> write local -> push merged result.
+// Sync orchestration: reconcile every deck against Google Drive.
+//
+// Cards are merged GLOBALLY by id (last-write-wins + tombstones), then
+// partitioned back into per-deck snapshots. Merging globally (rather than
+// per-deck) is what makes moving a card between decks correct: the moved card
+// has one canonical record whose newer deckId wins, so it lands in exactly one
+// deck instead of being duplicated or resurrected in its old deck.
 
 import { db } from '../db/db';
 import { getDeviceId, setLastSync } from '../db/repo';
-import { buildSnapshot, mergeSnapshot } from '@shared/snapshot';
+import { buildSnapshot, mergeCards, mergeDeck, gcTombstones } from '@shared/snapshot';
 import {
   listAppFiles,
   downloadSnapshot,
@@ -12,61 +17,75 @@ import {
   type DriveFile,
   type TokenProvider,
 } from '@shared/drive';
-import type { Card } from '@shared/types';
+import type { Card, Deck } from '@shared/types';
+import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
 
-async function syncOneDeck(
-  getToken: TokenProvider,
-  deckId: string,
-  remoteFile: DriveFile | undefined,
-  deviceId: string,
-): Promise<void> {
-  const [localDeck, localCards] = await Promise.all([
-    db.decks.get(deckId),
-    db.cards.where('deckId').equals(deckId).toArray(),
-  ]);
-
-  const remote = remoteFile ? await downloadSnapshot(getToken, remoteFile.id) : undefined;
-  const merged = mergeSnapshot(localDeck, localCards, remote);
-
-  // Persist the merged result locally (replacing this deck's cards).
-  await db.transaction('rw', db.decks, db.cards, async () => {
-    await db.decks.put(merged.deck);
-    const staleIds = localCards
-      .filter((c) => !merged.cards.some((m: Card) => m.id === c.id))
-      .map((c) => c.id);
-    if (staleIds.length) await db.cards.bulkDelete(staleIds);
-    await db.cards.bulkPut(merged.cards);
-  });
-
-  // Push the merged snapshot back to Drive.
-  const snapshot = buildSnapshot(merged.deck, merged.cards, deviceId);
-  if (remoteFile) {
-    await updateSnapshot(getToken, remoteFile.id, snapshot);
-  } else {
-    await createSnapshot(getToken, deckId, `deck-${deckId}.json`, snapshot);
-  }
+function synthDeck(id: string): Deck {
+  const now = Date.now();
+  return { id, name: id === INBOX_DECK_ID ? INBOX_DECK_NAME : id, createdAt: now, updatedAt: now };
 }
 
-/** Reconcile all decks (local + remote) with Google Drive. */
 export async function syncAll(getToken: TokenProvider): Promise<void> {
   const deviceId = await getDeviceId();
 
-  const remoteFiles = await listAppFiles(getToken);
-  const remoteByDeck = new Map<string, DriveFile>();
-  for (const f of remoteFiles) {
+  // --- pull every remote snapshot ---------------------------------------
+  const files = await listAppFiles(getToken);
+  const fileByDeck = new Map<string, DriveFile>();
+  const remoteDecks = new Map<string, Deck>();
+  let remoteCards: Card[] = [];
+  for (const f of files) {
     const id = f.appProperties?.deckId;
-    if (id) remoteByDeck.set(id, f);
+    if (!id) continue;
+    fileByDeck.set(id, f);
+    const snap = await downloadSnapshot(getToken, f.id);
+    remoteDecks.set(id, snap.deck);
+    remoteCards = remoteCards.concat(snap.cards);
   }
 
+  // --- local snapshot ----------------------------------------------------
   const localDecks = await db.decks.toArray();
+  const localCards = await db.cards.toArray();
+  const localDeckById = new Map(localDecks.map((d) => [d.id, d]));
+
+  // --- merge cards globally by id, and deck metadata per id --------------
+  const mergedCards = gcTombstones(mergeCards(localCards, remoteCards));
+
   const deckIds = new Set<string>([
     ...localDecks.map((d) => d.id),
-    ...remoteByDeck.keys(),
+    ...remoteDecks.keys(),
+    ...mergedCards.map((c) => c.deckId),
   ]);
+  const mergedDecks = new Map<string, Deck>();
+  for (const id of deckIds) {
+    const l = localDeckById.get(id);
+    const r = remoteDecks.get(id);
+    mergedDecks.set(id, l || r ? mergeDeck(l, r) : synthDeck(id));
+  }
+
+  // --- persist the merged result locally --------------------------------
+  const mergedIds = new Set(mergedCards.map((c) => c.id));
+  const dropIds = localCards.map((c) => c.id).filter((id) => !mergedIds.has(id));
+  await db.transaction('rw', db.decks, db.cards, async () => {
+    if (dropIds.length) await db.cards.bulkDelete(dropIds);
+    await db.cards.bulkPut(mergedCards);
+    await db.decks.bulkPut([...mergedDecks.values()]);
+  });
+
+  // --- partition cards by deck and push each snapshot -------------------
+  const cardsByDeck = new Map<string, Card[]>();
+  for (const id of mergedDecks.keys()) cardsByDeck.set(id, []);
+  for (const c of mergedCards) {
+    const arr = cardsByDeck.get(c.deckId);
+    if (arr) arr.push(c);
+    else cardsByDeck.set(c.deckId, [c]);
+  }
 
   // Sequential to keep Drive request volume low and avoid 429s.
-  for (const deckId of deckIds) {
-    await syncOneDeck(getToken, deckId, remoteByDeck.get(deckId), deviceId);
+  for (const [id, deck] of mergedDecks) {
+    const snapshot = buildSnapshot(deck, cardsByDeck.get(id) ?? [], deviceId);
+    const file = fileByDeck.get(id);
+    if (file) await updateSnapshot(getToken, file.id, snapshot);
+    else await createSnapshot(getToken, id, `deck-${id}.json`, snapshot);
   }
 
   await setLastSync(Date.now());

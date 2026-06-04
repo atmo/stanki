@@ -101,7 +101,18 @@ body {
 .card-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 12px 14px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); }
 .card-row.editing { flex-direction: column; }
 .card-row.editing .input { width: 100%; }
-.card-row-main { min-width: 0; }
+.card-row-main { min-width: 0; flex: 1; }
+.card-check { width: 17px; height: 17px; flex-shrink: 0; margin-top: 2px; accent-color: var(--primary); cursor: pointer; }
+
+.cards-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 8px; }
+.select-all { display: flex; align-items: center; gap: 7px; font-size: 0.9rem; color: var(--muted); cursor: pointer; }
+
+.sel-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; margin-bottom: 12px;
+}
+.sel-move { width: auto; flex: 1; min-width: 140px; padding: 7px 10px; }
 
 /* Review */
 .review { display: flex; flex-direction: column; gap: 16px; }
