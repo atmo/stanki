@@ -74,23 +74,27 @@ function renderBubble(payload: BubblePayload) {
     '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}' +
     '.lemma{font-weight:700;font-size:15px;color:#fff;}' +
     '.x{margin-left:auto;cursor:pointer;color:#94a3b8;font-size:15px;line-height:1;background:none;border:none;}' +
-    '.slabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
-    'font-weight:700;margin:10px 0 3px;}' +
+    '.slabel{display:flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;' +
+    'letter-spacing:.04em;color:#93c5fd;font-weight:700;margin:10px 0 3px;}' +
+    '.slink{margin-left:auto;font-size:11px;text-transform:none;letter-spacing:0;font-weight:600;' +
+    'color:#93c5fd;text-decoration:none;}.slink:hover{text-decoration:underline;}' +
     '.sense{margin:5px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
     '.add{margin-top:12px;width:100%;padding:7px;border:none;border-radius:8px;' +
-    'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}';
+    'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}' +
+    '.vd{display:block;margin-top:10px;font-size:11px;color:#93c5fd;text-decoration:none;}.vd:hover{text-decoration:underline;}';
   shadow.appendChild(style);
 
   const card = document.createElement('div');
   card.className = 'card';
   const { anw, free } = payload.lookups;
+  const term = anw?.lemma || free?.lemma || payload.word;
 
   const hd = document.createElement('div');
   hd.className = 'hd';
   const lemma = document.createElement('span');
   lemma.className = 'lemma';
-  lemma.textContent = anw?.lemma || free?.lemma || payload.word;
+  lemma.textContent = term;
   hd.appendChild(lemma);
   const x = document.createElement('button');
   x.className = 'x';
@@ -98,10 +102,19 @@ function renderBubble(payload: BubblePayload) {
   hd.appendChild(x);
   card.appendChild(hd);
 
-  const addSection = (label: string, senses: Sense[]) => {
+  const addSection = (label: string, senses: Sense[], url: string) => {
     const lab = document.createElement('div');
     lab.className = 'slabel';
-    lab.textContent = label;
+    const name = document.createElement('span');
+    name.textContent = label;
+    lab.appendChild(name);
+    const link = document.createElement('a');
+    link.className = 'slink';
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noreferrer';
+    link.textContent = 'open ↗';
+    lab.appendChild(link);
     card.appendChild(lab);
     senses.forEach((s, i) => {
       const row = document.createElement('div');
@@ -132,8 +145,16 @@ function renderBubble(payload: BubblePayload) {
     p.textContent = `No definition found for “${payload.word}”.`;
     card.appendChild(p);
   } else {
-    if (anw) addSection('ANW', anw.senses);
-    if (free) addSection('Wiktionary (EN)', free.senses);
+    if (anw) {
+      addSection('ANW', anw.senses, `https://anw.ivdnt.org/article/${encodeURIComponent(anw.lemma)}`);
+    }
+    if (free) {
+      addSection(
+        'Wiktionary (EN)',
+        free.senses,
+        `https://en.wiktionary.org/wiki/${encodeURIComponent(free.lemma)}#Dutch`,
+      );
+    }
   }
 
   if (!payload.loading) {
@@ -144,6 +165,14 @@ function renderBubble(payload: BubblePayload) {
           .map((s, i) => `${s.sense ? s.sense.replace(/\.0$/, '') : String(i + 1)}. ${s.definition}`)
           .join('\n')
       : '';
+    const vd = document.createElement('a');
+    vd.className = 'vd';
+    vd.href = `https://zoeken.vandale.nl/?query=${encodeURIComponent(term)}`;
+    vd.target = '_blank';
+    vd.rel = 'noreferrer';
+    vd.textContent = 'Look up in Van Dale ↗';
+    card.appendChild(vd);
+
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
