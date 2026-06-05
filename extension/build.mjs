@@ -87,7 +87,15 @@ const targets = {
   firefox: {
     ...base,
     background: { scripts: ['background.js'] },
-    browser_specific_settings: { gecko: { id: 'stanki@local', strict_min_version: '115.0' } },
+    browser_specific_settings: {
+      gecko: {
+        id: 'stanki@local',
+        strict_min_version: '115.0',
+        // Required by AMO: Stanki stores only to the user's own Google Drive and
+        // sends looked-up words to public dictionaries; no developer-side collection.
+        data_collection_permissions: { required: ['none'] },
+      },
+    },
   },
 };
 
