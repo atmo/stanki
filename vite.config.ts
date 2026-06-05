@@ -36,6 +36,13 @@ export default defineConfig({
           { src: 'icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
           { src: 'icon-maskable.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
         ],
+        // Android: register as a share target so "Share → Stanki" opens the
+        // add screen (bridged to #/add in main.tsx). iOS uses a Shortcut instead.
+        share_target: {
+          action: '.',
+          method: 'GET',
+          params: { text: 'text', title: 'title', url: 'url' },
+        },
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],

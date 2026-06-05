@@ -30,6 +30,10 @@ export const saveSettings = (s: SrSettings) => setMeta('srSettings', s);
 export const getLastSync = () => getMeta<number | null>('lastSync', null);
 export const setLastSync = (ts: number) => setMeta('lastSync', ts);
 
+// Remembered target deck for the "Add word" screen.
+export const getLastAddDeck = () => getMeta<string | null>('lastAddDeckId', null);
+export const setLastAddDeck = (id: string) => setMeta('lastAddDeckId', id);
+
 // ---- decks -----------------------------------------------------------------
 
 export function listDecks(): Promise<Deck[]> {

@@ -3,7 +3,7 @@ import { extract } from '@shared/sentence';
 import { newCardState } from '@shared/sm2';
 import type { Card } from '@shared/types';
 import { addPending, flushPending, getPending, getTargetDeck } from './drive-ext';
-import { lookupWord, type Lookups, type Sense } from './lookup';
+import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
 
 const ADD_MENU_ID = 'stanki-add-word';
 const LOOKUP_MENU_ID = 'stanki-lookup';

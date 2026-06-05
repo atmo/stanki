@@ -129,6 +129,24 @@ body {
 .grade-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .review-done { text-align: center; padding: 40px 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
 
+/* Add word screen */
+.add-screen { display: flex; flex-direction: column; }
+.add-title { margin: 0 0 12px; font-size: 1.15rem; }
+.add-done { text-align: center; padding: 40px 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+.add-screen .card-form .row .input { flex: 1; }
+
+.lookup-results { margin-top: 18px; display: flex; flex-direction: column; gap: 4px; }
+.lk-loading { margin-top: 18px; }
+.lk-section { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 10px; }
+.lk-head { display: flex; align-items: center; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; color: #93c5fd; font-weight: 700; margin-bottom: 6px; }
+.lk-head a { margin-left: auto; text-transform: none; letter-spacing: 0; font-size: 0.78rem; color: #93c5fd; text-decoration: none; }
+.lk-head a:hover { text-decoration: underline; }
+.lk-sense { font-size: 0.92rem; margin: 5px 0; }
+.lk-n { color: var(--muted); font-weight: 700; margin-right: 6px; }
+.lk-ex { color: var(--muted); font-style: italic; margin-top: 2px; }
+.lk-vd { color: #93c5fd; font-size: 0.85rem; text-decoration: none; }
+.lk-vd:hover { text-decoration: underline; }
+
 /* Settings */
 .settings { display: flex; flex-direction: column; gap: 16px; }
 .panel { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }

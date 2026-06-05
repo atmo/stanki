@@ -1,12 +1,14 @@
-// Word-lookup providers for the in-page "Look up" bubble.
+// Word-lookup providers, shared by the extension bubble and the PWA "Add word"
+// screen.
 //
 // Primary:  ANW (Algemeen Nederlands Woordenboek) — authoritative, monolingual
 //           Dutch definitions. Its /backend/search endpoint returns JSON with a
-//           short gloss ("snippet") per sense — perfect for a compact bubble.
+//           short gloss ("snippet") per sense.
 // Fallback: freedictionaryapi.com (Wiktionary data) — English glosses of Dutch
 //           words plus Dutch examples, for words ANW doesn't cover.
 //
-// Fetched from the background service worker, whose host_permissions bypass CORS.
+// All three sources send permissive CORS headers, so this works both from the
+// extension background (host_permissions) and directly from the PWA in-browser.
 
 export interface Sense {
   sense?: string; // e.g. "1.0"
@@ -20,8 +22,20 @@ export interface LookupResult {
   senses: Sense[];
 }
 
-// Normalize a selection to a single lookup term (first word, trimmed of punctuation).
-function firstWord(s: string): string {
+export interface Lookups {
+  anw: LookupResult | null;
+  free: LookupResult | null;
+}
+
+// External "full entry" links.
+export const anwUrl = (lemma: string) => `https://anw.ivdnt.org/article/${encodeURIComponent(lemma)}`;
+export const wiktionaryUrl = (word: string) =>
+  `https://en.wiktionary.org/wiki/${encodeURIComponent(word)}#Dutch`;
+export const vanDaleUrl = (term: string) =>
+  `https://zoeken.vandale.nl/?query=${encodeURIComponent(term)}`;
+
+/** Normalize a selection to a single lookup term (first word, trimmed of punctuation). */
+export function firstWord(s: string): string {
   const cleaned = s.trim().toLowerCase().replace(/^[^\p{L}]+|[^\p{L}]+$/gu, '');
   return cleaned.split(/\s+/)[0] ?? '';
 }
@@ -78,11 +92,6 @@ async function lookupFreeDict(word: string): Promise<LookupResult | null> {
   return { source: 'Wiktionary (EN)', lemma: data.word ?? word, senses: senses.slice(0, 6) };
 }
 
-export interface Lookups {
-  anw: LookupResult | null;
-  free: LookupResult | null;
-}
-
 /** Look up a word in both sources (ANW + Wiktionary) in parallel. */
 export async function lookupWord(raw: string): Promise<Lookups> {
   const word = firstWord(raw);
@@ -92,4 +101,12 @@ export async function lookupWord(raw: string): Promise<Lookups> {
     lookupFreeDict(word).catch(() => null),
   ]);
   return { anw, free };
+}
+
+/** Join ANW senses into a single explanation string (one per line). */
+export function anwExplanation(anw: LookupResult | null): string {
+  if (!anw) return '';
+  return anw.senses
+    .map((s, i) => `${s.sense ? s.sense.replace(/\.0$/, '') : String(i + 1)}. ${s.definition}`)
+    .join('\n');
 }
