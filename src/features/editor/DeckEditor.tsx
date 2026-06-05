@@ -25,9 +25,15 @@ function CardRow({
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
   const [context, setContext] = useState(card.context ?? '');
+  const [explanation, setExplanation] = useState(card.explanation ?? '');
 
   async function save() {
-    await updateCard(card.id, { front, back, context: context || undefined });
+    await updateCard(card.id, {
+      front,
+      back,
+      context: context || undefined,
+      explanation: explanation || undefined,
+    });
     setEditing(false);
   }
 
@@ -36,6 +42,7 @@ function CardRow({
       <li className="card-row editing">
         <input className="input" value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front" />
         <input className="input" value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
+        <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
         <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
         <div className="row">
           <button className="btn btn-primary" onClick={() => void save()}>Save</button>
@@ -57,6 +64,7 @@ function CardRow({
       <div className="card-row-main">
         <strong>{card.front}</strong>
         <span className="muted"> — {card.back || '(no answer)'}</span>
+        {card.explanation && <p className="explanation small">{card.explanation}</p>}
         {card.context && <p className="context small">{card.context}</p>}
       </div>
       <div className="row">
@@ -72,6 +80,7 @@ export function DeckEditor() {
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [context, setContext] = useState('');
+  const [explanation, setExplanation] = useState('');
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -104,9 +113,16 @@ export function DeckEditor() {
   async function add(e: React.FormEvent) {
     e.preventDefault();
     if (!front.trim()) return;
-    await createCard({ deckId: id, front: front.trim(), back: back.trim(), context: context.trim() || undefined });
+    await createCard({
+      deckId: id,
+      front: front.trim(),
+      back: back.trim(),
+      explanation: explanation.trim() || undefined,
+      context: context.trim() || undefined,
+    });
     setFront('');
     setBack('');
+    setExplanation('');
     setContext('');
   }
 
@@ -152,6 +168,7 @@ export function DeckEditor() {
       <form className="card-form" onSubmit={add}>
         <input className="input" placeholder="Front (word / question)" value={front} onChange={(e) => setFront(e.target.value)} />
         <input className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
+        <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <textarea className="input" placeholder="Context (optional)" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
         <div className="row">
           <button className="btn btn-primary" type="submit">Add card</button>

@@ -138,6 +138,12 @@ function renderBubble(payload: BubblePayload) {
 
   if (!payload.loading) {
     const back = free?.senses[0]?.definition ?? ''; // card back = Wiktionary gloss
+    // card explanation = ANW Dutch senses, one per line
+    const explanation = anw
+      ? anw.senses
+          .map((s, i) => `${s.sense ? s.sense.replace(/\.0$/, '') : String(i + 1)}. ${s.definition}`)
+          .join('\n')
+      : '';
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
@@ -151,6 +157,7 @@ function renderBubble(payload: BubblePayload) {
             word: payload.word,
             context: payload.context,
             back,
+            explanation,
             url: payload.url,
             title: payload.title,
           },
@@ -203,6 +210,7 @@ function makeCard(
   word: string,
   back: string,
   context: string,
+  explanation: string,
   url: string,
   title: string,
 ): Card {
@@ -213,6 +221,7 @@ function makeCard(
     front: word,
     back,
     context,
+    explanation: explanation || undefined,
     source: { url, title, addedAt: now },
     createdAt: now,
     updatedAt: now,
@@ -237,7 +246,7 @@ async function capture(tabId: number): Promise<void> {
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
   const target = await getTargetDeck();
-  await addPending(makeCard(target.id, word, '', context, info.url, info.title));
+  await addPending(makeCard(target.id, word, '', context, '', info.url, info.title));
   await updateBadge();
 
   // Best-effort silent push; if not yet authorized it stays queued for the popup.
@@ -293,7 +302,7 @@ contextMenus.onClicked.addListener((info: chrome.contextMenus.OnClickData, tab?:
 
 interface Msg {
   type?: string;
-  payload?: { word: string; context: string; back: string; url: string; title: string };
+  payload?: { word: string; context: string; back: string; explanation: string; url: string; title: string };
 }
 
 runtime.onMessage.addListener((msg: Msg, _sender: unknown, sendResponse: (r: unknown) => void) => {
@@ -307,7 +316,7 @@ runtime.onMessage.addListener((msg: Msg, _sender: unknown, sendResponse: (r: unk
     const p = msg.payload;
     (async () => {
       const target = await getTargetDeck();
-      await addPending(makeCard(target.id, p.word, p.back, p.context, p.url, p.title));
+      await addPending(makeCard(target.id, p.word, p.back, p.context, p.explanation, p.url, p.title));
       await updateBadge();
       void flushPending(false).then(updateBadge).catch(() => {});
     })()

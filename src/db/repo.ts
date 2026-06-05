@@ -96,6 +96,7 @@ export interface NewCardInput {
   front: string;
   back: string;
   context?: string;
+  explanation?: string;
   source?: Card['source'];
 }
 
@@ -107,6 +108,7 @@ export async function createCard(input: NewCardInput): Promise<Card> {
     front: input.front,
     back: input.back,
     context: input.context,
+    explanation: input.explanation,
     source: input.source,
     createdAt: now,
     updatedAt: now,
@@ -118,7 +120,7 @@ export async function createCard(input: NewCardInput): Promise<Card> {
 
 export async function updateCard(
   id: string,
-  patch: Partial<Pick<Card, 'front' | 'back' | 'context'>>,
+  patch: Partial<Pick<Card, 'front' | 'back' | 'context' | 'explanation'>>,
 ): Promise<void> {
   await db.cards.update(id, { ...patch, updatedAt: Date.now() });
 }

@@ -122,6 +122,8 @@ body {
 .card-back { font-size: 1.3rem; text-align: center; }
 .divider { width: 100%; border: none; border-top: 1px solid var(--border); margin: 0; }
 .context { background: var(--panel-2); border-radius: 8px; padding: 10px 12px; color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin: 0; }
+.explanation { background: var(--panel-2); border-left: 3px solid var(--primary); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 0.95rem; line-height: 1.5; margin: 0; white-space: pre-wrap; }
+.explanation.small { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
 .context mark { background: rgba(250, 204, 21, 0.35); color: inherit; padding: 0 2px; border-radius: 3px; }
 .source-link { color: #93c5fd; font-size: 0.8rem; text-align: center; word-break: break-all; }
 .grade-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }

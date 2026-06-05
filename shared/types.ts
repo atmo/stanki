@@ -22,6 +22,7 @@ export interface Card {
   front: string;
   back: string;
   context?: string; // sentence/paragraph captured from a webpage
+  explanation?: string; // dictionary explanation (e.g. ANW), filled via lookup
   source?: CardSource; // provenance when added via the extension
 
   // SM-2 scheduling state

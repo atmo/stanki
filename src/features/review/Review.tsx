@@ -84,6 +84,7 @@ export function Review() {
           <>
             <hr className="divider" />
             <div className="card-back">{card.back || <span className="muted">(no answer yet)</span>}</div>
+            {card.explanation && <p className="explanation">{card.explanation}</p>}
             {card.context && <Context text={card.context} word={card.front} />}
             {card.source?.url && (
               <a className="source-link" href={card.source.url} target="_blank" rel="noreferrer">
