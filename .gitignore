@@ -7,5 +7,8 @@ dist-ssr
 extension/node_modules
 extension/dist
 
+# Packaged extension artifacts
+*.xpi
+
 # Machine-specific local agent config (absolute paths)
 .claude/
