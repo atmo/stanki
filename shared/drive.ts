@@ -139,6 +139,18 @@ export const createSnapshot = (
 export const updateSnapshot = (getToken: TokenProvider, fileId: string, snapshot: DeckSnapshot) =>
   updateFile(getToken, fileId, snapshot);
 
+/** Delete an appDataFolder file. A 404 is treated as already-gone. */
+export async function deleteFile(getToken: TokenProvider, fileId: string): Promise<void> {
+  const res = await fetch(`${FILES}/${fileId}`, {
+    method: 'DELETE',
+    headers: await authHeader(getToken),
+  });
+  if (!res.ok && res.status !== 404) {
+    const body = await res.text().catch(() => '');
+    throw new DriveError(res.status, `Drive ${res.status}: ${body.slice(0, 300)}`);
+  }
+}
+
 /** Create or overwrite the snapshot for a deck in one call. */
 export async function upsertSnapshot(
   getToken: TokenProvider,

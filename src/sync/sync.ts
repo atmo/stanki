@@ -24,10 +24,11 @@ import {
   createSnapshot,
   updateFile,
   createFile,
+  deleteFile,
   type DriveFile,
   type TokenProvider,
 } from '@shared/drive';
-import type { Card, Deck, ReviewSnapshot } from '@shared/types';
+import type { Card, Deck, ReviewLog, ReviewSnapshot } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME, SCHEMA_VERSION } from '@shared/types';
 
 // appProperties tag identifying the single shared review-log file.
@@ -56,10 +57,17 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
   }
 
   // --- pull the shared review log ---------------------------------------
-  const reviewsFile = files.find((f) => f.appProperties?.kind === REVIEWS_KIND);
-  const remoteReviews = reviewsFile
-    ? (await downloadJson<ReviewSnapshot>(getToken, reviewsFile.id)).reviews ?? []
-    : [];
+  // A first-sync race can create more than one reviews file (each device makes
+  // its own before seeing the other's). Union them ALL on read, sorted by id so
+  // every device agrees which one is canonical, then collapse to that one below.
+  const reviewsFiles = files
+    .filter((f) => f.appProperties?.kind === REVIEWS_KIND)
+    .sort((a, b) => a.id.localeCompare(b.id));
+  let remoteReviews: ReviewLog[] = [];
+  for (const f of reviewsFiles) {
+    const snap = await downloadJson<ReviewSnapshot>(getToken, f.id);
+    remoteReviews = mergeReviews(remoteReviews, snap.reviews ?? []);
+  }
 
   // --- local snapshot ----------------------------------------------------
   const localDecks = await db.decks.toArray();
@@ -122,8 +130,11 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     exportedAt: now,
     deviceId,
   };
-  if (reviewsFile) await updateFile(getToken, reviewsFile.id, reviewSnapshot);
+  const canonical = reviewsFiles[0];
+  if (canonical) await updateFile(getToken, canonical.id, reviewSnapshot);
   else await createFile(getToken, 'reviews.json', { kind: REVIEWS_KIND }, reviewSnapshot);
+  // Collapse any duplicate reviews files into the canonical one.
+  for (const f of reviewsFiles.slice(1)) await deleteFile(getToken, f.id);
 
   await setLastSync(now);
 }
