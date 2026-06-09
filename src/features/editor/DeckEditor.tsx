@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
+import { lookupWord, anwExplanation, type Lookups } from '@shared/lookup';
+import { LookupResults } from '../lookup/LookupResults';
 import {
   createCard,
   updateCard,
@@ -86,6 +88,8 @@ export function DeckEditor() {
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState('');
+  const [lookupTerm, setLookupTerm] = useState('');
+  const [lookups, setLookups] = useState<Lookups | null>(null);
 
   const data = useLiveQuery(async () => {
     const deck = await db.decks.get(id);
@@ -96,6 +100,25 @@ export function DeckEditor() {
     );
     return { deck, cards, allDecks };
   }, [id]);
+
+  // Run the dictionary lookup and pre-fill empty Back/Explanation fields.
+  useEffect(() => {
+    if (!lookupTerm) {
+      setLookups(null);
+      return;
+    }
+    let cancelled = false;
+    setLookups(null);
+    void lookupWord(lookupTerm).then((l) => {
+      if (cancelled) return;
+      setLookups(l);
+      setBack((p) => p || (l.free?.senses[0]?.definition ?? ''));
+      setExplanation((p) => p || anwExplanation(l.anw));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [lookupTerm]);
 
   function toggle(cardId: string) {
     setSelected((prev) => {
@@ -132,6 +155,8 @@ export function DeckEditor() {
     setBack('');
     setExplanation('');
     setContext('');
+    setLookupTerm('');
+    setLookups(null);
   }
 
   async function importBulk() {
@@ -193,7 +218,12 @@ export function DeckEditor() {
       </label>
 
       <form className="card-form" onSubmit={add}>
-        <input className="input" placeholder="Front (word / question)" value={front} onChange={(e) => setFront(e.target.value)} />
+        <div className="row">
+          <input className="input" placeholder="Front (word / question)" value={front} onChange={(e) => setFront(e.target.value)} />
+          <button className="btn" type="button" onClick={() => setLookupTerm(front.trim())} disabled={!front.trim()}>
+            Look up
+          </button>
+        </div>
         <input className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <textarea className="input" placeholder="Context (optional)" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
@@ -204,6 +234,13 @@ export function DeckEditor() {
           </button>
         </div>
       </form>
+
+      {lookupTerm && (
+        <LookupResults
+          lookups={lookups}
+          term={lookups?.anw?.lemma || lookups?.free?.lemma || lookupTerm}
+        />
+      )}
 
       {showBulk && (
         <div className="card-form">

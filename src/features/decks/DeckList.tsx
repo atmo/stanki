@@ -37,13 +37,15 @@ export function DeckList() {
       cardsByDeck.set(c.deckId, arr);
     }
 
-    const byDeck = new Map<string, { total: number; due: number }>();
+    const byDeck = new Map<string, { total: number; newDue: number; reviewDue: number }>();
     for (const deck of decks) {
       const dc = cardsByDeck.get(deck.id) ?? [];
       const d = daily.get(deck.id) ?? { newToday: 0, reviewsToday: 0 };
       const direction = deck.reviewDirection ?? 'forward';
       const items = dc.flatMap((c) => itemsForCard(c, direction, settings));
-      byDeck.set(deck.id, { total: dc.length, due: selectDue(items, d, settings, now).length });
+      const due = selectDue(items, d, settings, now);
+      const newDue = due.filter((i) => i.schedule.interval === 0).length;
+      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue });
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
@@ -77,22 +79,28 @@ export function DeckList() {
 
       <ul className="deck-list">
         {data.decks.map((deck) => {
-          const stats = data.byDeck.get(deck.id) ?? { total: 0, due: 0 };
+          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0 };
+          const due = stats.newDue + stats.reviewDue;
           return (
             <li key={deck.id} className="deck-item">
               <div className="deck-main">
                 <span className="deck-name">{deck.name}</span>
                 <span className="deck-meta">
                   {stats.total} cards
-                  {stats.due > 0 && <span className="badge badge-due">{stats.due} due</span>}
+                  {stats.newDue > 0 && (
+                    <span className="badge badge-new" title="New cards to learn">{stats.newDue} new</span>
+                  )}
+                  {stats.reviewDue > 0 && (
+                    <span className="badge badge-due" title="Cards to revisit">{stats.reviewDue} review</span>
+                  )}
                 </span>
               </div>
               <div className="deck-actions">
                 <Link className="btn" to={`/deck/${deck.id}`}>Edit</Link>
                 <Link
-                  className={`btn ${stats.due > 0 ? 'btn-primary' : 'btn-disabled'}`}
-                  to={stats.due > 0 ? `/review/${deck.id}` : '#'}
-                  aria-disabled={stats.due === 0}
+                  className={`btn ${due > 0 ? 'btn-primary' : 'btn-disabled'}`}
+                  to={due > 0 ? `/review/${deck.id}` : '#'}
+                  aria-disabled={due === 0}
                 >
                   Review
                 </Link>
