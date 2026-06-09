@@ -5,6 +5,8 @@
 
 import type { DeckSnapshot } from './types';
 
+export type AppProperties = Record<string, string>;
+
 export type TokenProvider = () => Promise<string>;
 
 const FILES = 'https://www.googleapis.com/drive/v3/files';
@@ -59,17 +61,18 @@ export async function findFileByDeckId(
   return files.find((f) => f.appProperties?.deckId === deckId);
 }
 
-export async function downloadSnapshot(
-  getToken: TokenProvider,
-  fileId: string,
-): Promise<DeckSnapshot> {
+/** Download and parse any appDataFolder JSON file. */
+export async function downloadJson<T>(getToken: TokenProvider, fileId: string): Promise<T> {
   const res = await fetch(`${FILES}/${fileId}?alt=media`, {
     headers: await authHeader(getToken),
   });
-  return asJson<DeckSnapshot>(res);
+  return asJson<T>(res);
 }
 
-function multipartBody(metadata: object, snapshot: DeckSnapshot, boundary: string): string {
+export const downloadSnapshot = (getToken: TokenProvider, fileId: string) =>
+  downloadJson<DeckSnapshot>(getToken, fileId);
+
+function multipartBody(metadata: object, body: object, boundary: string): string {
   return [
     `--${boundary}`,
     'Content-Type: application/json; charset=UTF-8',
@@ -78,41 +81,37 @@ function multipartBody(metadata: object, snapshot: DeckSnapshot, boundary: strin
     `--${boundary}`,
     'Content-Type: application/json; charset=UTF-8',
     '',
-    JSON.stringify(snapshot),
+    JSON.stringify(body),
     `--${boundary}--`,
     '',
   ].join('\r\n');
 }
 
-/** Create a new snapshot file in appDataFolder, tagged with its deckId. */
-export async function createSnapshot(
+/** Create a new appDataFolder JSON file with the given appProperties tag. */
+export async function createFile(
   getToken: TokenProvider,
-  deckId: string,
   name: string,
-  snapshot: DeckSnapshot,
+  appProperties: AppProperties,
+  body: object,
 ): Promise<DriveFile> {
   const boundary = `stanki-${Math.random().toString(36).slice(2)}`;
-  const metadata = {
-    name,
-    parents: ['appDataFolder'],
-    appProperties: { deckId },
-  };
+  const metadata = { name, parents: ['appDataFolder'], appProperties };
   const res = await fetch(`${UPLOAD}?uploadType=multipart&fields=id,name,modifiedTime,appProperties`, {
     method: 'POST',
     headers: {
       ...(await authHeader(getToken)),
       'Content-Type': `multipart/related; boundary=${boundary}`,
     },
-    body: multipartBody(metadata, snapshot, boundary),
+    body: multipartBody(metadata, body, boundary),
   });
   return asJson<DriveFile>(res);
 }
 
-/** Overwrite an existing snapshot file's contents. */
-export async function updateSnapshot(
+/** Overwrite an existing appDataFolder file's contents. */
+export async function updateFile(
   getToken: TokenProvider,
   fileId: string,
-  snapshot: DeckSnapshot,
+  body: object,
 ): Promise<DriveFile> {
   const res = await fetch(
     `${UPLOAD}/${fileId}?uploadType=media&fields=id,name,modifiedTime,appProperties`,
@@ -122,11 +121,23 @@ export async function updateSnapshot(
         ...(await authHeader(getToken)),
         'Content-Type': 'application/json; charset=UTF-8',
       },
-      body: JSON.stringify(snapshot),
+      body: JSON.stringify(body),
     },
   );
   return asJson<DriveFile>(res);
 }
+
+/** Create a new snapshot file in appDataFolder, tagged with its deckId. */
+export const createSnapshot = (
+  getToken: TokenProvider,
+  deckId: string,
+  name: string,
+  snapshot: DeckSnapshot,
+) => createFile(getToken, name, { deckId }, snapshot);
+
+/** Overwrite an existing snapshot file's contents. */
+export const updateSnapshot = (getToken: TokenProvider, fileId: string, snapshot: DeckSnapshot) =>
+  updateFile(getToken, fileId, snapshot);
 
 /** Create or overwrite the snapshot for a deck in one call. */
 export async function upsertSnapshot(

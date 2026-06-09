@@ -8,17 +8,30 @@
 
 import { db } from '../db/db';
 import { getDeviceId, setLastSync } from '../db/repo';
-import { buildSnapshot, mergeCards, mergeDeck, gcTombstones } from '@shared/snapshot';
+import {
+  buildSnapshot,
+  mergeCards,
+  mergeDeck,
+  gcTombstones,
+  mergeReviews,
+  gcReviews,
+} from '@shared/snapshot';
 import {
   listAppFiles,
   downloadSnapshot,
+  downloadJson,
   updateSnapshot,
   createSnapshot,
+  updateFile,
+  createFile,
   type DriveFile,
   type TokenProvider,
 } from '@shared/drive';
-import type { Card, Deck } from '@shared/types';
-import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
+import type { Card, Deck, ReviewSnapshot } from '@shared/types';
+import { INBOX_DECK_ID, INBOX_DECK_NAME, SCHEMA_VERSION } from '@shared/types';
+
+// appProperties tag identifying the single shared review-log file.
+const REVIEWS_KIND = 'reviews';
 
 function synthDeck(id: string): Deck {
   const now = Date.now();
@@ -42,9 +55,16 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     remoteCards = remoteCards.concat(snap.cards);
   }
 
+  // --- pull the shared review log ---------------------------------------
+  const reviewsFile = files.find((f) => f.appProperties?.kind === REVIEWS_KIND);
+  const remoteReviews = reviewsFile
+    ? (await downloadJson<ReviewSnapshot>(getToken, reviewsFile.id)).reviews ?? []
+    : [];
+
   // --- local snapshot ----------------------------------------------------
   const localDecks = await db.decks.toArray();
   const localCards = await db.cards.toArray();
+  const localReviews = await db.reviews.toArray();
   const localDeckById = new Map(localDecks.map((d) => [d.id, d]));
 
   // --- merge cards globally by id, and deck metadata per id --------------
@@ -62,13 +82,18 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     mergedDecks.set(id, l || r ? mergeDeck(l, r) : synthDeck(id));
   }
 
+  // --- merge the review log (immutable union by id) ---------------------
+  const localReviewIds = new Set(localReviews.map((r) => r.id));
+  const newReviews = remoteReviews.filter((r) => !localReviewIds.has(r.id));
+
   // --- persist the merged result locally --------------------------------
   const mergedIds = new Set(mergedCards.map((c) => c.id));
   const dropIds = localCards.map((c) => c.id).filter((id) => !mergedIds.has(id));
-  await db.transaction('rw', db.decks, db.cards, async () => {
+  await db.transaction('rw', db.decks, db.cards, db.reviews, async () => {
     if (dropIds.length) await db.cards.bulkDelete(dropIds);
     await db.cards.bulkPut(mergedCards);
     await db.decks.bulkPut([...mergedDecks.values()]);
+    if (newReviews.length) await db.reviews.bulkPut(newReviews);
   });
 
   // --- partition cards by deck and push each snapshot -------------------
@@ -88,5 +113,17 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     else await createSnapshot(getToken, id, `deck-${id}.json`, snapshot);
   }
 
-  await setLastSync(Date.now());
+  // --- push the shared review log (trimmed to the rolling window) -------
+  const now = Date.now();
+  const recentReviews = gcReviews(mergeReviews(localReviews, remoteReviews), now);
+  const reviewSnapshot: ReviewSnapshot = {
+    schemaVersion: SCHEMA_VERSION,
+    reviews: recentReviews,
+    exportedAt: now,
+    deviceId,
+  };
+  if (reviewsFile) await updateFile(getToken, reviewsFile.id, reviewSnapshot);
+  else await createFile(getToken, 'reviews.json', { kind: REVIEWS_KIND }, reviewSnapshot);
+
+  await setLastSync(now);
 }

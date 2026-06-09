@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { mergeCards, mergeDeck, gcTombstones } from './snapshot';
-import type { Card, Deck } from './types';
+import { mergeCards, mergeDeck, gcTombstones, mergeReviews, gcReviews, REVIEW_SYNC_TTL_MS } from './snapshot';
+import type { Card, Deck, ReviewLog } from './types';
 
 function card(id: string, updatedAt: number, extra: Partial<Card> = {}): Card {
   return {
@@ -81,5 +81,31 @@ describe('gcTombstones', () => {
     const recent = card('a', now - 1 * 86_400_000, { deleted: true });
     const live = card('b', now - 999 * 86_400_000);
     expect(gcTombstones([recent, live], now).map((c) => c.id).sort()).toEqual(['a', 'b']);
+  });
+});
+
+describe('mergeReviews / gcReviews', () => {
+  const log = (id: string, ts: number): ReviewLog => ({
+    id, cardId: 'c1', ts, grade: 'good', prevInterval: 0, newInterval: 1,
+  });
+
+  it('unions review logs by id without duplicating', () => {
+    const local = [log('a', 1), log('b', 2)];
+    const remote = [log('b', 2), log('c', 3)];
+    const merged = mergeReviews(local, remote);
+    expect(merged.map((r) => r.id).sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('keeps the local copy of an id (logs are immutable)', () => {
+    const merged = mergeReviews([log('a', 100)], [log('a', 999)]);
+    expect(merged).toHaveLength(1);
+    expect(merged[0].ts).toBe(100);
+  });
+
+  it('gcReviews drops entries older than the sync window', () => {
+    const now = 1_000 * 86_400_000;
+    const fresh = log('fresh', now - 1000);
+    const old = log('old', now - REVIEW_SYNC_TTL_MS - 1000);
+    expect(gcReviews([fresh, old], now).map((r) => r.id)).toEqual(['fresh']);
   });
 });

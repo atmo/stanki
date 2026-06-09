@@ -68,6 +68,16 @@ export interface DeckSnapshot {
   deviceId: string;
 }
 
+// A single shared file holding recent review-log entries across all decks, so
+// the per-day new/review limits are tracked across devices. Kept separate from
+// the per-deck snapshots (which the extension rewrites) so it is never clobbered.
+export interface ReviewSnapshot {
+  schemaVersion: typeof SCHEMA_VERSION;
+  reviews: ReviewLog[]; // recent only — trimmed to a rolling window on upload
+  exportedAt: number;
+  deviceId: string;
+}
+
 // The special deck the extension appends captured words to.
 export const INBOX_DECK_ID = 'inbox';
 export const INBOX_DECK_NAME = 'Inbox';

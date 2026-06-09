@@ -1,7 +1,8 @@
-import type { Card, Deck, DeckSnapshot } from './types';
+import type { Card, Deck, DeckSnapshot, ReviewLog } from './types';
 import { SCHEMA_VERSION } from './types';
 
 const TOMBSTONE_TTL_MS = 60 * 86_400_000; // GC deleted records after ~60 days
+export const REVIEW_SYNC_TTL_MS = 14 * 86_400_000; // only sync the last ~2 weeks of reviews
 
 export function buildSnapshot(deck: Deck, cards: Card[], deviceId: string): DeckSnapshot {
   return {
@@ -44,6 +45,19 @@ export function mergeCards(local: Card[] = [], remote: Card[] = []): Card[] {
 /** Drop tombstones that are older than the TTL to keep snapshots small. */
 export function gcTombstones(cards: Card[], now = Date.now()): Card[] {
   return cards.filter((c) => !(c.deleted && now - c.updatedAt > TOMBSTONE_TTL_MS));
+}
+
+/** Union review-log entries by id. Logs are immutable, so any copy of an id wins. */
+export function mergeReviews(local: ReviewLog[] = [], remote: ReviewLog[] = []): ReviewLog[] {
+  const byId = new Map<string, ReviewLog>();
+  for (const r of local) byId.set(r.id, r);
+  for (const r of remote) if (!byId.has(r.id)) byId.set(r.id, r);
+  return [...byId.values()];
+}
+
+/** Keep only reviews within the rolling sync window (bounds the shared file size). */
+export function gcReviews(reviews: ReviewLog[], now = Date.now()): ReviewLog[] {
+  return reviews.filter((r) => now - r.ts <= REVIEW_SYNC_TTL_MS);
 }
 
 export interface MergeResult {
