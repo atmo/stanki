@@ -2,7 +2,41 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, getSettings, getDeck } from '../../db/repo';
+import { reviewQueue, gradeCard, getSettings, getDeck, updateCard } from '../../db/repo';
+
+type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation'>;
+
+/** Inline editor for the card under review. Keyed by card id so it resets per card. */
+function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: CardPatch) => void; onCancel: () => void }) {
+  const [front, setFront] = useState(card.front);
+  const [back, setBack] = useState(card.back);
+  const [context, setContext] = useState(card.context ?? '');
+  const [explanation, setExplanation] = useState(card.explanation ?? '');
+
+  async function save() {
+    const patch: CardPatch = {
+      front: front.trim(),
+      back: back.trim(),
+      context: context.trim() || undefined,
+      explanation: explanation.trim() || undefined,
+    };
+    await updateCard(card.id, patch);
+    onSave(patch);
+  }
+
+  return (
+    <div className="card-form">
+      <input className="input" placeholder="Front" value={front} onChange={(e) => setFront(e.target.value)} />
+      <input className="input" placeholder="Back" value={back} onChange={(e) => setBack(e.target.value)} />
+      <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+      <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
+      <div className="row">
+        <button className="btn btn-primary" onClick={() => void save()}>Save</button>
+        <button className="btn" onClick={onCancel}>Cancel</button>
+      </div>
+    </div>
+  );
+}
 
 function fmt(days: number): string {
   if (days < 1) return '<1d';
@@ -35,6 +69,7 @@ export function Review() {
   const [queue, setQueue] = useState<Card[] | null>(null);
   const [pos, setPos] = useState(0);
   const [revealed, setRevealed] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
   const [deckName, setDeckName] = useState('');
 
@@ -57,7 +92,13 @@ export function Review() {
     if (!card) return;
     await gradeCard(card, g);
     setRevealed(false);
+    setEditing(false);
     setPos((p) => p + 1);
+  }
+
+  function applyEdit(patch: CardPatch) {
+    setQueue((q) => q?.map((c, i) => (i === pos ? { ...c, ...patch } : c)) ?? q);
+    setEditing(false);
   }
 
   if (!queue) return <p className="muted">Loading…</p>;
@@ -72,10 +113,22 @@ export function Review() {
     );
   }
 
+  if (editing) {
+    return (
+      <div className="review">
+        <div className="review-progress">
+          {pos + 1} / {queue.length} · {deckName}
+        </div>
+        <CardEdit key={card.id} card={card} onSave={applyEdit} onCancel={() => setEditing(false)} />
+      </div>
+    );
+  }
+
   return (
     <div className="review">
       <div className="review-progress">
-        {pos + 1} / {queue.length} · {deckName}
+        <span>{pos + 1} / {queue.length} · {deckName}</span>
+        <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
       </div>
 
       <div className="card-face">
