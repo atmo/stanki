@@ -86,6 +86,7 @@ body {
 .about-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 12px 0; }
 .about-list dt { color: var(--muted); }
 .about-list dd { margin: 0; }
+.panel a:not(.btn) { color: #93c5fd; }
 .diag-report { margin-top: 10px; padding: 10px 12px; background: var(--panel-2); border-radius: 8px; font-size: 0.8rem; white-space: pre-wrap; overflow-x: auto; }
 
 /* Deck list */
