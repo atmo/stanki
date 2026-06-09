@@ -39,7 +39,10 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
 }
 
 function fmt(days: number): string {
-  if (days < 1) return '<1d';
+  if (days < 1) {
+    const mins = Math.max(1, Math.round(days * 1440));
+    return mins < 60 ? `${mins}m` : `${Math.round(mins / 60)}h`;
+  }
   if (days < 30) return `${days}d`;
   if (days < 365) return `${Math.round(days / 30)}mo`;
   return `${(days / 365).toFixed(1)}y`;

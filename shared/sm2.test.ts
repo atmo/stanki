@@ -41,10 +41,11 @@ describe('schedule', () => {
     expect(c.interval).toBe(15);
   });
 
-  it('Again resets reps, drops ease, short interval', () => {
+  it('Again resets reps, drops ease, schedules minutes out', () => {
     const c = run(['good', 'good', 'again']);
     expect(c.repetitions).toBe(0);
-    expect(c.interval).toBe(DEFAULT_SETTINGS.againInterval);
+    expect(c.interval).toBeCloseTo(DEFAULT_SETTINGS.againInterval / 1440, 9); // minutes -> days
+    expect(c.dueDate).toBe(NOW + DEFAULT_SETTINGS.againInterval * 60_000);
     expect(c.easeFactor).toBeCloseTo(2.3, 5);
   });
 
@@ -105,7 +106,7 @@ describe('previewIntervals', () => {
   it('returns an interval for every grade', () => {
     const c = run(['good', 'good']); // interval 6, reps 2
     const p = previewIntervals(c);
-    expect(p.again).toBe(1);
+    expect(p.again).toBeCloseTo(DEFAULT_SETTINGS.againInterval / 1440, 9); // 1 minute, in days
     expect(p.good).toBe(15); // round(6 * 2.5)
     expect(p.easy).toBeGreaterThanOrEqual(p.good);
   });

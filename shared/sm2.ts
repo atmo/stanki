@@ -1,12 +1,14 @@
 import type { Card, Grade } from './types';
 
 const DAY_MS = 86_400_000;
+const MIN_MS = 60_000;
+const MINS_PER_DAY = 1440;
 const MIN_EASE = 1.3;
 
 export interface SrSettings {
   startingEase: number; // default 2.5
   easyBonus: number; // multiplier applied to interval on "easy"
-  againInterval: number; // days to wait after "again"
+  againInterval: number; // minutes to wait after "again" (min 1)
   newCardsPerDay: number; // max brand-new cards introduced per deck per day
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
 }
@@ -74,24 +76,34 @@ export function schedule(
   let { interval, easeFactor, repetitions } = card;
 
   if (grade === 'again') {
+    // Lapse: re-show after a few minutes. Interval is kept as a fraction of a
+    // day so it stays > 0 (a "review", not "new") while expressing sub-day time.
     repetitions = 0;
-    interval = settings.againInterval;
     easeFactor = Math.max(MIN_EASE, easeFactor - 0.2);
-  } else {
-    const q = grade === 'easy' ? 5 : 4; // quality score
-    repetitions += 1;
-
-    if (repetitions === 1) interval = 1;
-    else if (repetitions === 2) interval = 6;
-    else interval = Math.round(interval * easeFactor);
-
-    easeFactor = Math.max(
-      MIN_EASE,
-      easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
-    );
-
-    if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
+    const mins = Math.max(1, settings.againInterval);
+    return {
+      ...card,
+      interval: mins / MINS_PER_DAY,
+      easeFactor,
+      repetitions,
+      dueDate: now + mins * MIN_MS,
+      updatedAt: now,
+    };
   }
+
+  const q = grade === 'easy' ? 5 : 4; // quality score
+  repetitions += 1;
+
+  if (repetitions === 1) interval = 1;
+  else if (repetitions === 2) interval = 6;
+  else interval = Math.round(interval * easeFactor);
+
+  easeFactor = Math.max(
+    MIN_EASE,
+    easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
+  );
+
+  if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
 
   interval = Math.max(1, interval);
 

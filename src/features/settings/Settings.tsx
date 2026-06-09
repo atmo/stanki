@@ -88,9 +88,9 @@ export function Settings() {
             onChange={(e) => update('easyBonus', Number(e.target.value))} />
         </label>
         <label className="field">
-          <span>Again interval ({s.againInterval} day{s.againInterval === 1 ? '' : 's'})</span>
-          <input type="range" min={1} max={7} step={1} value={s.againInterval}
-            onChange={(e) => update('againInterval', Number(e.target.value))} />
+          <span>Again interval (minutes)</span>
+          <input type="number" className="input" min={1} max={1440} value={s.againInterval}
+            onChange={(e) => update('againInterval', Math.max(1, Math.round(Number(e.target.value))))} />
         </label>
       </section>
 
