@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { createDeck, deleteDeck, getSettings } from '../../db/repo';
+import { createDeck, getSettings } from '../../db/repo';
 import { selectDue, itemsForCard, startOfDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
@@ -104,14 +104,6 @@ export function DeckList() {
                 >
                   Review
                 </Link>
-                <button
-                  className="btn btn-danger"
-                  onClick={() => {
-                    if (confirm(`Delete deck "${deck.name}"?`)) void deleteDeck(deck.id);
-                  }}
-                >
-                  ✕
-                </button>
               </div>
             </li>
           );

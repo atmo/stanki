@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { lookupWord, anwExplanation, type Lookups } from '@shared/lookup';
@@ -9,6 +9,7 @@ import {
   updateCard,
   deleteCard,
   deleteCards,
+  deleteDeck,
   moveCards,
   renameDeck,
   setReviewDirection,
@@ -72,7 +73,14 @@ function CardRow({
       </div>
       <div className="row">
         <button className="btn" onClick={() => setEditing(true)}>Edit</button>
-        <button className="btn btn-danger" onClick={() => void deleteCard(card.id)}>✕</button>
+        <button
+          className="btn btn-danger"
+          onClick={() => {
+            if (confirm(`Delete card “${card.front}”?`)) void deleteCard(card.id);
+          }}
+        >
+          ✕
+        </button>
       </div>
     </li>
   );
@@ -80,6 +88,7 @@ function CardRow({
 
 export function DeckEditor() {
   const { id = '' } = useParams();
+  const navigate = useNavigate();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [context, setContext] = useState('');
@@ -181,9 +190,16 @@ export function DeckEditor() {
     setSelected(new Set());
   }
 
+  async function removeDeck(name: string, count: number) {
+    if (!confirm(`Delete deck “${name}” and its ${count} card(s)? This cannot be undone.`)) return;
+    await deleteDeck(id);
+    navigate('/');
+  }
+
   if (!data) return <p className="muted">Loading…</p>;
   if (!data.deck) return <p className="muted">Deck not found. <Link to="/">Back</Link></p>;
 
+  const deck = data.deck;
   const otherDecks: Deck[] = data.allDecks.filter((d) => d.id !== id);
   const q = search.trim().toLowerCase();
   const visibleCards = q
@@ -202,6 +218,12 @@ export function DeckEditor() {
           onChange={(e) => void renameDeck(id, e.target.value)}
         />
         <Link className="btn" to="/">Done</Link>
+        <button
+          className="btn btn-danger"
+          onClick={() => void removeDeck(deck.name, data.cards.length)}
+        >
+          Delete deck
+        </button>
       </div>
 
       <label className="field">
