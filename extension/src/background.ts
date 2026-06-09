@@ -12,7 +12,6 @@ import {
 } from './drive-ext';
 import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
 
-const ADD_MENU_ID = 'stanki-add-word';
 const LOOKUP_MENU_ID = 'stanki-lookup';
 
 /**
@@ -327,20 +326,6 @@ async function updateBadge(): Promise<void> {
   }
 }
 
-async function capture(tabId: number): Promise<void> {
-  const [{ result }] = await scripting.executeScript({ target: { tabId }, func: grabSelectionInfo });
-  const info = result as ReturnType<typeof grabSelectionInfo>;
-  if (!info?.selectedText.trim()) return;
-
-  const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
-  const target = await getTargetDeck();
-  await addPending(makeCard(target.id, word, '', context, '', info.url, info.title));
-  await updateBadge();
-
-  // Best-effort silent push; if not yet authorized it stays queued for the popup.
-  void flushPending().then(updateBadge).catch(() => {});
-}
-
 /** Look up the selection and show the result bubble anchored to the word. */
 async function lookupAndShow(tabId: number): Promise<void> {
   const [{ result }] = await scripting.executeScript({ target: { tabId }, func: grabSelectionInfo });
@@ -365,27 +350,16 @@ async function lookupAndShow(tabId: number): Promise<void> {
   });
 }
 
-// Reflect the remembered target deck in the "add" menu label.
-async function updateMenuTitle(): Promise<void> {
-  try {
-    const target = await getTargetDeck();
-    await contextMenus.update(ADD_MENU_ID, { title: `Add “%s” to ${target.name}` });
-  } catch {
-    /* menu may not exist yet; best-effort */
-  }
-}
-
 runtime.onInstalled.addListener(async () => {
-  contextMenus.create({ id: ADD_MENU_ID, title: 'Add “%s” to Stanki', contexts: ['selection'] });
+  // Single top-level item, so the browser shows it directly in the context menu
+  // (two or more items would nest under a "Stanki" submenu).
   contextMenus.create({ id: LOOKUP_MENU_ID, title: 'Look up “%s” (ANW)', contexts: ['selection'] });
-  await updateMenuTitle();
   void updateBadge();
 });
 
 contextMenus.onClicked.addListener((info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
   if (tab?.id == null) return;
-  if (info.menuItemId === ADD_MENU_ID) void capture(tab.id);
-  else if (info.menuItemId === LOOKUP_MENU_ID) void lookupAndShow(tab.id);
+  if (info.menuItemId === LOOKUP_MENU_ID) void lookupAndShow(tab.id);
 });
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
@@ -444,9 +418,6 @@ runtime.onMessage.addListener(
     }
     if (msg?.type === 'refreshBadge') {
       void updateBadge();
-    }
-    if (msg?.type === 'targetChanged') {
-      void updateMenuTitle();
     }
     return undefined;
   },
