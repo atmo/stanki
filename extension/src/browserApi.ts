@@ -7,8 +7,8 @@ const ext: any = (globalThis as any).browser ?? (globalThis as any).chrome;
 
 export const runtime = ext.runtime;
 export const contextMenus = ext.contextMenus;
-export const identity = ext.identity;
 export const scripting = ext.scripting;
+export const tabs = ext.tabs;
 export const action = ext.action ?? ext.browserAction;
 export const storageLocal = ext.storage.local as {
   get: (keys?: string | string[] | null) => Promise<Record<string, unknown>>;

@@ -3,11 +3,19 @@
   "name": "Stanki — Add Word",
   "version": "0.1.0",
   "description": "Select a word on any page and add it to your Stanki flashcards with sentence context.",
-  "permissions": ["contextMenus", "scripting", "activeTab", "storage", "identity"],
+  "permissions": ["contextMenus", "scripting", "activeTab", "storage"],
   "host_permissions": [
     "https://www.googleapis.com/*",
     "https://anw.ivdnt.org/*",
-    "https://freedictionaryapi.com/*"
+    "https://freedictionaryapi.com/*",
+    "https://atmo.github.io/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://atmo.github.io/stanki/oauth.html*"],
+      "js": ["oauth-content.js"],
+      "run_at": "document_start"
+    }
   ],
   "action": {
     "default_popup": "popup.html",

@@ -12,11 +12,12 @@ const tmp = resolve(root, 'dist/_js');
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
 
-// 1) Bundle background + popup as self-contained IIFE files.
+// 1) Bundle background + popup + the OAuth redirect content script.
 await esbuild.build({
   entryPoints: {
     background: resolve(root, 'src/background.ts'),
     popup: resolve(root, 'src/popup.ts'),
+    'oauth-content': resolve(root, 'src/oauth-content.ts'),
   },
   bundle: true,
   format: 'iife',
@@ -104,6 +105,7 @@ for (const [name, manifest] of Object.entries(targets)) {
   mkdirSync(out, { recursive: true });
   copyFileSync(resolve(tmp, 'background.js'), resolve(out, 'background.js'));
   copyFileSync(resolve(tmp, 'popup.js'), resolve(out, 'popup.js'));
+  copyFileSync(resolve(tmp, 'oauth-content.js'), resolve(out, 'oauth-content.js'));
   copyFileSync(resolve(root, 'popup.html'), resolve(out, 'popup.html'));
   writeFileSync(resolve(out, 'icon-48.png'), icon48);
   writeFileSync(resolve(out, 'icon-128.png'), icon128);

@@ -1,12 +1,11 @@
 // Drive access for the extension: OAuth via the browser identity API (no GIS),
 // plus a pending-queue buffer so captures are never lost when offline/unauthed.
 
-import { identity, storageLocal } from './browserApi';
-import { DEFAULT_CLIENT_ID, DRIVE_SCOPE } from './config';
+import { storageLocal } from './browserApi';
+import { DEFAULT_CLIENT_ID, DRIVE_SCOPE, OAUTH_REDIRECT } from './config';
 import type { Card, Deck, DeckSnapshot } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
 import { buildSnapshot, mergeCards } from '@shared/snapshot';
-import { authErrorMessage, type AuthErrorKind } from '@shared/authError';
 import {
   listAppFiles,
   findFileByDeckId,
@@ -96,58 +95,40 @@ export async function addPending(card: Card): Promise<number> {
   return pending.length;
 }
 
-// ---- OAuth (identity.launchWebAuthFlow implicit token flow) ----------------
+// ---- OAuth (tab-based implicit flow) ---------------------------------------
+// Interactive sign-in opens the Google URL in a real browser tab (so the
+// multi-account chooser works); the redirect page's content script forwards the
+// token to the background, which calls storeOAuthToken. getToken itself is
+// silent — it only ever returns an already-stored token.
 
-function authError(kind: AuthErrorKind, redirectUri: string, raw?: string): Error {
-  const msg = authErrorMessage(kind, { surface: 'extension', redirectUri }, raw);
-  console.error('[Stanki] Google auth failed:', { kind, redirectUri, raw });
-  return new Error(msg);
-}
-
-export async function getToken(interactive: boolean): Promise<string> {
-  await loadToken();
-  if (token && Date.now() < tokenExp) return token;
-
-  const redirectUri = identity.getRedirectURL();
+/** Build the Google authorization URL (the background opens it in a tab). */
+export async function getAuthUrl(): Promise<string> {
   const clientId = await getClientId();
-  if (!clientId) throw authError('noClientId', redirectUri);
-
-  const authUrl =
+  if (!clientId) throw new Error('Set your Google OAuth Client ID in the popup first.');
+  return (
     'https://accounts.google.com/o/oauth2/v2/auth?' +
     new URLSearchParams({
       client_id: clientId,
       response_type: 'token',
-      redirect_uri: redirectUri,
+      redirect_uri: OAUTH_REDIRECT,
       scope: DRIVE_SCOPE,
-      prompt: interactive ? 'consent' : 'none',
-    }).toString();
+      prompt: 'consent',
+    }).toString()
+  );
+}
 
-  let redirectResp: string;
-  try {
-    redirectResp = await identity.launchWebAuthFlow({ url: authUrl, interactive });
-  } catch (e) {
-    const raw = e instanceof Error ? e.message : String(e);
-    // A silent attempt (no session) is expected to fail; let the caller swallow it.
-    if (!interactive) throw new Error(raw);
-    // Interactive "cancelled/denied" almost always means the redirect URI isn't
-    // registered, or the account isn't a Test user — not an actual cancel.
-    const kind: AuthErrorKind = /cancel|denied|did not approve/i.test(raw) ? 'cancelled' : 'unknown';
-    throw authError(kind, redirectUri, raw);
-  }
-
-  const params = new URLSearchParams(new URL(redirectResp).hash.slice(1));
-  const accessToken = params.get('access_token');
-  if (!accessToken) {
-    const err = params.get('error');
-    const kind: AuthErrorKind = err === 'access_denied' ? 'accessDenied' : 'unknown';
-    throw authError(kind, redirectUri, err ?? 'No access token returned');
-  }
-
-  const expiresIn = Number(params.get('expires_in') ?? '0');
+/** Store a token captured from the redirect page by the content script. */
+export async function storeOAuthToken(accessToken: string, expiresIn: number): Promise<void> {
   token = accessToken;
   tokenExp = Date.now() + (expiresIn - 60) * 1000;
   await saveToken();
-  return token;
+}
+
+/** Silent token provider for Drive calls; never opens a window. */
+async function getToken(): Promise<string> {
+  await loadToken();
+  if (token && Date.now() < tokenExp) return token;
+  throw new Error('Not connected to Google Drive — open the Stanki popup and click Connect.');
 }
 
 export function isConnected(): boolean {
@@ -157,8 +138,8 @@ export function isConnected(): boolean {
 // ---- deck listing ----------------------------------------------------------
 
 /** Fetch the user's decks from Drive (downloads each snapshot for its name). */
-export async function listRemoteDecks(interactive: boolean): Promise<DeckRef[]> {
-  const getTok: TokenProvider = () => getToken(interactive);
+export async function listRemoteDecks(): Promise<DeckRef[]> {
+  const getTok: TokenProvider = getToken;
   const files = await listAppFiles(getTok);
 
   const decks: DeckRef[] = [];
@@ -185,11 +166,11 @@ function newDeck(ref: DeckRef): Deck {
  * the queue. Read-modify-write per deck keeps concurrent captures from
  * clobbering each other.
  */
-export async function flushPending(interactive: boolean): Promise<{ pushed: number }> {
+export async function flushPending(): Promise<{ pushed: number }> {
   const pending = await getPending();
   if (pending.length === 0) return { pushed: 0 };
 
-  const getTok: TokenProvider = () => getToken(interactive);
+  const getTok: TokenProvider = getToken;
   const deviceId = await getDeviceId();
 
   // Resolve deck names for any decks we may need to create (e.g. Inbox).

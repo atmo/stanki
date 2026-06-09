@@ -1,4 +1,5 @@
-import { runtime, identity } from './browserApi';
+import { runtime } from './browserApi';
+import { OAUTH_REDIRECT } from './config';
 import {
   getClientId,
   setClientId,
@@ -23,8 +24,8 @@ function setStatus(text: string, kind: '' | 'ok' | 'err' = '') {
   statusEl.className = `status ${kind}`;
 }
 
-// Show this extension's OAuth redirect URI so the user can register it.
-redirectEl.value = identity.getRedirectURL();
+// The fixed redirect URI to register on the OAuth client (same for everyone).
+redirectEl.value = OAUTH_REDIRECT;
 redirectEl.addEventListener('click', () => {
   redirectEl.select();
   void navigator.clipboard?.writeText(redirectEl.value);
@@ -63,15 +64,15 @@ deckEl.addEventListener('change', async () => {
 $('refreshDecks').addEventListener('click', async () => {
   setStatus('Loading decks from Drive…');
   try {
-    const decks = await listRemoteDecks(true);
+    const decks = await listRemoteDecks();
     renderDecks(decks, currentTarget?.id ?? decks[0].id);
     setStatus(`Loaded ${decks.length} deck(s).`, 'ok');
-  } catch (e) {
-    setStatus(e instanceof Error ? e.message : String(e), 'err');
+  } catch {
+    setStatus('Connect to Google Drive first (button above), then refresh.', 'err');
   }
 });
 
-// ---- client id + push ------------------------------------------------------
+// ---- client id + connect ---------------------------------------------------
 
 $('saveId').addEventListener('click', async () => {
   await setClientId(clientIdEl.value);
@@ -79,13 +80,15 @@ $('saveId').addEventListener('click', async () => {
 });
 
 $('push').addEventListener('click', () => {
-  setStatus('Connecting…');
-  runtime.sendMessage({ type: 'flush' }, (resp: { ok: boolean; pushed?: number; error?: string }) => {
+  setStatus('Opening Google sign-in…');
+  // The background opens sign-in in a real tab (so the multi-account chooser
+  // works); after you approve, it stores the token, pushes pending cards, and
+  // closes the tab.
+  runtime.sendMessage({ type: 'connect' }, (resp: { ok?: boolean; error?: string }) => {
     if (resp?.ok) {
-      setStatus(`Pushed ${resp.pushed ?? 0} card(s) to Drive.`, 'ok');
-      void refresh();
+      setStatus('Finish sign-in in the new tab — your cards sync automatically.', 'ok');
     } else {
-      setStatus(resp?.error ?? 'Failed', 'err');
+      setStatus(resp?.error ?? 'Could not start sign-in', 'err');
     }
   });
 });

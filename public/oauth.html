@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Stanki — signing in</title>
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0f172a;
+        color: #e2e8f0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Redirect target for the Stanki browser extension's Google sign-in.
+      The extension injects a content script here that reads the access token
+      from the URL fragment and hands it back to the extension, then closes the
+      tab. This page intentionally has no script of its own.
+    -->
+    <p>Signing in to Stanki… you can close this tab.</p>
+  </body>
+</html>

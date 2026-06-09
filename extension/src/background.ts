@@ -1,8 +1,15 @@
-import { contextMenus, scripting, action, runtime } from './browserApi';
+import { contextMenus, scripting, action, runtime, tabs } from './browserApi';
 import { extract } from '@shared/sentence';
 import { newCardState } from '@shared/sm2';
 import type { Card } from '@shared/types';
-import { addPending, flushPending, getPending, getTargetDeck } from './drive-ext';
+import {
+  addPending,
+  flushPending,
+  getPending,
+  getTargetDeck,
+  getAuthUrl,
+  storeOAuthToken,
+} from './drive-ext';
 import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
 
 const ADD_MENU_ID = 'stanki-add-word';
@@ -279,7 +286,7 @@ async function capture(tabId: number): Promise<void> {
   await updateBadge();
 
   // Best-effort silent push; if not yet authorized it stays queued for the popup.
-  void flushPending(false).then(updateBadge).catch(() => {});
+  void flushPending().then(updateBadge).catch(() => {});
 }
 
 /** Look up the selection and show the result bubble anchored to the word. */
@@ -329,35 +336,66 @@ contextMenus.onClicked.addListener((info: chrome.contextMenus.OnClickData, tab?:
   else if (info.menuItemId === LOOKUP_MENU_ID) void lookupAndShow(tab.id);
 });
 
+const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
+
 interface Msg {
   type?: string;
   payload?: { word: string; context: string; back: string; explanation: string; url: string; title: string };
+  accessToken?: string | null;
+  expiresIn?: number;
+  error?: string | null;
 }
 
-runtime.onMessage.addListener((msg: Msg, _sender: unknown, sendResponse: (r: unknown) => void) => {
-  if (msg?.type === 'flush') {
-    flushPending(true)
-      .then((r) => updateBadge().then(() => sendResponse({ ok: true, ...r })))
-      .catch((e: unknown) => sendResponse({ ok: false, error: e instanceof Error ? e.message : String(e) }));
-    return true; // async response
-  }
-  if (msg?.type === 'addFromLookup' && msg.payload) {
-    const p = msg.payload;
-    (async () => {
-      const target = await getTargetDeck();
-      await addPending(makeCard(target.id, p.word, p.back, p.context, p.explanation, p.url, p.title));
-      await updateBadge();
-      void flushPending(false).then(updateBadge).catch(() => {});
-    })()
-      .then(() => sendResponse({ ok: true }))
-      .catch((e: unknown) => sendResponse({ ok: false, error: e instanceof Error ? e.message : String(e) }));
-    return true; // async response
-  }
-  if (msg?.type === 'refreshBadge') {
-    void updateBadge();
-  }
-  if (msg?.type === 'targetChanged') {
-    void updateMenuTitle();
-  }
-  return undefined;
-});
+runtime.onMessage.addListener(
+  (msg: Msg, sender: { tab?: { id?: number } }, sendResponse: (r: unknown) => void) => {
+    // Popup → open the Google sign-in in a real tab (multi-account chooser works).
+    if (msg?.type === 'connect') {
+      getAuthUrl()
+        .then((url) => tabs.create({ url }))
+        .then(() => sendResponse({ ok: true }))
+        .catch((e: unknown) => sendResponse({ ok: false, error: errMsg(e) }));
+      return true; // async response
+    }
+    // Redirect content script → hand back the captured token, then push + close.
+    if (msg?.type === 'oauthRedirect') {
+      const tabId = sender?.tab?.id;
+      void (async () => {
+        if (msg.accessToken) {
+          await storeOAuthToken(msg.accessToken, msg.expiresIn ?? 0);
+          await flushPending();
+          await updateBadge();
+        } else {
+          console.error('[Stanki] OAuth redirect error:', msg.error);
+        }
+        if (tabId != null) await tabs.remove(tabId).catch(() => {});
+      })().catch((e) => console.error('[Stanki] oauthRedirect failed', e));
+      return undefined;
+    }
+    // Popup → push whatever is pending (uses the stored token).
+    if (msg?.type === 'flush') {
+      flushPending()
+        .then((r) => updateBadge().then(() => sendResponse({ ok: true, ...r })))
+        .catch((e: unknown) => sendResponse({ ok: false, error: errMsg(e) }));
+      return true; // async response
+    }
+    if (msg?.type === 'addFromLookup' && msg.payload) {
+      const p = msg.payload;
+      (async () => {
+        const target = await getTargetDeck();
+        await addPending(makeCard(target.id, p.word, p.back, p.context, p.explanation, p.url, p.title));
+        await updateBadge();
+        void flushPending().then(updateBadge).catch(() => {});
+      })()
+        .then(() => sendResponse({ ok: true }))
+        .catch((e: unknown) => sendResponse({ ok: false, error: errMsg(e) }));
+      return true; // async response
+    }
+    if (msg?.type === 'refreshBadge') {
+      void updateBadge();
+    }
+    if (msg?.type === 'targetChanged') {
+      void updateMenuTitle();
+    }
+    return undefined;
+  },
+);
