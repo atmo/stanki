@@ -151,6 +151,7 @@ body {
 /* Review */
 .review { display: flex; flex-direction: column; gap: 16px; }
 .review-progress { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 12px; }
+.review-actions { display: inline-flex; gap: 12px; }
 .btn-link { background: none; border: none; color: var(--primary); padding: 0; font-size: 0.85rem; cursor: pointer; }
 .btn-link:hover { text-decoration: underline; }
 .card-face { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px 20px; min-height: 180px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }

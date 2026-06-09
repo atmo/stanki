@@ -196,22 +196,28 @@ export async function deleteCards(ids: string[]): Promise<void> {
   await db.cards.where('id').anyOf(ids).modify({ deleted: true, updatedAt: Date.now() });
 }
 
-/** Apply a review grade to one direction of a card: reschedule, persist, log it; returns the updated card. */
+export interface GradeResult {
+  card: Card; // the updated card
+  reviewId: string; // id of the logged review (for undo)
+}
+
+/** Apply a review grade to one direction of a card: reschedule, persist, log it. */
 export async function gradeCard(
   card: Card,
   direction: CardDirection,
   grade: Grade,
-): Promise<Card> {
+): Promise<GradeResult> {
   const settings = await getSettings();
   const now = Date.now();
   const prev = directionSchedule(card, direction, settings);
   const next = scheduleState(prev, grade, now, settings);
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
+  const reviewId = uid();
   await db.transaction('rw', db.cards, db.reviews, async () => {
     await db.cards.update(card.id, patch);
     await db.reviews.put({
-      id: uid(),
+      id: reviewId,
       cardId: card.id,
       ts: now,
       grade,
@@ -220,7 +226,15 @@ export async function gradeCard(
       direction,
     });
   });
-  return { ...card, ...patch };
+  return { card: { ...card, ...patch }, reviewId };
+}
+
+/** Reverse a grade: restore the card's prior state and drop its review-log entry. */
+export async function undoGrade(priorCard: Card, reviewId: string): Promise<void> {
+  await db.transaction('rw', db.cards, db.reviews, async () => {
+    await db.cards.put(priorCard);
+    await db.reviews.delete(reviewId);
+  });
 }
 
 // ---- export / import (offline sync fallback) ------------------------------

@@ -2,7 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, getSettings, getDeck, updateCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard } from '../../db/repo';
+
+interface UndoSnapshot {
+  prior: Card; // card state before the grade
+  reviewId: string; // logged review to delete
+  queue: ReviewItem[]; // session queue before the grade
+  done: number; // done count before the grade
+}
 
 type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation'>;
 
@@ -77,6 +84,7 @@ export function Review() {
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
   const [deckName, setDeckName] = useState('');
+  const [undoSnap, setUndoSnap] = useState<UndoSnapshot | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -100,8 +108,9 @@ export function Review() {
   );
 
   async function grade(g: Grade) {
-    if (!item || !card) return;
-    const updated = await gradeCard(card, direction, g);
+    if (!item || !card || !queue) return;
+    const { card: updated, reviewId } = await gradeCard(card, direction, g);
+    setUndoSnap({ prior: card, reviewId, queue, done });
     setRevealed(false);
     setEditing(false);
     if (g === 'again') {
@@ -116,6 +125,16 @@ export function Review() {
       setDone((n) => n + 1);
       setQueue((q) => (q ? q.slice(1) : q));
     }
+  }
+
+  async function undoReview() {
+    if (!undoSnap) return;
+    await undoGrade(undoSnap.prior, undoSnap.reviewId);
+    setQueue(undoSnap.queue);
+    setDone(undoSnap.done);
+    setUndoSnap(null);
+    setEditing(false);
+    setRevealed(true); // show the answer so the card can be re-graded immediately
   }
 
   function applyEdit(patch: CardPatch) {
@@ -137,7 +156,10 @@ export function Review() {
           {done > 0 ? `${done} card${done === 1 ? '' : 's'} reviewed in ` : 'No more cards due in '}
           “{deckName}”.
         </p>
-        <Link className="btn btn-primary" to="/">Back to decks</Link>
+        <div className="row">
+          <Link className="btn btn-primary" to="/">Back to decks</Link>
+          {undoSnap && <button className="btn" onClick={() => void undoReview()}>Undo last</button>}
+        </div>
       </div>
     );
   }
@@ -160,7 +182,10 @@ export function Review() {
           {queue.length} left · {deckName}
           {direction === 'reverse' && <span className="badge badge-due">reverse</span>}
         </span>
-        <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
+        <span className="review-actions">
+          {undoSnap && <button className="btn btn-link" onClick={() => void undoReview()}>Undo</button>}
+          <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
+        </span>
       </div>
 
       <div className="card-face">
