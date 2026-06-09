@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
-import { previewIntervals, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
+import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, getSettings, getDeck, updateCard } from '../../db/repo';
 
 type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation'>;
@@ -69,8 +69,10 @@ const GRADES: { grade: Grade; label: string; cls: string }[] = [
 
 export function Review() {
   const { id = '' } = useParams();
+  // The session queue: current card is at the front. "Again" re-queues the card
+  // to the back so it returns this session; "Good"/"Easy" graduate and remove it.
   const [queue, setQueue] = useState<ReviewItem[] | null>(null);
-  const [pos, setPos] = useState(0);
+  const [done, setDone] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
@@ -85,7 +87,7 @@ export function Review() {
     })();
   }, [id]);
 
-  const item = queue?.[pos];
+  const item = queue?.[0];
   const card = item?.card;
   const direction = item?.direction ?? 'forward';
   // Forward: prompt with the front, guess the back. Reverse: the other way.
@@ -98,11 +100,22 @@ export function Review() {
   );
 
   async function grade(g: Grade) {
-    if (!card) return;
-    await gradeCard(card, direction, g);
+    if (!item || !card) return;
+    const updated = await gradeCard(card, direction, g);
     setRevealed(false);
     setEditing(false);
-    setPos((p) => p + 1);
+    if (g === 'again') {
+      // Keep it in the session until graded something other than Again.
+      const refreshed: ReviewItem = {
+        ...item,
+        card: updated,
+        schedule: directionSchedule(updated, direction, settings),
+      };
+      setQueue((q) => (q ? [...q.slice(1), refreshed] : q));
+    } else {
+      setDone((n) => n + 1);
+      setQueue((q) => (q ? q.slice(1) : q));
+    }
   }
 
   function applyEdit(patch: CardPatch) {
@@ -120,7 +133,10 @@ export function Review() {
     return (
       <div className="review-done">
         <h2>🎉 All done</h2>
-        <p className="muted">No more cards due in “{deckName}”.</p>
+        <p className="muted">
+          {done > 0 ? `${done} card${done === 1 ? '' : 's'} reviewed in ` : 'No more cards due in '}
+          “{deckName}”.
+        </p>
         <Link className="btn btn-primary" to="/">Back to decks</Link>
       </div>
     );
@@ -130,7 +146,7 @@ export function Review() {
     return (
       <div className="review">
         <div className="review-progress">
-          {pos + 1} / {queue.length} · {deckName}
+          {queue.length} left · {deckName}
         </div>
         <CardEdit key={card.id} card={card} onSave={applyEdit} onCancel={() => setEditing(false)} />
       </div>
@@ -141,7 +157,7 @@ export function Review() {
     <div className="review">
       <div className="review-progress">
         <span>
-          {pos + 1} / {queue.length} · {deckName}
+          {queue.length} left · {deckName}
           {direction === 'reverse' && <span className="badge badge-due">reverse</span>}
         </span>
         <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>

@@ -55,8 +55,21 @@ describe('schedule', () => {
     expect(c.repetitions).toBe(1);
   });
 
-  it('ease never drops below 1.3', () => {
-    const c = run(['again', 'again', 'again', 'again', 'again', 'again', 'again']);
+  it('Again while learning keeps ease (no thrash) and resets reps', () => {
+    const c = run(['again', 'again', 'again']);
+    expect(c.easeFactor).toBe(DEFAULT_SETTINGS.startingEase);
+    expect(c.repetitions).toBe(0);
+  });
+
+  it('Good after Again graduates to at least the next day', () => {
+    const c = run(['again', 'good']);
+    expect(c.interval).toBe(1);
+    expect(c.dueDate).toBe(NOW + 1 * DAY);
+  });
+
+  it('a mature lapse lowers ease but never below 1.3', () => {
+    const c = run(['good', 'good', 'again']); // interval 6 before the lapse
+    expect(c.easeFactor).toBeLessThan(DEFAULT_SETTINGS.startingEase);
     expect(c.easeFactor).toBeGreaterThanOrEqual(1.3);
   });
 

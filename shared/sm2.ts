@@ -110,10 +110,12 @@ export function scheduleState(
   let { interval, easeFactor, repetitions } = s;
 
   if (grade === 'again') {
-    // Lapse: re-show after a few minutes. Interval is kept as a fraction of a
-    // day so it stays > 0 (a "review", not "new") while expressing sub-day time.
+    // Re-show within the session. Interval is kept as a fraction of a day so it
+    // stays > 0 (a "review", not "new") while expressing sub-day time. Ease is
+    // only dented for a genuine lapse of an already-graduated card (interval
+    // >= 1 day) — repeatedly pressing Again while learning shouldn't thrash it.
     repetitions = 0;
-    easeFactor = Math.max(MIN_EASE, easeFactor - 0.2);
+    if (interval >= 1) easeFactor = Math.max(MIN_EASE, easeFactor - 0.2);
     const mins = Math.max(1, settings.againInterval);
     return { interval: mins / MINS_PER_DAY, easeFactor, repetitions, dueDate: now + mins * MIN_MS };
   }

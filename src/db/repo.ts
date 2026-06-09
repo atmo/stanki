@@ -196,12 +196,12 @@ export async function deleteCards(ids: string[]): Promise<void> {
   await db.cards.where('id').anyOf(ids).modify({ deleted: true, updatedAt: Date.now() });
 }
 
-/** Apply a review grade to one direction of a card: reschedule, persist, and log it. */
+/** Apply a review grade to one direction of a card: reschedule, persist, log it; returns the updated card. */
 export async function gradeCard(
   card: Card,
   direction: CardDirection,
   grade: Grade,
-): Promise<void> {
+): Promise<Card> {
   const settings = await getSettings();
   const now = Date.now();
   const prev = directionSchedule(card, direction, settings);
@@ -220,6 +220,7 @@ export async function gradeCard(
       direction,
     });
   });
+  return { ...card, ...patch };
 }
 
 // ---- export / import (offline sync fallback) ------------------------------
