@@ -26,11 +26,14 @@ export interface DailyReviewCounts {
   reviewsToday: number; // review cards already done today (this deck)
 }
 
-/** Local midnight for `now` — the day boundary for the daily limits. */
+/**
+ * Start of the day for `now`, in UTC — the day boundary for the daily limits.
+ * Deliberately timezone-independent so every device agrees which reviews count
+ * as "today"; a local-midnight boundary diverged across devices in different
+ * timezones (or with a skewed clock), breaking the cross-device daily limit.
+ */
 export function startOfDay(now = Date.now()): number {
-  const d = new Date(now);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
+  return Math.floor(now / 86_400_000) * 86_400_000;
 }
 
 /** One thing to review: a card shown in a particular direction, with its schedule. */

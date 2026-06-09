@@ -91,6 +91,8 @@ export function About() {
           </dd>
           <dt>Last sync</dt>
           <dd>{stats ? (stats.lastSync ? new Date(stats.lastSync).toLocaleString() : 'never') : '…'}</dd>
+          <dt>Device clock</dt>
+          <dd>{new Date().toString()}</dd>
         </dl>
         {connected && (
           <>
