@@ -79,7 +79,7 @@ $('saveId').addEventListener('click', async () => {
   setStatus('Client ID saved.', 'ok');
 });
 
-$('push').addEventListener('click', () => {
+$('connect').addEventListener('click', () => {
   setStatus('Opening Google sign-in…');
   // The background opens sign-in in a real tab (so the multi-account chooser
   // works); after you approve, it stores the token, pushes pending cards, and
@@ -89,6 +89,19 @@ $('push').addEventListener('click', () => {
       setStatus('Finish sign-in in the new tab — your cards sync automatically.', 'ok');
     } else {
       setStatus(resp?.error ?? 'Could not start sign-in', 'err');
+    }
+  });
+});
+
+$('push').addEventListener('click', () => {
+  setStatus('Pushing…');
+  // Pushes whatever is pending using the stored token (no sign-in window).
+  runtime.sendMessage({ type: 'flush' }, (resp: { ok?: boolean; pushed?: number; error?: string }) => {
+    if (resp?.ok) {
+      setStatus(`Pushed ${resp.pushed ?? 0} card(s) to Drive.`, 'ok');
+      void refresh();
+    } else {
+      setStatus(resp?.error ?? 'Push failed', 'err');
     }
   });
 });
