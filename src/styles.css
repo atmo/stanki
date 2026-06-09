@@ -181,6 +181,12 @@ body {
 .lk-sense { font-size: 0.92rem; margin: 5px 0; }
 .lk-n { color: var(--muted); font-weight: 700; margin-right: 6px; }
 .lk-ex { color: var(--muted); font-style: italic; margin-top: 2px; }
+.lk-baseform {
+  align-self: flex-start; margin-bottom: 6px; padding: 6px 12px; cursor: pointer;
+  background: rgba(22, 163, 74, 0.15); color: #86efac;
+  border: 1px solid rgba(22, 163, 74, 0.4); border-radius: 999px; font-size: 0.85rem;
+}
+.lk-baseform:hover { background: rgba(22, 163, 74, 0.25); }
 .lk-vd { color: #93c5fd; font-size: 0.85rem; text-decoration: none; }
 .lk-vd:hover { text-decoration: underline; }
 

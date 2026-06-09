@@ -123,7 +123,15 @@ export function AddWord() {
         </div>
       </div>
 
-      <LookupResults lookups={lookups} term={term} />
+      <LookupResults
+        lookups={lookups}
+        term={term}
+        front={front}
+        onUseLemma={(lemma) => {
+          setFront(lemma);
+          setLookupTerm(lemma);
+        }}
+      />
     </div>
   );
 }

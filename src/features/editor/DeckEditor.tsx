@@ -239,6 +239,11 @@ export function DeckEditor() {
         <LookupResults
           lookups={lookups}
           term={lookups?.anw?.lemma || lookups?.free?.lemma || lookupTerm}
+          front={front}
+          onUseLemma={(lemma) => {
+            setFront(lemma);
+            setLookupTerm(lemma);
+          }}
         />
       )}
 
