@@ -142,12 +142,14 @@ export async function listRemoteDecks(): Promise<DeckRef[]> {
   const getTok: TokenProvider = getToken;
   const files = await listAppFiles(getTok);
 
-  const decks: DeckRef[] = [];
+  // Dedup by deck id — Drive can hold more than one snapshot file per deck
+  // (e.g. a sync race created a duplicate), which would otherwise list twice.
+  const byId = new Map<string, DeckRef>();
   for (const f of files) {
     const snap = await downloadSnapshot(getTok, f.id);
-    if (!snap.deck.deleted) decks.push({ id: snap.deck.id, name: snap.deck.name });
+    if (!snap.deck.deleted) byId.set(snap.deck.id, { id: snap.deck.id, name: snap.deck.name });
   }
-  decks.sort((a, b) => a.name.localeCompare(b.name));
+  const decks = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 
   const list = withInbox(decks);
   await storageLocal.set({ deckCache: list });
