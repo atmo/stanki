@@ -87,6 +87,8 @@ function renderBubble(payload: BubblePayload) {
     'color:#93c5fd;text-decoration:none;}.slink:hover{text-decoration:underline;}' +
     '.sense{margin:5px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
+    '.baseform{margin:10px 0 0;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:12px;' +
+    'background:rgba(22,163,74,.15);color:#86efac;border:1px solid rgba(22,163,74,.4);}' +
     '.add{margin-top:12px;width:100%;padding:7px;border:none;border-radius:8px;' +
     'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}' +
     '.vd{display:block;margin-top:10px;font-size:11px;color:#93c5fd;text-decoration:none;}.vd:hover{text-decoration:underline;}';
@@ -96,12 +98,13 @@ function renderBubble(payload: BubblePayload) {
   card.className = 'card';
   const { anw, free } = payload.lookups;
   const term = anw?.lemma || free?.lemma || payload.word;
+  let front = payload.word; // what gets saved; togglable to the resolved base form
 
   const hd = document.createElement('div');
   hd.className = 'hd';
   const lemma = document.createElement('span');
   lemma.className = 'lemma';
-  lemma.textContent = term;
+  lemma.textContent = front;
   hd.appendChild(lemma);
   const x = document.createElement('button');
   x.className = 'x';
@@ -180,6 +183,23 @@ function renderBubble(payload: BubblePayload) {
     vd.textContent = 'Look up in Van Dale ↗';
     card.appendChild(vd);
 
+    // Offer the dictionary's base form (e.g. huizen -> huis); clicking switches
+    // what will be saved as the card front (and toggles back).
+    if (term.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
+      const chip = document.createElement('button');
+      chip.className = 'baseform';
+      const renderChip = () => {
+        chip.textContent = front === term ? `✓ Base form: ${term}` : `Use base form: ${term}`;
+      };
+      renderChip();
+      chip.addEventListener('click', () => {
+        front = front === term ? payload.word : term;
+        lemma.textContent = front;
+        renderChip();
+      });
+      card.appendChild(chip);
+    }
+
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
@@ -190,7 +210,7 @@ function renderBubble(payload: BubblePayload) {
         {
           type: 'addFromLookup',
           payload: {
-            word: payload.word,
+            word: front,
             context: payload.context,
             back,
             explanation,
