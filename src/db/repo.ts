@@ -1,12 +1,15 @@
 import { db } from './db';
-import type { Card, Deck, Grade } from '@shared/types';
+import type { Card, CardDirection, Deck, Grade, ReviewDirection } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
 import {
-  schedule,
+  scheduleState,
   newCardState,
   selectDue,
+  directionSchedule,
+  itemsForCard,
   startOfDay,
   DEFAULT_SETTINGS,
+  type ReviewItem,
   type SrSettings,
 } from '@shared/sm2';
 
@@ -62,6 +65,10 @@ export async function createDeck(name: string): Promise<Deck> {
 
 export async function renameDeck(id: string, name: string): Promise<void> {
   await db.decks.update(id, { name: name.trim(), updatedAt: Date.now() });
+}
+
+export async function setReviewDirection(id: string, direction: ReviewDirection): Promise<void> {
+  await db.decks.update(id, { reviewDirection: direction, updatedAt: Date.now() });
 }
 
 /** Soft-delete a deck and all its cards (tombstones, so the delete syncs). */
@@ -123,17 +130,20 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
   return { newToday, reviewsToday };
 }
 
-/** The review queue for a deck: due cards capped by the per-day limits. */
+/** The review queue for a deck: due items capped by the per-day limits. */
 export async function reviewQueue(
   deckId: string,
   settings: SrSettings,
   now = Date.now(),
-): Promise<Card[]> {
-  const [cards, daily] = await Promise.all([
+): Promise<ReviewItem[]> {
+  const [deck, cards, daily] = await Promise.all([
+    db.decks.get(deckId),
     db.cards.where('deckId').equals(deckId).toArray(),
     dailyCounts(deckId, now),
   ]);
-  return selectDue(cards, daily, settings, now);
+  const direction = deck?.reviewDirection ?? 'forward';
+  const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
+  return selectDue(items, daily, settings, now);
 }
 
 export interface NewCardInput {
@@ -186,23 +196,30 @@ export async function deleteCards(ids: string[]): Promise<void> {
   await db.cards.where('id').anyOf(ids).modify({ deleted: true, updatedAt: Date.now() });
 }
 
-/** Apply a review grade: reschedule, persist, and log it. */
-export async function gradeCard(card: Card, grade: Grade): Promise<Card> {
+/** Apply a review grade to one direction of a card: reschedule, persist, and log it. */
+export async function gradeCard(
+  card: Card,
+  direction: CardDirection,
+  grade: Grade,
+): Promise<void> {
   const settings = await getSettings();
   const now = Date.now();
-  const next = schedule(card, grade, now, settings);
+  const prev = directionSchedule(card, direction, settings);
+  const next = scheduleState(prev, grade, now, settings);
+  const patch: Partial<Card> =
+    direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
   await db.transaction('rw', db.cards, db.reviews, async () => {
-    await db.cards.put(next);
+    await db.cards.update(card.id, patch);
     await db.reviews.put({
       id: uid(),
       cardId: card.id,
       ts: now,
       grade,
-      prevInterval: card.interval,
+      prevInterval: prev.interval,
       newInterval: next.interval,
+      direction,
     });
   });
-  return next;
 }
 
 // ---- export / import (offline sync fallback) ------------------------------

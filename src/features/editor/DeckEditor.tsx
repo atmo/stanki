@@ -9,8 +9,9 @@ import {
   deleteCards,
   moveCards,
   renameDeck,
+  setReviewDirection,
 } from '../../db/repo';
-import type { Card, Deck } from '@shared/types';
+import type { Card, Deck, ReviewDirection } from '@shared/types';
 
 function CardRow({
   card,
@@ -177,6 +178,19 @@ export function DeckEditor() {
         />
         <Link className="btn" to="/">Done</Link>
       </div>
+
+      <label className="field">
+        <span>Review direction</span>
+        <select
+          className="input"
+          value={data.deck.reviewDirection ?? 'forward'}
+          onChange={(e) => void setReviewDirection(id, e.target.value as ReviewDirection)}
+        >
+          <option value="forward">Front → back</option>
+          <option value="reverse">Back → front</option>
+          <option value="both">Both ways</option>
+        </select>
+      </label>
 
       <form className="card-form" onSubmit={add}>
         <input className="input" placeholder="Front (word / question)" value={front} onChange={(e) => setFront(e.target.value)} />

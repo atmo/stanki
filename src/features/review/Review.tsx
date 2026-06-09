@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
-import { previewIntervals, DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
+import { previewIntervals, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, getSettings, getDeck, updateCard } from '../../db/repo';
 
 type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation'>;
@@ -69,7 +69,7 @@ const GRADES: { grade: Grade; label: string; cls: string }[] = [
 
 export function Review() {
   const { id = '' } = useParams();
-  const [queue, setQueue] = useState<Card[] | null>(null);
+  const [queue, setQueue] = useState<ReviewItem[] | null>(null);
   const [pos, setPos] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -85,28 +85,38 @@ export function Review() {
     })();
   }, [id]);
 
-  const card = queue?.[pos];
+  const item = queue?.[pos];
+  const card = item?.card;
+  const direction = item?.direction ?? 'forward';
+  // Forward: prompt with the front, guess the back. Reverse: the other way.
+  const prompt = card ? (direction === 'forward' ? card.front : card.back) : '';
+  const answer = card ? (direction === 'forward' ? card.back : card.front) : '';
+
   const previews = useMemo(
-    () => (card ? previewIntervals(card, settings) : null),
-    [card, settings],
+    () => (item ? previewIntervals(item.schedule, settings) : null),
+    [item, settings],
   );
 
   async function grade(g: Grade) {
     if (!card) return;
-    await gradeCard(card, g);
+    await gradeCard(card, direction, g);
     setRevealed(false);
     setEditing(false);
     setPos((p) => p + 1);
   }
 
   function applyEdit(patch: CardPatch) {
-    setQueue((q) => q?.map((c, i) => (i === pos ? { ...c, ...patch } : c)) ?? q);
+    if (!card) return;
+    const cardId = card.id;
+    setQueue((q) =>
+      q?.map((it) => (it.card.id === cardId ? { ...it, card: { ...it.card, ...patch } } : it)) ?? q,
+    );
     setEditing(false);
   }
 
   if (!queue) return <p className="muted">Loading…</p>;
 
-  if (!card) {
+  if (!item || !card) {
     return (
       <div className="review-done">
         <h2>🎉 All done</h2>
@@ -130,17 +140,20 @@ export function Review() {
   return (
     <div className="review">
       <div className="review-progress">
-        <span>{pos + 1} / {queue.length} · {deckName}</span>
+        <span>
+          {pos + 1} / {queue.length} · {deckName}
+          {direction === 'reverse' && <span className="badge badge-due">reverse</span>}
+        </span>
         <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
       </div>
 
       <div className="card-face">
-        <div className="card-front">{card.front}</div>
+        <div className="card-front">{prompt}</div>
 
         {revealed && (
           <>
             <hr className="divider" />
-            <div className="card-back">{card.back || <span className="muted">(no answer yet)</span>}</div>
+            <div className="card-back">{answer || <span className="muted">(no answer yet)</span>}</div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {card.context && <Context text={card.context} word={card.front} />}
             {card.source?.url && (

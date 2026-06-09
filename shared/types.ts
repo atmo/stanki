@@ -2,11 +2,17 @@
 
 export type Grade = 'again' | 'good' | 'easy';
 
+// Which way a card is shown during review.
+//  forward = prompt with front, guess back; reverse = prompt with back, guess front.
+export type CardDirection = 'forward' | 'reverse';
+export type ReviewDirection = CardDirection | 'both';
+
 export interface Deck {
   id: string;
   name: string;
   createdAt: number;
   updatedAt: number;
+  reviewDirection?: ReviewDirection; // default 'forward'
   deleted?: boolean; // soft-delete tombstone for sync convergence
 }
 
@@ -16,7 +22,15 @@ export interface CardSource {
   addedAt: number;
 }
 
-export interface Card {
+// SM-2 scheduling state for one review direction.
+export interface CardSchedule {
+  interval: number; // days until next review (fraction of a day for sub-day lapses)
+  easeFactor: number; // starts at 2.5
+  repetitions: number; // consecutive correct count
+  dueDate: number; // epoch ms
+}
+
+export interface Card extends CardSchedule {
   id: string;
   deckId: string;
   front: string;
@@ -25,11 +39,8 @@ export interface Card {
   explanation?: string; // dictionary explanation (e.g. ANW), filled via lookup
   source?: CardSource; // provenance when added via the extension
 
-  // SM-2 scheduling state
-  interval: number; // days until next review
-  easeFactor: number; // starts at 2.5
-  repetitions: number; // consecutive correct count
-  dueDate: number; // epoch ms
+  // Inline CardSchedule fields above are the *forward* schedule (prompt = front).
+  reverse?: CardSchedule; // independent schedule for the reverse direction (prompt = back)
 
   createdAt: number;
   updatedAt: number; // last edit OR last review (drives LWW merge)
@@ -43,6 +54,7 @@ export interface ReviewLog {
   grade: Grade;
   prevInterval: number;
   newInterval: number;
+  direction?: CardDirection; // omitted on old logs == forward
 }
 
 export const SCHEMA_VERSION = 1 as const;

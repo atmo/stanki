@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createDeck, deleteDeck, getSettings } from '../../db/repo';
-import { selectDue, startOfDay } from '@shared/sm2';
+import { selectDue, itemsForCard, startOfDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
 export function DeckList() {
@@ -41,7 +41,9 @@ export function DeckList() {
     for (const deck of decks) {
       const dc = cardsByDeck.get(deck.id) ?? [];
       const d = daily.get(deck.id) ?? { newToday: 0, reviewsToday: 0 };
-      byDeck.set(deck.id, { total: dc.length, due: selectDue(dc, d, settings, now).length });
+      const direction = deck.reviewDirection ?? 'forward';
+      const items = dc.flatMap((c) => itemsForCard(c, direction, settings));
+      byDeck.set(deck.id, { total: dc.length, due: selectDue(items, d, settings, now).length });
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
