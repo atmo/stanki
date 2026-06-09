@@ -84,6 +84,7 @@ export function DeckEditor() {
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [search, setSearch] = useState('');
 
   const data = useLiveQuery(async () => {
     const deck = await db.decks.get(id);
@@ -105,9 +106,15 @@ export function DeckEditor() {
   }
 
   function toggleAll(cards: Card[]) {
-    setSelected((prev) =>
-      prev.size === cards.length ? new Set() : new Set(cards.map((c) => c.id)),
-    );
+    setSelected((prev) => {
+      const allOn = cards.length > 0 && cards.every((c) => prev.has(c.id));
+      const next = new Set(prev);
+      for (const c of cards) {
+        if (allOn) next.delete(c.id);
+        else next.add(c.id);
+      }
+      return next;
+    });
   }
 
   async function add(e: React.FormEvent) {
@@ -152,7 +159,13 @@ export function DeckEditor() {
   if (!data.deck) return <p className="muted">Deck not found. <Link to="/">Back</Link></p>;
 
   const otherDecks: Deck[] = data.allDecks.filter((d) => d.id !== id);
-  const allSelected = data.cards.length > 0 && selected.size === data.cards.length;
+  const q = search.trim().toLowerCase();
+  const visibleCards = q
+    ? data.cards.filter((c) =>
+        [c.front, c.back, c.explanation, c.context].some((f) => f?.toLowerCase().includes(q)),
+      )
+    : data.cards;
+  const allSelected = visibleCards.length > 0 && visibleCards.every((c) => selected.has(c.id));
 
   return (
     <div>
@@ -186,14 +199,26 @@ export function DeckEditor() {
         </div>
       )}
 
+      {data.cards.length > 0 && (
+        <input
+          className="input"
+          type="search"
+          placeholder="Search cards…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      )}
+
       <div className="cards-head">
-        {data.cards.length > 0 && (
+        {visibleCards.length > 0 && (
           <label className="select-all">
-            <input type="checkbox" className="card-check" checked={allSelected} onChange={() => toggleAll(data.cards)} />
+            <input type="checkbox" className="card-check" checked={allSelected} onChange={() => toggleAll(visibleCards)} />
             Select all
           </label>
         )}
-        <span className="muted">{data.cards.length} cards</span>
+        <span className="muted">
+          {q ? `${visibleCards.length} of ${data.cards.length}` : data.cards.length} cards
+        </span>
       </div>
 
       {selected.size > 0 && (
@@ -218,10 +243,11 @@ export function DeckEditor() {
       )}
 
       <ul className="card-list">
-        {data.cards.map((c) => (
+        {visibleCards.map((c) => (
           <CardRow key={c.id} card={c} selected={selected.has(c.id)} onToggle={toggle} />
         ))}
       </ul>
+      {q && visibleCards.length === 0 && <p className="muted empty">No cards match “{search.trim()}”.</p>}
     </div>
   );
 }
