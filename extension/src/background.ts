@@ -89,6 +89,12 @@ function renderBubble(payload: BubblePayload) {
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
     '.baseform{margin:10px 0 0;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:12px;' +
     'background:rgba(22,163,74,.15);color:#86efac;border:1px solid rgba(22,163,74,.4);}' +
+    '.form{display:flex;flex-direction:column;gap:3px;margin-top:12px;}' +
+    '.flabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
+    'font-weight:700;margin-top:5px;}' +
+    '.finput,.ftext{width:100%;box-sizing:border-box;background:#1e293b;color:#e2e8f0;' +
+    'border:1px solid #334155;border-radius:6px;padding:5px 7px;font-size:12px;font-family:inherit;}' +
+    '.ftext{resize:vertical;line-height:1.4;}' +
     '.add{margin-top:12px;width:100%;padding:7px;border:none;border-radius:8px;' +
     'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}' +
     '.vd{display:block;margin-top:10px;font-size:11px;color:#93c5fd;text-decoration:none;}.vd:hover{text-decoration:underline;}';
@@ -98,13 +104,12 @@ function renderBubble(payload: BubblePayload) {
   card.className = 'card';
   const { anw, free } = payload.lookups;
   const term = anw?.lemma || free?.lemma || payload.word;
-  let front = payload.word; // what gets saved; togglable to the resolved base form
 
   const hd = document.createElement('div');
   hd.className = 'hd';
   const lemma = document.createElement('span');
   lemma.className = 'lemma';
-  lemma.textContent = front;
+  lemma.textContent = payload.word;
   hd.appendChild(lemma);
   const x = document.createElement('button');
   x.className = 'x';
@@ -183,18 +188,45 @@ function renderBubble(payload: BubblePayload) {
     vd.textContent = 'Look up in Van Dale ↗';
     card.appendChild(vd);
 
-    // Offer the dictionary's base form (e.g. huizen -> huis); clicking switches
-    // what will be saved as the card front (and toggles back).
+    // Editable card fields, pre-filled from the lookup; tweak before saving.
+    const form = document.createElement('div');
+    form.className = 'form';
+    const addField = (
+      label: string,
+      value: string,
+      multiline: boolean,
+    ): HTMLInputElement | HTMLTextAreaElement => {
+      const lab = document.createElement('div');
+      lab.className = 'flabel';
+      lab.textContent = label;
+      form.appendChild(lab);
+      const el = document.createElement(multiline ? 'textarea' : 'input') as
+        | HTMLInputElement
+        | HTMLTextAreaElement;
+      el.className = multiline ? 'ftext' : 'finput';
+      el.value = value;
+      if (multiline) (el as HTMLTextAreaElement).rows = 2;
+      form.appendChild(el);
+      return el;
+    };
+    const frontInput = addField('Front', payload.word, false);
+    const backInput = addField('Back', back, false);
+    const explInput = addField('Explanation', explanation, true);
+    const ctxInput = addField('Context', payload.context, true);
+    card.appendChild(form);
+
+    // Offer the dictionary's base form (e.g. huizen -> huis); clicking sets the
+    // Front field to it (and toggles back).
     if (term.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
       const chip = document.createElement('button');
       chip.className = 'baseform';
+      const usingBase = () => frontInput.value.trim().toLowerCase() === term.toLowerCase();
       const renderChip = () => {
-        chip.textContent = front === term ? `✓ Base form: ${term}` : `Use base form: ${term}`;
+        chip.textContent = usingBase() ? `✓ Base form: ${term}` : `Use base form: ${term}`;
       };
       renderChip();
       chip.addEventListener('click', () => {
-        front = front === term ? payload.word : term;
-        lemma.textContent = front;
+        frontInput.value = usingBase() ? payload.word : term;
         renderChip();
       });
       card.appendChild(chip);
@@ -210,10 +242,10 @@ function renderBubble(payload: BubblePayload) {
         {
           type: 'addFromLookup',
           payload: {
-            word: front,
-            context: payload.context,
-            back,
-            explanation,
+            word: frontInput.value.trim() || payload.word,
+            context: ctxInput.value.trim(),
+            back: backInput.value.trim(),
+            explanation: explInput.value.trim(),
             url: payload.url,
             title: payload.title,
           },
