@@ -8,6 +8,7 @@ const MIN_EASE = 1.3;
 export interface SrSettings {
   startingEase: number; // default 2.5
   easyBonus: number; // multiplier applied to interval on "easy"
+  easyFirstInterval: number; // days a new card jumps to when graded "easy"
   againInterval: number; // minutes to wait after "again" (min 1)
   newCardsPerDay: number; // max brand-new cards introduced per deck per day
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
@@ -16,6 +17,7 @@ export interface SrSettings {
 export const DEFAULT_SETTINGS: SrSettings = {
   startingEase: 2.5,
   easyBonus: 1.3,
+  easyFirstInterval: 4,
   againInterval: 1,
   newCardsPerDay: 20,
   maxReviewsPerDay: 50,
@@ -123,16 +125,19 @@ export function scheduleState(
   const q = grade === 'easy' ? 5 : 4; // quality score
   repetitions += 1;
 
-  if (repetitions === 1) interval = 1;
-  else if (repetitions === 2) interval = 6;
-  else interval = Math.round(interval * easeFactor);
+  if (repetitions === 1) {
+    // Graduating interval: Easy jumps ahead of Good so the two differ on a new
+    // card (otherwise the easy bonus rounds 1d back to 1d).
+    interval = grade === 'easy' ? settings.easyFirstInterval : 1;
+  } else {
+    interval = repetitions === 2 ? 6 : Math.round(interval * easeFactor);
+    if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
+  }
 
   easeFactor = Math.max(
     MIN_EASE,
     easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
   );
-
-  if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
 
   interval = Math.max(1, interval);
 

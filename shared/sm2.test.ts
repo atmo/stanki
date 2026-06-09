@@ -49,10 +49,16 @@ describe('schedule', () => {
     expect(c.easeFactor).toBeCloseTo(2.3, 5);
   });
 
-  it('Easy raises ease and applies the easy bonus', () => {
+  it('Easy raises ease and graduates a new card to the easy first interval', () => {
     const c = run(['easy']);
     expect(c.easeFactor).toBeCloseTo(2.6, 5);
     expect(c.repetitions).toBe(1);
+    expect(c.interval).toBe(DEFAULT_SETTINGS.easyFirstInterval);
+  });
+
+  it('Good and Easy differ on a new card', () => {
+    expect(run(['good']).interval).toBe(1);
+    expect(run(['easy']).interval).toBe(DEFAULT_SETTINGS.easyFirstInterval);
   });
 
   it('Again while learning keeps ease (no thrash) and resets reps', () => {
