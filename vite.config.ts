@@ -3,8 +3,23 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath } from 'node:url';
+import { execSync } from 'node:child_process';
+
+// Short commit hash, shown on the About screen. Falls back to the CI-provided
+// SHA, then 'dev' when git isn't available (e.g. a tarball build).
+function commitHash(): string {
+  try {
+    return execSync('git rev-parse --short HEAD').toString().trim();
+  } catch {
+    return (process.env.GITHUB_SHA ?? 'dev').slice(0, 7);
+  }
+}
 
 export default defineConfig({
+  define: {
+    __COMMIT_HASH__: JSON.stringify(commitHash()),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   // Base path. Locally './' works anywhere; CI sets VITE_BASE=/<repo>/ so the
   // PWA's assets and service-worker scope are correct on GitHub Project Pages.
   base: process.env.VITE_BASE ?? './',

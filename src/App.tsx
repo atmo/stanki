@@ -6,6 +6,7 @@ import { DeckEditor } from './features/editor/DeckEditor';
 import { Review } from './features/review/Review';
 import { Settings } from './features/settings/Settings';
 import { AddWord } from './features/add/AddWord';
+import { About } from './features/about/About';
 import { useStore } from './store/store';
 import { ensureInboxDeck } from './db/repo';
 
@@ -35,6 +36,7 @@ export function App() {
         <Route path="/deck/:id" element={<DeckEditor />} />
         <Route path="/review/:id" element={<Review />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/about" element={<About />} />
       </Routes>
     </Layout>
   );
