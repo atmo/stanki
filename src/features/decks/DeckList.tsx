@@ -2,24 +2,48 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { createDeck, deleteDeck } from '../../db/repo';
+import { createDeck, deleteDeck, getSettings } from '../../db/repo';
+import { selectDue, startOfDay } from '@shared/sm2';
+import type { Card } from '@shared/types';
 
 export function DeckList() {
   const [name, setName] = useState('');
 
   const data = useLiveQuery(async () => {
-    const [decks, cards] = await Promise.all([
+    const now = Date.now();
+    const [decks, cards, settings, reviews] = await Promise.all([
       db.decks.filter((d) => !d.deleted).toArray(),
       db.cards.filter((c) => !c.deleted).toArray(),
+      getSettings(),
+      db.reviews.where('ts').aboveOrEqual(startOfDay(now)).toArray(),
     ]);
-    const now = Date.now();
-    const byDeck = new Map<string, { total: number; due: number }>();
-    for (const c of cards) {
-      const e = byDeck.get(c.deckId) ?? { total: 0, due: 0 };
-      e.total += 1;
-      if (c.dueDate <= now) e.due += 1;
-      byDeck.set(c.deckId, e);
+
+    // Today's new/review counts per deck (via cardId -> deckId).
+    const cardDeck = new Map(cards.map((c) => [c.id, c.deckId]));
+    const daily = new Map<string, { newToday: number; reviewsToday: number }>();
+    for (const r of reviews) {
+      const deckId = cardDeck.get(r.cardId);
+      if (!deckId) continue;
+      const d = daily.get(deckId) ?? { newToday: 0, reviewsToday: 0 };
+      if (r.prevInterval === 0) d.newToday++;
+      else d.reviewsToday++;
+      daily.set(deckId, d);
     }
+
+    const cardsByDeck = new Map<string, Card[]>();
+    for (const c of cards) {
+      const arr = cardsByDeck.get(c.deckId) ?? [];
+      arr.push(c);
+      cardsByDeck.set(c.deckId, arr);
+    }
+
+    const byDeck = new Map<string, { total: number; due: number }>();
+    for (const deck of decks) {
+      const dc = cardsByDeck.get(deck.id) ?? [];
+      const d = daily.get(deck.id) ?? { newToday: 0, reviewsToday: 0 };
+      byDeck.set(deck.id, { total: dc.length, due: selectDue(dc, d, settings, now).length });
+    }
+
     decks.sort((a, b) => a.name.localeCompare(b.name));
     return { decks, byDeck };
   }, []);

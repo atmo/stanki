@@ -1,7 +1,14 @@
 import { db } from './db';
 import type { Card, Deck, Grade } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
-import { schedule, newCardState, DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
+import {
+  schedule,
+  newCardState,
+  selectDue,
+  startOfDay,
+  DEFAULT_SETTINGS,
+  type SrSettings,
+} from '@shared/sm2';
 
 const uid = () => crypto.randomUUID();
 
@@ -24,7 +31,11 @@ export async function getDeviceId(): Promise<string> {
   return id;
 }
 
-export const getSettings = () => getMeta<SrSettings>('srSettings', DEFAULT_SETTINGS);
+export async function getSettings(): Promise<SrSettings> {
+  // Merge with defaults so settings saved before a field existed get its default.
+  const stored = await getMeta<Partial<SrSettings>>('srSettings', {});
+  return { ...DEFAULT_SETTINGS, ...stored };
+}
 export const saveSettings = (s: SrSettings) => setMeta('srSettings', s);
 
 export const getLastSync = () => getMeta<number | null>('lastSync', null);
@@ -93,6 +104,36 @@ export async function dueCards(deckId: string, now = Date.now()): Promise<Card[]
 
 export async function dueCount(deckId: string, now = Date.now()): Promise<number> {
   return (await dueCards(deckId, now)).length;
+}
+
+/** Today's new-card introductions and review count for a deck. */
+export async function dailyCounts(deckId: string, now = Date.now()) {
+  const [cards, reviews] = await Promise.all([
+    db.cards.where('deckId').equals(deckId).primaryKeys() as Promise<string[]>,
+    db.reviews.where('ts').aboveOrEqual(startOfDay(now)).toArray(),
+  ]);
+  const ids = new Set(cards);
+  let newToday = 0;
+  let reviewsToday = 0;
+  for (const r of reviews) {
+    if (!ids.has(r.cardId)) continue;
+    if (r.prevInterval === 0) newToday++;
+    else reviewsToday++;
+  }
+  return { newToday, reviewsToday };
+}
+
+/** The review queue for a deck: due cards capped by the per-day limits. */
+export async function reviewQueue(
+  deckId: string,
+  settings: SrSettings,
+  now = Date.now(),
+): Promise<Card[]> {
+  const [cards, daily] = await Promise.all([
+    db.cards.where('deckId').equals(deckId).toArray(),
+    dailyCounts(deckId, now),
+  ]);
+  return selectDue(cards, daily, settings, now);
 }
 
 export interface NewCardInput {

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
-import { dueCards, gradeCard, getSettings, getDeck } from '../../db/repo';
+import { reviewQueue, gradeCard, getSettings, getDeck } from '../../db/repo';
 
 function fmt(days: number): string {
   if (days < 1) return '<1d';
@@ -40,9 +40,10 @@ export function Review() {
 
   useEffect(() => {
     void (async () => {
-      setSettings(await getSettings());
+      const s = await getSettings();
+      setSettings(s);
       setDeckName((await getDeck(id))?.name ?? '');
-      setQueue(await dueCards(id));
+      setQueue(await reviewQueue(id, s));
     })();
   }, [id]);
 

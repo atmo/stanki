@@ -95,6 +95,21 @@ export function Settings() {
       </section>
 
       <section className="panel">
+        <h2>Daily limits</h2>
+        <p className="muted small">Per deck. New cards are introduced up to the limit; reviews are capped separately.</p>
+        <label className="field">
+          <span>New cards / day</span>
+          <input type="number" className="input" min={0} max={500} value={s.newCardsPerDay}
+            onChange={(e) => update('newCardsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />
+        </label>
+        <label className="field">
+          <span>Max reviews / day</span>
+          <input type="number" className="input" min={0} max={9999} value={s.maxReviewsPerDay}
+            onChange={(e) => update('maxReviewsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />
+        </label>
+      </section>
+
+      <section className="panel">
         <h2>Backup</h2>
         <p className="muted">Offline portability and backup, independent of Drive.</p>
         <div className="row">

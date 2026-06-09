@@ -7,13 +7,49 @@ export interface SrSettings {
   startingEase: number; // default 2.5
   easyBonus: number; // multiplier applied to interval on "easy"
   againInterval: number; // days to wait after "again"
+  newCardsPerDay: number; // max brand-new cards introduced per deck per day
+  maxReviewsPerDay: number; // max review (non-new) cards per deck per day
 }
 
 export const DEFAULT_SETTINGS: SrSettings = {
   startingEase: 2.5,
   easyBonus: 1.3,
   againInterval: 1,
+  newCardsPerDay: 20,
+  maxReviewsPerDay: 50,
 };
+
+export interface DailyReviewCounts {
+  newToday: number; // new cards already introduced today (this deck)
+  reviewsToday: number; // review cards already done today (this deck)
+}
+
+/** Local midnight for `now` — the day boundary for the daily limits. */
+export function startOfDay(now = Date.now()): number {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
+/**
+ * Cards due now, capped by the per-day new/review limits. A card is "new" until
+ * its first review (interval === 0). Review cards come first, then new cards.
+ */
+export function selectDue(
+  cards: Card[],
+  daily: DailyReviewCounts,
+  settings: SrSettings,
+  now = Date.now(),
+): Card[] {
+  const due = cards
+    .filter((c) => !c.deleted && c.dueDate <= now)
+    .sort((a, b) => a.dueDate - b.dueDate);
+  const newRemaining = Math.max(0, settings.newCardsPerDay - daily.newToday);
+  const reviewRemaining = Math.max(0, settings.maxReviewsPerDay - daily.reviewsToday);
+  const newCards = due.filter((c) => c.interval === 0).slice(0, newRemaining);
+  const reviewCards = due.filter((c) => c.interval > 0).slice(0, reviewRemaining);
+  return [...reviewCards, ...newCards];
+}
 
 // Fresh scheduling state for a brand-new card (due immediately).
 export function newCardState(now = Date.now(), settings = DEFAULT_SETTINGS) {
