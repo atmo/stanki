@@ -1,4 +1,5 @@
 import { anwUrl, wiktionaryUrl, vanDaleUrl, firstWord, type Lookups, type LookupResult } from '@shared/lookup';
+import { lemmatize } from '@shared/lemma';
 
 function Section({ label, result, url }: { label: string; result: LookupResult; url: string }) {
   return (
@@ -32,9 +33,8 @@ export function LookupResults({
 }) {
   if (lookups === null) return <p className="muted lk-loading">Looking up “{term}”…</p>;
   const { anw, free } = lookups;
-  // Canonical headword the dictionary resolved to (ANW preferred). Suggest it as
-  // the base form when it differs from what was typed (e.g. huizen -> huis).
-  const lemma = anw?.lemma || free?.lemma || '';
+  // Offline lemma (e.g. huizen -> huis); suggest it when it differs from the input.
+  const lemma = front ? lemmatize(front) : '';
   const showBase = !!(lemma && onUseLemma && front && firstWord(front) !== firstWord(lemma));
   return (
     <div className="lookup-results">

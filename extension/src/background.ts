@@ -11,6 +11,7 @@ import {
   storeOAuthToken,
 } from './drive-ext';
 import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
+import { lemmatize } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
 
@@ -41,6 +42,7 @@ function grabSelectionInfo() {
 
 interface BubblePayload {
   word: string;
+  lemma: string; // offline-lemmatized base form of `word` (may equal it)
   context: string;
   url: string;
   title: string;
@@ -102,7 +104,7 @@ function renderBubble(payload: BubblePayload) {
   const card = document.createElement('div');
   card.className = 'card';
   const { anw, free } = payload.lookups;
-  const term = anw?.lemma || free?.lemma || payload.word;
+  const term = payload.lemma || payload.word; // offline base form, computed by the background
 
   const hd = document.createElement('div');
   hd.className = 'hd';
@@ -338,7 +340,7 @@ async function lookupAndShow(tabId: number): Promise<void> {
   if (!info?.selectedText.trim()) return;
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
-  const base = { word, context, url: info.url, title: info.title };
+  const base = { word, lemma: lemmatize(word), context, url: info.url, title: info.title };
 
   // Show a loading bubble immediately, then replace it with the results.
   await scripting.executeScript({

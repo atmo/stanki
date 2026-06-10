@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { lookupWord, anwExplanation, type Lookups } from '@shared/lookup';
+import { lemmatize } from '@shared/lemma';
 import { LookupResults } from '../lookup/LookupResults';
 import {
   createCard,
@@ -260,7 +261,7 @@ export function DeckEditor() {
       {lookupTerm && (
         <LookupResults
           lookups={lookups}
-          term={lookups?.anw?.lemma || lookups?.free?.lemma || lookupTerm}
+          term={lemmatize(lookupTerm)}
           front={front}
           onUseLemma={(lemma) => {
             setFront(lemma);

@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createCard, ensureInboxDeck, getLastAddDeck, setLastAddDeck } from '../../db/repo';
 import { lookupWord, anwExplanation, type Lookups } from '@shared/lookup';
+import { lemmatize } from '@shared/lemma';
 import { LookupResults } from '../lookup/LookupResults';
 
 export function AddWord() {
@@ -89,7 +90,7 @@ export function AddWord() {
     );
   }
 
-  const term = lookups?.anw?.lemma || lookups?.free?.lemma || lookupTerm || front;
+  const term = lemmatize(lookupTerm || front);
 
   return (
     <div className="add-screen">
