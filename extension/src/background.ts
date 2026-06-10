@@ -88,8 +88,7 @@ function renderBubble(payload: BubblePayload) {
     'color:#93c5fd;text-decoration:none;}.slink:hover{text-decoration:underline;}' +
     '.sense{margin:5px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
-    '.baseform{margin:10px 0 0;padding:5px 11px;border-radius:999px;cursor:pointer;font-size:12px;' +
-    'background:rgba(22,163,74,.15);color:#86efac;border:1px solid rgba(22,163,74,.4);}' +
+    '.basef{font-size:13px;color:#86efac;font-weight:600;margin:-2px 0 6px;}' +
     '.form{display:flex;flex-direction:column;gap:3px;margin-top:12px;}' +
     '.flabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
     'font-weight:700;margin-top:5px;}' +
@@ -117,6 +116,14 @@ function renderBubble(payload: BubblePayload) {
   x.textContent = '✕';
   hd.appendChild(x);
   card.appendChild(hd);
+
+  // Show the resolved base form under the selected word, in an accent colour.
+  if (term.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
+    const bf = document.createElement('div');
+    bf.className = 'basef';
+    bf.textContent = `→ ${term}`;
+    card.appendChild(bf);
+  }
 
   const addSection = (label: string, senses: Sense[], url: string) => {
     const lab = document.createElement('div');
@@ -215,28 +222,13 @@ function renderBubble(payload: BubblePayload) {
       form.appendChild(el);
       return el;
     };
-    const frontInput = addField('Front', payload.word, false);
+    // Front defaults to the base form; it stays editable if the user wants the
+    // selected form instead.
+    const frontInput = addField('Front', term, false);
     const backInput = addField('Back', back, false);
     const explInput = addField('Explanation', explanation, true);
     const ctxInput = addField('Context', payload.context, true);
     card.appendChild(form);
-
-    // Offer the dictionary's base form (e.g. huizen -> huis); clicking sets the
-    // Front field to it (and toggles back).
-    if (term.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
-      const chip = document.createElement('button');
-      chip.className = 'baseform';
-      const usingBase = () => frontInput.value.trim().toLowerCase() === term.toLowerCase();
-      const renderChip = () => {
-        chip.textContent = usingBase() ? `✓ Base form: ${term}` : `Use base form: ${term}`;
-      };
-      renderChip();
-      chip.addEventListener('click', () => {
-        frontInput.value = usingBase() ? payload.word : term;
-        renderChip();
-      });
-      card.appendChild(chip);
-    }
 
     const add = document.createElement('button');
     add.className = 'add';
