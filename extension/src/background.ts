@@ -153,12 +153,12 @@ function renderBubble(payload: BubblePayload) {
   if (payload.loading) {
     const p = document.createElement('div');
     p.className = 'muted';
-    p.textContent = `Looking up “${payload.word}”…`;
+    p.textContent = `Looking up “${term}”…`;
     card.appendChild(p);
   } else if (!anw && !free) {
     const p = document.createElement('div');
     p.className = 'muted';
-    p.textContent = `No definition found for “${payload.word}”.`;
+    p.textContent = `No definition found for “${term}”.`;
     card.appendChild(p);
   } else {
     if (anw) {
@@ -166,7 +166,7 @@ function renderBubble(payload: BubblePayload) {
     } else {
       const p = document.createElement('div');
       p.className = 'muted';
-      p.textContent = `No ANW entry for “${payload.word}”.`;
+      p.textContent = `No ANW entry for “${term}”.`;
       card.appendChild(p);
     }
     if (free) {
@@ -349,7 +349,8 @@ async function lookupAndShow(tabId: number): Promise<void> {
     args: [{ ...base, loading: true, lookups: { anw: null, free: null } }],
   });
 
-  const lookups = await lookupWord(info.selectedText);
+  // Look up the offline base form (e.g. huizen -> huis) in both dictionaries.
+  const lookups = await lookupWord(base.lemma);
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
