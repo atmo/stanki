@@ -361,7 +361,7 @@ async function lookupAndShow(tabId: number): Promise<void> {
 runtime.onInstalled.addListener(async () => {
   // Single top-level item, so the browser shows it directly in the context menu
   // (two or more items would nest under a "Stanki" submenu).
-  contextMenus.create({ id: LOOKUP_MENU_ID, title: 'Look up “%s” (ANW)', contexts: ['selection'] });
+  contextMenus.create({ id: LOOKUP_MENU_ID, title: 'Look up “%s”', contexts: ['selection'] });
   void updateBadge();
 });
 
