@@ -1,5 +1,5 @@
 import { anwUrl, wiktionaryUrl, vanDaleUrl, type Lookups, type LookupResult } from '@shared/lookup';
-import { lemmatize, withArticle } from '@shared/lemma';
+import { lemmaCandidates, withArticle } from '@shared/lemma';
 
 function Section({ label, result, url }: { label: string; result: LookupResult; url: string }) {
   return (
@@ -33,19 +33,25 @@ export function LookupResults({
 }) {
   if (lookups === null) return <p className="muted lk-loading">Looking up “{term}”…</p>;
   const { anw, free } = lookups;
-  // Offline base form: lemma (huizen -> huis) plus the article for nouns (-> het
-  // huis). Suggest it when it differs from the input; look up the bare lemma.
-  const lemma = front ? lemmatize(front) : '';
-  const suggestion = lemma ? withArticle(lemma) : '';
-  const showBase = !!(
-    suggestion && onUseLemma && front && suggestion.toLowerCase() !== front.trim().toLowerCase()
-  );
+  // Offline base-form readings (huizen -> ["huizen","huis"]; opvallender ->
+  // ["opvallen","opvallend"]), each shown with its article for nouns. The user
+  // picks which to use; clicking looks the bare lemma up and fills the Front.
+  const candidates = front && onUseLemma ? lemmaCandidates(front) : [];
+  const choices = candidates.map((c) => ({ lemma: c, label: withArticle(c) }));
+  const showChoices =
+    choices.length > 1 ||
+    (choices.length === 1 && choices[0].label.toLowerCase() !== (front ?? '').trim().toLowerCase());
   return (
     <div className="lookup-results">
-      {showBase && (
-        <button className="lk-baseform" onClick={() => onUseLemma!(lemma, suggestion)}>
-          Use base form: <b>{suggestion}</b>
-        </button>
+      {showChoices && (
+        <div className="lk-baseforms">
+          <span className="muted small">Base form:</span>
+          {choices.map((c) => (
+            <button key={c.lemma} className="lk-baseform" onClick={() => onUseLemma!(c.lemma, c.label)}>
+              {c.label}
+            </button>
+          ))}
+        </div>
       )}
       {anw ? (
         <Section label="ANW" result={anw} url={anwUrl(anw.lemma)} />

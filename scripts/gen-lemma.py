@@ -1,57 +1,132 @@
 #!/usr/bin/env python3
-"""Generate shared/lemma-data.ts: a Dutch form -> lemma map of inflected content
-words, from the Universal Dependencies Dutch treebanks (UD_Dutch-Alpino +
-UD_Dutch-LassySmall, CC BY-SA 4.0). Uses every form encountered (all splits).
+"""Generate shared/lemma-data.ts from a kaikki.org Wiktionary extract.
 
-Usage:
-  # download all conllu splits first, e.g. for each repo/split:
-  #   curl -o /tmp/alpino.conllu https://raw.githubusercontent.com/UniversalDependencies/UD_Dutch-Alpino/master/nl_alpino-ud-train.conllu
-  python3 scripts/gen-lemma.py /tmp/*.conllu
+Download the data (~246 MB), then run:
+    curl -s -o /tmp/wikt-nl.jsonl https://kaikki.org/dictionary/Dutch/kaikki.org-dictionary-Dutch.jsonl
+    python3 scripts/gen-lemma.py /tmp/wikt-nl.jsonl
+
+Produces a form -> lemma map (every inflected content-word form) and a noun ->
+article map (de/het from grammatical gender).
 """
-import re, sys, json, collections, os, glob
+import collections
+import json
+import os
+import re
+import sys
 
-POS = {'NOUN', 'VERB', 'AUX', 'ADJ'}
-word_re = re.compile(r"^[a-zà-öø-ÿ]+(?:-[a-zà-öø-ÿ]+)?$")
+POS = {'noun', 'verb', 'adj', 'adv', 'num'}
+# Form entries tagged like this are conjugation-table metadata or non-standard
+# spellings, not the standard inflection we want.
+JUNK_TAGS = {'table-tags', 'inflection-template', 'class', 'auxiliary',
+             'obsolete', 'archaic', 'dated', 'rare', 'dialectal', 'nonstandard'}
+WORD_RE = re.compile(r"^[a-zà-ÿ][a-zà-ÿ'’-]*[a-zà-ÿ]$")
 
 
-def main(files):
-    pairs = collections.defaultdict(collections.Counter)
-    genders = collections.defaultdict(collections.Counter)  # noun lemma -> {de, het}
-    for fn in files:
-        with open(fn, encoding='utf-8') as f:
-            for line in f:
-                if not line or line[0] == '#' or line == '\n':
+def is_real_lemma(entry):
+    """True unless every sense is obsolete/archaic or merely an alt/form-of pointer
+    (e.g. "loopen" = obsolete spelling of lopen) — those aren't headwords we keep."""
+    senses = entry.get('senses') or []
+    if not senses:
+        return True
+    for s in senses:
+        t = set(s.get('tags') or [])
+        if not (t & {'obsolete', 'archaic'}) and 'alt-of' not in t and 'form-of' not in t:
+            return True
+    return False
+
+
+def gender_article(entry):
+    for ht in entry.get('head_templates') or []:
+        if ht.get('name', '').startswith('nl-noun'):
+            g = (ht.get('args') or {}).get('1', '')
+            if g == 'n':
+                return 'het'
+            if g and g[0] in 'mfc':
+                return 'de'
+    return None
+
+
+def main(path):
+    pairs = collections.defaultdict(collections.Counter)   # form -> {lemma: n}
+    genders = collections.defaultdict(collections.Counter)  # noun lemma -> {de/het: n}
+    verb_inf = set()     # true infinitives: offer verb-vs-noun choice, default verb
+    noun_lemmas = set()  # noun headwords: don't reduce (e.g. brief, not briefen)
+
+    with open(path, encoding='utf-8') as f:
+        for line in f:
+            try:
+                e = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if e.get('lang_code') != 'nl' or e.get('pos') not in POS:
+                continue
+            lemma = (e.get('word') or '').lower()
+            if not WORD_RE.match(lemma) or not is_real_lemma(e):
+                continue
+
+            heads = {h.get('name') for h in (e.get('head_templates') or [])}
+            # Only true infinitives (head `nl-verb`), not Wiktionary's form-of verb
+            # entries (loopt, werkten) or participles.
+            if e['pos'] == 'verb' and 'nl-verb' in heads:
+                verb_inf.add(lemma)
+            if e['pos'] == 'noun':
+                if 'nl-noun' in heads:
+                    noun_lemmas.add(lemma)
+                art = gender_article(e)
+                if art:
+                    genders[lemma][art] += 1
+
+            for fo in e.get('forms') or []:
+                tags = set(fo.get('tags') or [])
+                if tags & JUNK_TAGS:
                     continue
-                c = line.rstrip('\n').split('\t')
-                if len(c) < 6 or '-' in c[0] or '.' in c[0]:
-                    continue
-                form, lemma, upos, feats = c[1].lower(), c[2].lower(), c[3], c[5]
-                # Noun gender -> definite article (any form), keyed by lemma.
-                if upos == 'NOUN' and word_re.match(lemma) and len(lemma) >= 2:
-                    art = 'de' if 'Gender=Com' in feats else 'het' if 'Gender=Neut' in feats else None
-                    if art:
-                        genders[lemma][art] += 1
-                # form -> lemma for inflected content words.
-                if upos not in POS or form == lemma:
-                    continue
-                if not word_re.match(form) or not word_re.match(lemma):
-                    continue
-                if len(form) < 2 or len(lemma) < 2:
+                form = (fo.get('form') or '').lower()
+                if form == lemma or not WORD_RE.match(form):
                     continue
                 pairs[form][lemma] += 1
 
-    # Keep every form; resolve ambiguity to its most frequent lemma / gender.
-    data = {form: ctr.most_common(1)[0][0] for form, ctr in sorted(pairs.items())}
-    articles = {lemma: ctr.most_common(1)[0][0] for lemma, ctr in sorted(genders.items())}
+    # A true infinitive (lopen, huizen, …) is ambiguous: verb OR noun plural.
+    # Default to the verb, offer the noun reading(s) as alternatives. Noun
+    # headwords (brief) are protected from reduction (so brieven -> brief stops,
+    # not -> briefen). Everything else reduces; offer a choice on real ambiguity.
+    data = {}   # form -> primary lemma (used by lemmatize)
+    alts = {}   # form -> [candidate lemmas] when there's a genuine choice
+    for form, ctr in sorted(pairs.items()):
+        reductions = [lemma for lemma, _ in ctr.most_common()]
+        if form in verb_inf:
+            cands = [form] + [r for r in reductions if r != form]
+        elif form in noun_lemmas:
+            cands = [form]  # protected headword: don't reduce
+        else:
+            data[form] = reductions[0]
+            cands = reductions
+        seen = set()
+        cands = [c for c in cands if not (c in seen or seen.add(c))]
+        if len(cands) > 1:
+            alts[form] = cands
+
+    # Exclude verb infinitives (gerund nouns like "het lopen") so their candidate
+    # shows as the bare verb, not "het lopen".
+    articles = {
+        lemma: ctr.most_common(1)[0][0]
+        for lemma, ctr in sorted(genders.items())
+        if lemma not in verb_inf
+    }
 
     out = os.path.join(os.path.dirname(__file__), '..', 'shared', 'lemma-data.ts')
     with open(out, 'w', encoding='utf-8') as f:
-        f.write(f'// AUTO-GENERATED. Dutch form -> lemma map ({len(data)} inflected content\n')
-        f.write(f'// words) and noun -> article map ({len(articles)} nouns) from the Universal\n')
-        f.write('// Dependencies Dutch treebanks (UD_Dutch-Alpino + UD_Dutch-LassySmall, all\n')
-        f.write('// splits, CC BY-SA 4.0). Regenerate via scripts/gen-lemma.py.\n')
+        f.write(f'// AUTO-GENERATED. Dutch form -> lemma map ({len(data)} forms), ambiguous\n')
+        f.write(f'// form -> [candidate lemmas] map ({len(alts)} forms), and noun -> article map\n')
+        f.write(f'// ({len(articles)} nouns), built from English Wiktionary via kaikki.org\n')
+        f.write('// (CC BY-SA 3.0/4.0). Regenerate via scripts/gen-lemma.py.\n')
         f.write('export const LEMMA_MAP: Record<string, string> = {\n')
         for k, v in data.items():
+            f.write(f'  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)},\n')
+        f.write('};\n\n')
+        f.write('// Forms with more than one base-form reading (e.g. noun plural vs. verb\n')
+        f.write('// infinitive); the first is the default. The UI offers these as a choice.\n')
+        f.write('export const ALT_MAP: Record<string, string[]> = {\n')
+        for k, v in alts.items():
             f.write(f'  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)},\n')
         f.write('};\n\n')
         f.write('// Definite article (de/het) by noun lemma, from grammatical gender.\n')
@@ -59,10 +134,8 @@ def main(files):
         for k, v in articles.items():
             f.write(f'  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)},\n')
         f.write('};\n')
-    print(f'wrote {out}: {len(data)} forms, {len(articles)} nouns')
+    print(f'wrote {out}: {len(data)} forms, {len(alts)} ambiguous, {len(articles)} nouns')
 
 
 if __name__ == '__main__':
-    args = sys.argv[1:]
-    files = [f for a in args for f in glob.glob(a)] or glob.glob('/tmp/*.conllu')
-    main(files)
+    main(sys.argv[1] if len(sys.argv) > 1 else '/tmp/wikt-nl.jsonl')

@@ -1,34 +1,80 @@
 import { describe, it, expect } from 'vitest';
-import { lemmatize, nounArticle, withArticle } from './lemma';
+import { lemmatize, lemmaCandidates, nounArticle, withArticle } from './lemma';
 
-describe('lemmatize (UD Dutch map)', () => {
-  it('noun plural -> singular', () => {
-    expect(lemmatize('huizen')).toBe('huis');
-    expect(lemmatize('boeken')).toBe('boek');
-    expect(lemmatize('kinderen')).toBe('kind');
-    expect(lemmatize('steden')).toBe('stad');
-  });
-
-  it('conjugated / participle verb -> infinitive', () => {
+describe('lemmatize', () => {
+  it('verb present-tense -t -> infinitive', () => {
     expect(lemmatize('loopt')).toBe('lopen');
     expect(lemmatize('werkt')).toBe('werken');
+    expect(lemmatize('maakt')).toBe('maken');
+    expect(lemmatize('hoort')).toBe('horen');
+  });
+
+  it('past participle -> infinitive', () => {
     expect(lemmatize('gewerkt')).toBe('werken');
+    expect(lemmatize('gemaakt')).toBe('maken');
+    expect(lemmatize('gehoord')).toBe('horen');
+  });
+
+  it('strong verbs and suppletives', () => {
     expect(lemmatize('liep')).toBe('lopen');
     expect(lemmatize('gelopen')).toBe('lopen');
+    expect(lemmatize('is')).toBe('zijn');
+    expect(lemmatize('heeft')).toBe('hebben');
+    expect(lemmatize('ging')).toBe('gaan');
   });
 
-  it('inflected adjective -> base', () => {
-    expect(lemmatize('mooie')).toBe('mooi');
+  it('plurals -> singular', () => {
+    expect(lemmatize('mannen')).toBe('man');
+    expect(lemmatize('brieven')).toBe('brief');
+    expect(lemmatize('kinderen')).toBe('kind');
+    expect(lemmatize('eieren')).toBe('ei');
   });
 
-  it('leaves headwords / unknown words unchanged', () => {
-    expect(lemmatize('lopen')).toBe('lopen'); // already a lemma
+  it('diminutives -> base', () => {
+    expect(lemmatize('huisje')).toBe('huis');
+    expect(lemmatize('boekje')).toBe('boek');
+    expect(lemmatize("auto's")).toBe('auto');
+  });
+
+  it('follows the map transitively (comparative participle -> verb)', () => {
+    expect(lemmatize('opvallend')).toBe('opvallen');
+    expect(lemmatize('opvallende')).toBe('opvallen');
+    expect(lemmatize('opvallender')).toBe('opvallen');
+    expect(lemmatize('opvallendste')).toBe('opvallen');
+  });
+
+  it('leaves infinitives and bare lemmas unchanged', () => {
+    expect(lemmatize('lopen')).toBe('lopen'); // verb default (also a noun plural)
+    expect(lemmatize('werken')).toBe('werken');
     expect(lemmatize('huis')).toBe('huis');
-    expect(lemmatize('qwxyz')).toBe('qwxyz'); // unknown
+    expect(lemmatize('kat')).toBe('kat');
   });
 
   it('normalizes case and whitespace', () => {
-    expect(lemmatize('  Huizen ')).toBe('huis');
+    expect(lemmatize('  Mannen ')).toBe('man');
+  });
+});
+
+describe('lemmaCandidates', () => {
+  it('offers verb vs. noun-plural readings, default first', () => {
+    expect(lemmaCandidates('huizen')).toEqual(['huizen', 'huis']);
+    expect(lemmaCandidates('lopen')).toEqual(['lopen', 'loop']);
+    expect(lemmaCandidates('werken')).toEqual(['werken', 'werk']);
+  });
+
+  it('offers each step of a reduction chain (most-reduced first)', () => {
+    expect(lemmaCandidates('opvallender')).toEqual(['opvallen', 'opvallend']);
+  });
+
+  it('candidates[0] matches lemmatize', () => {
+    for (const w of ['opvallender', 'huizen', 'mannen', 'loopt', 'huis']) {
+      expect(lemmaCandidates(w)[0]).toBe(lemmatize(w));
+    }
+  });
+
+  it('returns a single candidate when unambiguous', () => {
+    expect(lemmaCandidates('mannen')).toEqual(['man']);
+    expect(lemmaCandidates('loopt')).toEqual(['lopen']);
   });
 });
 

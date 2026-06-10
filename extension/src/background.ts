@@ -11,7 +11,7 @@ import {
   storeOAuthToken,
 } from './drive-ext';
 import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
-import { lemmatize, withArticle } from '@shared/lemma';
+import { lemmaCandidates, lemmatize, withArticle } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
 
@@ -43,7 +43,8 @@ function grabSelectionInfo() {
 interface BubblePayload {
   word: string;
   lemma: string; // offline-lemmatized base form of `word` (may equal it)
-  front: string; // suggested card front: base form with its article for nouns ("het huis")
+  front: string; // default card front: first candidate with its article ("het huis")
+  candidates: string[]; // base-form readings to choose from, default first
   context: string;
   url: string;
   title: string;
@@ -89,7 +90,12 @@ function renderBubble(payload: BubblePayload) {
     'color:#93c5fd;text-decoration:none;}.slink:hover{text-decoration:underline;}' +
     '.sense{margin:5px 0;}.n{color:#64748b;font-weight:700;margin-right:5px;}' +
     '.ex{color:#94a3b8;font-style:italic;margin-top:2px;}.muted{color:#94a3b8;}' +
-    '.basef{font-size:13px;color:#86efac;font-weight:600;margin:-2px 0 6px;}' +
+    '.basef{font-size:13px;color:#86efac;font-weight:600;margin:8px 0 2px;}' +
+    '.basef-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 2px;}' +
+    '.basef-label{font-size:11px;color:#94a3b8;}' +
+    '.basef-chip{padding:3px 10px;border-radius:999px;cursor:pointer;font-size:12px;' +
+    'background:rgba(22,163,74,.12);color:#86efac;border:1px solid rgba(22,163,74,.35);}' +
+    '.basef-chip.on{background:rgba(22,163,74,.3);font-weight:600;}' +
     '.form{display:flex;flex-direction:column;gap:3px;margin-top:12px;}' +
     '.flabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
     'font-weight:700;margin-top:5px;}' +
@@ -117,15 +123,6 @@ function renderBubble(payload: BubblePayload) {
   x.textContent = '✕';
   hd.appendChild(x);
   card.appendChild(hd);
-
-  // Show the resolved base form (with article for nouns) under the selected
-  // word, in an accent colour.
-  if (payload.front.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
-    const bf = document.createElement('div');
-    bf.className = 'basef';
-    bf.textContent = `→ ${payload.front}`;
-    card.appendChild(bf);
-  }
 
   const addSection = (label: string, senses: Sense[], url: string) => {
     const lab = document.createElement('div');
@@ -235,6 +232,37 @@ function renderBubble(payload: BubblePayload) {
     const ctxInput = addField('Context', payload.context, true);
     card.appendChild(form);
 
+    // Base-form choice above the fields: pick the reading you mean (e.g. noun
+    // plural vs. verb). Clicking fills the Front field. Single reading -> a note.
+    const cands = payload.candidates && payload.candidates.length ? payload.candidates : [payload.front];
+    if (cands.length > 1) {
+      const row = document.createElement('div');
+      row.className = 'basef-row';
+      const labEl = document.createElement('span');
+      labEl.className = 'basef-label';
+      labEl.textContent = 'Base form:';
+      row.appendChild(labEl);
+      const chips: HTMLButtonElement[] = [];
+      cands.forEach((cand, i) => {
+        const chip = document.createElement('button');
+        chip.className = 'basef-chip' + (i === 0 ? ' on' : '');
+        chip.textContent = cand;
+        chip.addEventListener('click', () => {
+          (frontInput as HTMLInputElement).value = cand;
+          for (const c of chips) c.classList.remove('on');
+          chip.classList.add('on');
+        });
+        chips.push(chip);
+        row.appendChild(chip);
+      });
+      card.insertBefore(row, form);
+    } else if (payload.front.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
+      const bf = document.createElement('div');
+      bf.className = 'basef';
+      bf.textContent = `→ ${payload.front}`;
+      card.insertBefore(bf, form);
+    }
+
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
@@ -338,7 +366,8 @@ async function lookupAndShow(tabId: number): Promise<void> {
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
   const lemma = lemmatize(word);
-  const base = { word, lemma, front: withArticle(lemma), context, url: info.url, title: info.title };
+  const candidates = lemmaCandidates(word).map(withArticle);
+  const base = { word, lemma, candidates, front: candidates[0], context, url: info.url, title: info.title };
 
   // Show a loading bubble immediately, then replace it with the results.
   await scripting.executeScript({
