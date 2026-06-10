@@ -44,7 +44,11 @@ export function LookupResults({
         </button>
       )}
       {!anw && !free && <p className="muted">No definitions found for “{term}”.</p>}
-      {anw && <Section label="ANW" result={anw} url={anwUrl(anw.lemma)} />}
+      {anw ? (
+        <Section label="ANW" result={anw} url={anwUrl(anw.lemma)} />
+      ) : (
+        free && <p className="muted small">No ANW entry for “{term}”.</p>
+      )}
       {free && <Section label="Wiktionary (EN)" result={free} url={wiktionaryUrl(free.lemma)} />}
       {term && (
         <a className="lk-vd" href={vanDaleUrl(term)} target="_blank" rel="noreferrer">

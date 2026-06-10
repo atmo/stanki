@@ -161,6 +161,11 @@ function renderBubble(payload: BubblePayload) {
   } else {
     if (anw) {
       addSection('ANW', anw.senses, `https://anw.ivdnt.org/article/${encodeURIComponent(anw.lemma)}`);
+    } else {
+      const p = document.createElement('div');
+      p.className = 'muted';
+      p.textContent = `No ANW entry for “${payload.word}”.`;
+      card.appendChild(p);
     }
     if (free) {
       addSection(
