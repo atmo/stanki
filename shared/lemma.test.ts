@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { lemmatize } from './lemma';
+import { lemmatize, nounArticle, withArticle } from './lemma';
 
 describe('lemmatize (UD Dutch map)', () => {
   it('noun plural -> singular', () => {
@@ -29,5 +29,24 @@ describe('lemmatize (UD Dutch map)', () => {
 
   it('normalizes case and whitespace', () => {
     expect(lemmatize('  Huizen ')).toBe('huis');
+  });
+});
+
+describe('noun articles', () => {
+  it('returns de/het for known nouns', () => {
+    expect(nounArticle('huis')).toBe('het');
+    expect(nounArticle('hond')).toBe('de');
+    expect(nounArticle('kind')).toBe('het');
+  });
+
+  it('returns null for non-nouns / unknown', () => {
+    expect(nounArticle('lopen')).toBeNull();
+    expect(nounArticle('qwxyz')).toBeNull();
+  });
+
+  it('withArticle prepends the article for nouns only', () => {
+    expect(withArticle('huis')).toBe('het huis');
+    expect(withArticle('hond')).toBe('de hond');
+    expect(withArticle('lopen')).toBe('lopen');
   });
 });

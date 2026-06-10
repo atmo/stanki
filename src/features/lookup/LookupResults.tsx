@@ -1,5 +1,5 @@
-import { anwUrl, wiktionaryUrl, vanDaleUrl, firstWord, type Lookups, type LookupResult } from '@shared/lookup';
-import { lemmatize } from '@shared/lemma';
+import { anwUrl, wiktionaryUrl, vanDaleUrl, type Lookups, type LookupResult } from '@shared/lookup';
+import { lemmatize, withArticle } from '@shared/lemma';
 
 function Section({ label, result, url }: { label: string; result: LookupResult; url: string }) {
   return (
@@ -29,18 +29,22 @@ export function LookupResults({
   lookups: Lookups | null;
   term: string;
   front?: string; // the current "front" field, to suggest a base form when it differs
-  onUseLemma?: (lemma: string) => void;
+  onUseLemma?: (lemma: string, frontForm: string) => void; // (bare lemma to look up, front to fill)
 }) {
   if (lookups === null) return <p className="muted lk-loading">Looking up “{term}”…</p>;
   const { anw, free } = lookups;
-  // Offline lemma (e.g. huizen -> huis); suggest it when it differs from the input.
+  // Offline base form: lemma (huizen -> huis) plus the article for nouns (-> het
+  // huis). Suggest it when it differs from the input; look up the bare lemma.
   const lemma = front ? lemmatize(front) : '';
-  const showBase = !!(lemma && onUseLemma && front && firstWord(front) !== firstWord(lemma));
+  const suggestion = lemma ? withArticle(lemma) : '';
+  const showBase = !!(
+    suggestion && onUseLemma && front && suggestion.toLowerCase() !== front.trim().toLowerCase()
+  );
   return (
     <div className="lookup-results">
       {showBase && (
-        <button className="lk-baseform" onClick={() => onUseLemma!(lemma)}>
-          Use base form: <b>{lemma}</b>
+        <button className="lk-baseform" onClick={() => onUseLemma!(lemma, suggestion)}>
+          Use base form: <b>{suggestion}</b>
         </button>
       )}
       {!anw && !free && <p className="muted">No definitions found for “{term}”.</p>}

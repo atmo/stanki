@@ -128,8 +128,8 @@ export function AddWord() {
         lookups={lookups}
         term={term}
         front={front}
-        onUseLemma={(lemma) => {
-          setFront(lemma);
+        onUseLemma={(lemma, frontForm) => {
+          setFront(frontForm);
           setLookupTerm(lemma);
         }}
       />

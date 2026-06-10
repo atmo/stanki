@@ -263,8 +263,8 @@ export function DeckEditor() {
           lookups={lookups}
           term={lemmatize(lookupTerm)}
           front={front}
-          onUseLemma={(lemma) => {
-            setFront(lemma);
+          onUseLemma={(lemma, frontForm) => {
+            setFront(frontForm);
             setLookupTerm(lemma);
           }}
         />
