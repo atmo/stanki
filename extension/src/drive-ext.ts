@@ -146,8 +146,10 @@ export async function listRemoteDecks(): Promise<DeckRef[]> {
   // (e.g. a sync race created a duplicate), which would otherwise list twice.
   const byId = new Map<string, DeckRef>();
   for (const f of files) {
+    // Skip non-deck files (e.g. the PWA's reviews.json), which have no `deck`.
+    if (!f.appProperties?.deckId) continue;
     const snap = await downloadSnapshot(getTok, f.id);
-    if (!snap.deck.deleted) byId.set(snap.deck.id, { id: snap.deck.id, name: snap.deck.name });
+    if (snap.deck && !snap.deck.deleted) byId.set(snap.deck.id, { id: snap.deck.id, name: snap.deck.name });
   }
   const decks = [...byId.values()].sort((a, b) => a.name.localeCompare(b.name));
 

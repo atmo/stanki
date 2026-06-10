@@ -65,10 +65,16 @@ $('refreshDecks').addEventListener('click', async () => {
   setStatus('Loading decks from Drive…');
   try {
     const decks = await listRemoteDecks();
-    renderDecks(decks, currentTarget?.id ?? decks[0].id);
+    renderDecks(decks, currentTarget?.id ?? decks[0]?.id ?? '');
     setStatus(`Loaded ${decks.length} deck(s).`, 'ok');
-  } catch {
-    setStatus('Connect to Google Drive first (button above), then refresh.', 'err');
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    setStatus(
+      msg.includes('Not connected')
+        ? 'Connect to Google Drive first (button above), then refresh.'
+        : `Could not load decks: ${msg}`,
+      'err',
+    );
   }
 });
 
