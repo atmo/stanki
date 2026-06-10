@@ -47,13 +47,16 @@ export function LookupResults({
           Use base form: <b>{suggestion}</b>
         </button>
       )}
-      {!anw && !free && <p className="muted">No definitions found for “{term}”.</p>}
       {anw ? (
         <Section label="ANW" result={anw} url={anwUrl(anw.lemma)} />
       ) : (
-        free && <p className="muted small">No ANW entry for “{term}”.</p>
+        <p className="muted small">No ANW entry for “{term}”.</p>
       )}
-      {free && <Section label="Wiktionary (EN)" result={free} url={wiktionaryUrl(free.lemma)} />}
+      {free ? (
+        <Section label="Wiktionary (EN)" result={free} url={wiktionaryUrl(free.lemma)} />
+      ) : (
+        <p className="muted small">No Wiktionary entry for “{term}”.</p>
+      )}
       {term && (
         <a className="lk-vd" href={vanDaleUrl(term)} target="_blank" rel="noreferrer">
           Look up in Van Dale ↗

@@ -159,24 +159,20 @@ function renderBubble(payload: BubblePayload) {
     });
   };
 
+  const addNote = (text: string) => {
+    const p = document.createElement('div');
+    p.className = 'muted';
+    p.textContent = text;
+    card.appendChild(p);
+  };
+
   if (payload.loading) {
-    const p = document.createElement('div');
-    p.className = 'muted';
-    p.textContent = `Looking up “${term}”…`;
-    card.appendChild(p);
-  } else if (!anw && !free) {
-    const p = document.createElement('div');
-    p.className = 'muted';
-    p.textContent = `No definition found for “${term}”.`;
-    card.appendChild(p);
+    addNote(`Looking up “${term}”…`);
   } else {
     if (anw) {
       addSection('ANW', anw.senses, `https://anw.ivdnt.org/article/${encodeURIComponent(anw.lemma)}`);
     } else {
-      const p = document.createElement('div');
-      p.className = 'muted';
-      p.textContent = `No ANW entry for “${term}”.`;
-      card.appendChild(p);
+      addNote(`No ANW entry for “${term}”.`);
     }
     if (free) {
       addSection(
@@ -184,6 +180,8 @@ function renderBubble(payload: BubblePayload) {
         free.senses,
         `https://en.wiktionary.org/wiki/${encodeURIComponent(free.lemma)}#Dutch`,
       );
+    } else {
+      addNote(`No Wiktionary entry for “${term}”.`);
     }
   }
 
