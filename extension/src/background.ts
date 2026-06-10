@@ -11,7 +11,7 @@ import {
   storeOAuthToken,
 } from './drive-ext';
 import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
-import { lemmaCandidates, lemmatize, withArticle } from '@shared/lemma';
+import { lemmaCandidates, withArticle } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
 
@@ -25,6 +25,7 @@ function grabSelectionInfo() {
   const selectedText = sel ? sel.toString() : '';
   let blockText = '';
 
+  let rect = { left: 16, top: 16, bottom: 16 };
   if (sel && sel.rangeCount > 0) {
     let node: Node | null = sel.getRangeAt(0).commonAncestorContainer;
     if (node && node.nodeType === Node.TEXT_NODE) node = node.parentElement;
@@ -35,19 +36,26 @@ function grabSelectionInfo() {
     let el = node as HTMLElement | null;
     while (el && el.parentElement && !BLOCKS.has(el.tagName)) el = el.parentElement;
     blockText = (el?.textContent ?? '').replace(/\s+/g, ' ').trim();
+    const r = sel.getRangeAt(0).getBoundingClientRect();
+    if (r && (r.width || r.height)) rect = { left: r.left, top: r.top, bottom: r.bottom };
   }
 
-  return { selectedText, blockText, url: location.href, title: document.title };
+  return { selectedText, blockText, url: location.href, title: document.title, rect };
 }
 
+interface Candidate {
+  lemma: string; // bare base form, for the dictionary lookup ("huis")
+  label: string; // display + card front, with article for nouns ("het huis")
+}
 interface BubblePayload {
   word: string;
-  lemma: string; // offline-lemmatized base form of `word` (may equal it)
-  front: string; // default card front: first candidate with its article ("het huis")
-  candidates: string[]; // base-form readings to choose from, default first
+  lemma: string; // base form currently looked up
+  front: string; // card front: the chosen candidate's label
+  candidates: Candidate[]; // base-form readings to choose from, default first
   context: string;
   url: string;
   title: string;
+  rect?: { left: number; top: number; bottom: number }; // anchor, kept across re-lookups
   loading?: boolean;
   lookups: Lookups;
 }
@@ -62,11 +70,15 @@ function renderBubble(payload: BubblePayload) {
   const w = window as unknown as { __stankiBubbleClose?: () => void };
   if (typeof w.__stankiBubbleClose === 'function') w.__stankiBubbleClose();
 
-  const sel = window.getSelection();
-  let rect = { left: 16, top: 16, bottom: 16 };
-  if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
-    const r = sel.getRangeAt(0).getBoundingClientRect();
-    if (r && (r.width || r.height)) rect = { left: r.left, top: r.top, bottom: r.bottom };
+  // Prefer the anchor carried in the payload (so re-lookups keep position even
+  // if the page selection was cleared); else read the current selection.
+  let rect = payload.rect ?? { left: 16, top: 16, bottom: 16 };
+  if (!payload.rect) {
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount > 0 && !sel.isCollapsed) {
+      const r = sel.getRangeAt(0).getBoundingClientRect();
+      if (r && (r.width || r.height)) rect = { left: r.left, top: r.top, bottom: r.bottom };
+    }
   }
 
   const host = document.createElement('div');
@@ -233,8 +245,9 @@ function renderBubble(payload: BubblePayload) {
     card.appendChild(form);
 
     // Base-form choice above the fields: pick the reading you mean (e.g. noun
-    // plural vs. verb). Clicking fills the Front field. Single reading -> a note.
-    const cands = payload.candidates && payload.candidates.length ? payload.candidates : [payload.front];
+    // plural vs. verb). Clicking re-runs the lookup on that base form (and fills
+    // the Front field). Single reading -> a note.
+    const cands = payload.candidates ?? [];
     if (cands.length > 1) {
       const row = document.createElement('div');
       row.className = 'basef-row';
@@ -242,19 +255,28 @@ function renderBubble(payload: BubblePayload) {
       labEl.className = 'basef-label';
       labEl.textContent = 'Base form:';
       row.appendChild(labEl);
-      const chips: HTMLButtonElement[] = [];
-      cands.forEach((cand, i) => {
+      for (const cand of cands) {
         const chip = document.createElement('button');
-        chip.className = 'basef-chip' + (i === 0 ? ' on' : '');
-        chip.textContent = cand;
+        chip.className = 'basef-chip' + (cand.label === payload.front ? ' on' : '');
+        chip.textContent = cand.label;
         chip.addEventListener('click', () => {
-          (frontInput as HTMLInputElement).value = cand;
-          for (const c of chips) c.classList.remove('on');
-          chip.classList.add('on');
+          if (cand.label === payload.front) return; // already showing this one
+          chrome.runtime.sendMessage({
+            type: 'lookupBase',
+            base: {
+              word: payload.word,
+              lemma: cand.lemma,
+              front: cand.label,
+              candidates: payload.candidates,
+              context: payload.context,
+              url: payload.url,
+              title: payload.title,
+              rect: payload.rect,
+            },
+          });
         });
-        chips.push(chip);
         row.appendChild(chip);
-      });
+      }
       card.insertBefore(row, form);
     } else if (payload.front.trim().toLowerCase() !== payload.word.trim().toLowerCase()) {
       const bf = document.createElement('div');
@@ -358,6 +380,23 @@ async function updateBadge(): Promise<void> {
   }
 }
 
+type LookupBase = Omit<BubblePayload, 'loading' | 'lookups'>;
+
+/** Show a loading bubble, look up base.lemma in both dictionaries, show results. */
+async function showLookup(tabId: number, base: LookupBase): Promise<void> {
+  await scripting.executeScript({
+    target: { tabId },
+    func: renderBubble,
+    args: [{ ...base, loading: true, lookups: { anw: null, free: null } }],
+  });
+  const lookups = await lookupWord(base.lemma);
+  await scripting.executeScript({
+    target: { tabId },
+    func: renderBubble,
+    args: [{ ...base, loading: false, lookups }],
+  });
+}
+
 /** Look up the selection and show the result bubble anchored to the word. */
 async function lookupAndShow(tabId: number): Promise<void> {
   const [{ result }] = await scripting.executeScript({ target: { tabId }, func: grabSelectionInfo });
@@ -365,23 +404,16 @@ async function lookupAndShow(tabId: number): Promise<void> {
   if (!info?.selectedText.trim()) return;
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
-  const lemma = lemmatize(word);
-  const candidates = lemmaCandidates(word).map(withArticle);
-  const base = { word, lemma, candidates, front: candidates[0], context, url: info.url, title: info.title };
-
-  // Show a loading bubble immediately, then replace it with the results.
-  await scripting.executeScript({
-    target: { tabId },
-    func: renderBubble,
-    args: [{ ...base, loading: true, lookups: { anw: null, free: null } }],
-  });
-
-  // Look up the offline base form (e.g. huizen -> huis) in both dictionaries.
-  const lookups = await lookupWord(base.lemma);
-  await scripting.executeScript({
-    target: { tabId },
-    func: renderBubble,
-    args: [{ ...base, loading: false, lookups }],
+  const candidates = lemmaCandidates(word).map((l) => ({ lemma: l, label: withArticle(l) }));
+  await showLookup(tabId, {
+    word,
+    lemma: candidates[0].lemma,
+    front: candidates[0].label,
+    candidates,
+    context,
+    url: info.url,
+    title: info.title,
+    rect: info.rect,
   });
 }
 
@@ -402,6 +434,7 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 interface Msg {
   type?: string;
   payload?: { word: string; context: string; back: string; explanation: string; url: string; title: string };
+  base?: LookupBase; // for 'lookupBase' (re-run lookup on a chosen base form)
   accessToken?: string | null;
   expiresIn?: number;
   error?: string | null;
@@ -450,6 +483,13 @@ runtime.onMessage.addListener(
         .then(() => sendResponse({ ok: true }))
         .catch((e: unknown) => sendResponse({ ok: false, error: errMsg(e) }));
       return true; // async response
+    }
+    // Bubble base-form chip → re-run the lookup on the chosen base form.
+    if (msg?.type === 'lookupBase' && msg.base && sender?.tab?.id != null) {
+      void showLookup(sender.tab.id, msg.base).catch((e) =>
+        console.error('[Stanki] lookupBase failed', e),
+      );
+      return undefined;
     }
     if (msg?.type === 'refreshBadge') {
       void updateBadge();
