@@ -104,7 +104,9 @@ $('push').addEventListener('click', () => {
   // Pushes whatever is pending using the stored token (no sign-in window).
   runtime.sendMessage({ type: 'flush' }, (resp: { ok?: boolean; pushed?: number; error?: string }) => {
     if (resp?.ok) {
-      setStatus(`Pushed ${resp.pushed ?? 0} card(s) to Drive.`, 'ok');
+      const n = resp.pushed ?? 0;
+      // 0 usually means the cards were already pushed automatically on capture.
+      setStatus(n > 0 ? `Pushed ${n} card(s) to Drive.` : 'All cards already synced.', 'ok');
       void refresh();
     } else {
       setStatus(resp?.error ?? 'Push failed', 'err');

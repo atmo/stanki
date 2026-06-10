@@ -169,8 +169,18 @@ function newDeck(ref: DeckRef): Deck {
  * Append pending captures to Drive, grouped by their target deck, then clear
  * the queue. Read-modify-write per deck keeps concurrent captures from
  * clobbering each other.
+ *
+ * Dedupe concurrent calls (the auto-push on capture vs. the popup's Push button)
+ * so they share one operation and report the same count, instead of one racing
+ * ahead, clearing the queue, and leaving the other to report 0 pushed.
  */
-export async function flushPending(): Promise<{ pushed: number }> {
+let flushing: Promise<{ pushed: number }> | null = null;
+export function flushPending(): Promise<{ pushed: number }> {
+  if (!flushing) flushing = doFlush().finally(() => { flushing = null; });
+  return flushing;
+}
+
+async function doFlush(): Promise<{ pushed: number }> {
   const pending = await getPending();
   if (pending.length === 0) return { pushed: 0 };
 
