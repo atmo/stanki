@@ -188,7 +188,12 @@ function renderBubble(payload: BubblePayload) {
   }
 
   if (!payload.loading) {
-    const back = free?.senses[0]?.definition ?? ''; // card back = Wiktionary gloss
+    // card back = all Wiktionary glosses (numbered when there's more than one)
+    const back = free
+      ? free.senses.length > 1
+        ? free.senses.map((s, i) => `${i + 1}. ${s.definition}`).join('\n')
+        : (free.senses[0]?.definition ?? '')
+      : '';
     // card explanation = ANW Dutch senses, one per line
     const explanation = anw
       ? anw.senses

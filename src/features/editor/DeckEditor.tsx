@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { lookupWord, anwExplanation, type Lookups } from '@shared/lookup';
+import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { LookupResults } from '../lookup/LookupResults';
 import {
@@ -122,7 +122,7 @@ export function DeckEditor() {
     void lookupWord(lookupTerm).then((l) => {
       if (cancelled) return;
       setLookups(l);
-      setBack((p) => p || (l.free?.senses[0]?.definition ?? ''));
+      setBack((p) => p || joinSenses(l.free));
       setExplanation((p) => p || anwExplanation(l.anw));
     });
     return () => {

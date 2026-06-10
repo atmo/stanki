@@ -110,3 +110,11 @@ export function anwExplanation(anw: LookupResult | null): string {
     .map((s, i) => `${s.sense ? s.sense.replace(/\.0$/, '') : String(i + 1)}. ${s.definition}`)
     .join('\n');
 }
+
+/** All of a result's sense definitions joined (one per line; numbered if many). */
+export function joinSenses(result: LookupResult | null): string {
+  if (!result) return '';
+  const ss = result.senses;
+  if (ss.length <= 1) return ss[0]?.definition ?? '';
+  return ss.map((s, i) => `${i + 1}. ${s.definition}`).join('\n');
+}
