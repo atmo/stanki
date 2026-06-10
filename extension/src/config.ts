@@ -1,6 +1,9 @@
-// Optional hard-coded default. Leave empty and set the Client ID from the popup
-// (stored in extension storage) — handy for personal/unpublished use.
-export const DEFAULT_CLIENT_ID = '';
+// Baked in at build time (see build.mjs) from the GOOGLE_CLIENT_ID env var or
+// the repo .env's VITE_GOOGLE_CLIENT_ID. The OAuth client ID is public-by-design,
+// so shipping it in the built extension is safe. An empty string falls back to a
+// Client ID entered in the popup (stored in extension storage).
+declare const __CLIENT_ID__: string;
+export const DEFAULT_CLIENT_ID = __CLIENT_ID__;
 
 export const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.appdata';
 

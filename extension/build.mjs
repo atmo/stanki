@@ -2,13 +2,27 @@
 // Output: dist/chrome and dist/firefox, each a loadable unpacked extension.
 import * as esbuild from 'esbuild';
 import { deflateSync } from 'node:zlib';
-import { mkdirSync, writeFileSync, copyFileSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, writeFileSync, copyFileSync, readFileSync, existsSync, rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
 
 const root = dirname(fileURLToPath(import.meta.url));
 const sharedDir = resolve(root, '../shared');
 const tmp = resolve(root, 'dist/_js');
+
+// OAuth Client ID baked into the build: GOOGLE_CLIENT_ID env, else the repo
+// .env's VITE_GOOGLE_CLIENT_ID (shared with the PWA). Public-by-design, so safe.
+function bakedClientId() {
+  if (process.env.GOOGLE_CLIENT_ID) return process.env.GOOGLE_CLIENT_ID.trim();
+  const envPath = resolve(root, '../.env');
+  if (existsSync(envPath)) {
+    const m = readFileSync(envPath, 'utf8').match(/^\s*VITE_GOOGLE_CLIENT_ID\s*=\s*(.+?)\s*$/m);
+    if (m) return m[1].replace(/^["']|["']$/g, '').trim();
+  }
+  return '';
+}
+const CLIENT_ID = bakedClientId();
+console.log(CLIENT_ID ? `Baking Client ID …${CLIENT_ID.slice(-12)}` : 'No Client ID baked (set it in the popup)');
 
 rmSync(resolve(root, 'dist'), { recursive: true, force: true });
 
@@ -25,6 +39,7 @@ await esbuild.build({
   outdir: tmp,
   alias: { '@shared': sharedDir },
   resolveExtensions: ['.ts', '.js'],
+  define: { __CLIENT_ID__: JSON.stringify(CLIENT_ID) },
   logLevel: 'info',
 });
 
