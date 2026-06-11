@@ -14,10 +14,28 @@ function bucketCard(c: { interval: number }, m: Maturity) {
 
 export function Stats() {
   const data = useLiveQuery(async () => {
-    const [cards, decks] = await Promise.all([
+    const [cards, decks, reviews] = await Promise.all([
       db.cards.filter((c) => !c.deleted).toArray(),
       db.decks.filter((d) => !d.deleted).toArray(),
+      db.reviews.toArray(),
     ]);
+
+    // Per-day study history from the review log: new-card introductions
+    // (prevInterval === 0) vs. repeats, keyed by local day.
+    const byDay = new Map<number, { nw: number; rv: number }>();
+    for (const r of reviews) {
+      const d = new Date(r.ts);
+      d.setHours(0, 0, 0, 0);
+      const key = d.getTime();
+      const e = byDay.get(key) ?? { nw: 0, rv: 0 };
+      if (r.prevInterval === 0) e.nw++;
+      else e.rv++;
+      byDay.set(key, e);
+    }
+    const history = [...byDay.entries()]
+      .map(([day, c]) => ({ day, ...c }))
+      .sort((a, b) => b.day - a.day)
+      .slice(0, 14);
 
     const now = Date.now();
     const today = new Date();
@@ -54,7 +72,7 @@ export function Stats() {
       .filter((d) => d.total > 0)
       .sort((a, b) => b.total - a.total);
 
-    return { total: cards.length, ...maturity, dueNow, forecast, later, byDeck };
+    return { total: cards.length, ...maturity, dueNow, forecast, later, byDeck, history };
   }, []);
 
   if (!data) return <p className="muted">Loading…</p>;
@@ -62,7 +80,7 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { total, nw, young, mature, dueNow, forecast, later, byDeck } = data;
+  const { total, nw, young, mature, dueNow, forecast, later, byDeck, history } = data;
   const fcLabels = Array.from({ length: 7 }, (_, i) => {
     if (i === 0) return 'Today';
     if (i === 1) return 'Tomorrow';
@@ -142,6 +160,30 @@ export function Stats() {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="panel">
+        <h2>Study history</h2>
+        <p className="muted small">New cards introduced vs. repeats reviewed, per day (from the review log).</p>
+        {history.length === 0 ? (
+          <p className="muted">No reviews logged yet.</p>
+        ) : (
+          <div className="deck-stats">
+            <div className="deck-stat deck-stat-head">
+              <span>Day</span>
+              <span className="ds-cols2"><span>new</span><span>review</span></span>
+            </div>
+            {history.map((h) => (
+              <div className="deck-stat" key={h.day}>
+                <span>{new Date(h.day).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                <span className="ds-cols2">
+                  <span className="ds-new">{h.nw}</span>
+                  <span className="ds-young">{h.rv}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </section>
     </div>
   );

@@ -112,6 +112,7 @@ body {
 .deck-stat-head { color: var(--muted); font-size: 0.78rem; border-top: none; }
 .deck-stat-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ds-cols { display: grid; grid-template-columns: repeat(4, 40px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.ds-cols2 { display: grid; grid-template-columns: repeat(2, 52px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .ds-new { color: #93c5fd; }
 .ds-young { color: #86efac; }
 .ds-mature { color: #5eead4; }
