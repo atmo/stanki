@@ -108,6 +108,9 @@ function renderBubble(payload: BubblePayload) {
     '.basef-chip{padding:3px 10px;border-radius:999px;cursor:pointer;font-size:12px;' +
     'background:rgba(22,163,74,.12);color:#86efac;border:1px solid rgba(22,163,74,.35);}' +
     '.basef-chip.on{background:rgba(22,163,74,.3);font-weight:600;}' +
+    '.frow{display:flex;gap:6px;}.frow .finput{flex:1;min-width:0;}' +
+    '.look{background:#334155;color:#e2e8f0;border:none;border-radius:6px;padding:5px 10px;' +
+    'font-size:12px;cursor:pointer;white-space:nowrap;}.look:hover{background:#3f4d63;}' +
     '.form{display:flex;flex-direction:column;gap:3px;margin-top:12px;}' +
     '.flabel{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#93c5fd;' +
     'font-weight:700;margin-top:5px;}' +
@@ -236,9 +239,40 @@ function renderBubble(payload: BubblePayload) {
       form.appendChild(el);
       return el;
     };
-    // Front defaults to the base form (with article for nouns); editable if the
-    // user wants the selected form instead.
-    const frontInput = addField('Front', payload.front, false);
+    // Front + a "Look up" button that re-runs the dictionary lookup on whatever
+    // is currently in the Front field (after editing it). Defaults to the base
+    // form (with article for nouns).
+    const flab = document.createElement('div');
+    flab.className = 'flabel';
+    flab.textContent = 'Front';
+    form.appendChild(flab);
+    const frow = document.createElement('div');
+    frow.className = 'frow';
+    const frontInput = document.createElement('input');
+    frontInput.className = 'finput';
+    frontInput.value = payload.front;
+    const lookBtn = document.createElement('button');
+    lookBtn.className = 'look';
+    lookBtn.type = 'button';
+    lookBtn.textContent = 'Look up';
+    lookBtn.addEventListener('click', () => {
+      const word = frontInput.value.trim().replace(/^(de|het)\s+/i, ''); // drop article
+      if (!word) return;
+      chrome.runtime.sendMessage({
+        type: 'lookupTyped',
+        typed: {
+          word,
+          context: payload.context,
+          url: payload.url,
+          title: payload.title,
+          rect: payload.rect,
+        },
+      });
+    });
+    frow.appendChild(frontInput);
+    frow.appendChild(lookBtn);
+    form.appendChild(frow);
+
     const backInput = addField('Back', back, true);
     const explInput = addField('Explanation', explanation, true);
     const ctxInput = addField('Context', payload.context, true);
@@ -397,6 +431,18 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
   });
 }
 
+/** Build a lookup base (word + offline base-form candidates) for a word. */
+function baseForWord(
+  word: string,
+  context: string,
+  url: string,
+  title: string,
+  rect?: BubblePayload['rect'],
+): LookupBase {
+  const candidates = lemmaCandidates(word).map((l) => ({ lemma: l, label: withArticle(l) }));
+  return { word, lemma: candidates[0].lemma, front: candidates[0].label, candidates, context, url, title, rect };
+}
+
 /** Look up the selection and show the result bubble anchored to the word. */
 async function lookupAndShow(tabId: number): Promise<void> {
   const [{ result }] = await scripting.executeScript({ target: { tabId }, func: grabSelectionInfo });
@@ -404,17 +450,7 @@ async function lookupAndShow(tabId: number): Promise<void> {
   if (!info?.selectedText.trim()) return;
 
   const { word, context } = extract(info.selectedText, info.blockText || info.selectedText);
-  const candidates = lemmaCandidates(word).map((l) => ({ lemma: l, label: withArticle(l) }));
-  await showLookup(tabId, {
-    word,
-    lemma: candidates[0].lemma,
-    front: candidates[0].label,
-    candidates,
-    context,
-    url: info.url,
-    title: info.title,
-    rect: info.rect,
-  });
+  await showLookup(tabId, baseForWord(word, context, info.url, info.title, info.rect));
 }
 
 runtime.onInstalled.addListener(async () => {
@@ -435,6 +471,7 @@ interface Msg {
   type?: string;
   payload?: { word: string; context: string; back: string; explanation: string; url: string; title: string };
   base?: LookupBase; // for 'lookupBase' (re-run lookup on a chosen base form)
+  typed?: { word: string; context: string; url: string; title: string; rect?: BubblePayload['rect'] };
   accessToken?: string | null;
   expiresIn?: number;
   error?: string | null;
@@ -488,6 +525,14 @@ runtime.onMessage.addListener(
     if (msg?.type === 'lookupBase' && msg.base && sender?.tab?.id != null) {
       void showLookup(sender.tab.id, msg.base).catch((e) =>
         console.error('[Stanki] lookupBase failed', e),
+      );
+      return undefined;
+    }
+    // Bubble "Look up" button → re-run the lookup on the edited Front word.
+    if (msg?.type === 'lookupTyped' && msg.typed?.word && sender?.tab?.id != null) {
+      const t = msg.typed;
+      void showLookup(sender.tab.id, baseForWord(t.word, t.context, t.url, t.title, t.rect)).catch(
+        (e) => console.error('[Stanki] lookupTyped failed', e),
       );
       return undefined;
     }
