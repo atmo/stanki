@@ -90,7 +90,7 @@ function renderBubble(payload: BubblePayload) {
   const style = document.createElement('style');
   style.textContent =
     ".card{all:initial;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;" +
-    'display:block;width:300px;max-height:360px;overflow:auto;background:#0f172a;color:#e2e8f0;' +
+    'display:block;width:300px;max-height:calc(100vh - 16px);overflow:auto;background:#0f172a;color:#e2e8f0;' +
     'border:1px solid #334155;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);' +
     'padding:12px 14px;font-size:13px;line-height:1.45;box-sizing:border-box;}' +
     '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}' +
