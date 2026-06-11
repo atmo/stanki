@@ -34,6 +34,39 @@ import { INBOX_DECK_ID, INBOX_DECK_NAME, SCHEMA_VERSION } from '@shared/types';
 // appProperties tag identifying the single shared review-log file.
 const REVIEWS_KIND = 'reviews';
 
+// Rolling backups: a full decks+cards snapshot kept in separate files, written
+// only when the content changed since the last one, keeping the newest few.
+const BACKUP_KIND = 'backup';
+const MAX_BACKUPS = 5;
+
+/** Stable SHA-256 of the decks+cards content, for change detection. */
+async function contentHash(decks: Deck[], cards: Card[]): Promise<string> {
+  const byId = <T extends { id: string }>(a: T[]) => [...a].sort((x, y) => (x.id < y.id ? -1 : 1));
+  const json = JSON.stringify({ decks: byId(decks), cards: byId(cards) });
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(json));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+/** Write a backup file if the data changed since the last one; keep MAX_BACKUPS. */
+async function maybeBackup(
+  getToken: TokenProvider,
+  files: DriveFile[],
+  decks: Deck[],
+  cards: Card[],
+): Promise<void> {
+  if (cards.length === 0) return; // never back up (and rotate out) an empty state
+  const hash = await contentHash(decks, cards);
+  const backups = files
+    .filter((f) => f.appProperties?.kind === BACKUP_KIND)
+    .sort((a, b) => (a.modifiedTime < b.modifiedTime ? 1 : -1)); // newest first
+  if (backups[0]?.appProperties?.hash === hash) return; // unchanged since last backup
+
+  const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards };
+  await createFile(getToken, `backup-${new Date().toISOString()}.json`, { kind: BACKUP_KIND, hash }, bundle);
+  // Keep the newest MAX_BACKUPS (the new one + MAX_BACKUPS-1 existing); drop the rest.
+  for (const f of backups.slice(MAX_BACKUPS - 1)) await deleteFile(getToken, f.id);
+}
+
 function synthDeck(id: string): Deck {
   const now = Date.now();
   return { id, name: id === INBOX_DECK_ID ? INBOX_DECK_NAME : id, createdAt: now, updatedAt: now };
@@ -135,6 +168,13 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
   else await createFile(getToken, 'reviews.json', { kind: REVIEWS_KIND }, reviewSnapshot);
   // Collapse any duplicate reviews files into the canonical one.
   for (const f of reviewsFiles.slice(1)) await deleteFile(getToken, f.id);
+
+  // Best-effort rolling backup of the merged data (never fails the sync).
+  try {
+    await maybeBackup(getToken, files, [...mergedDecks.values()], mergedCards);
+  } catch (e) {
+    console.warn('[Stanki] backup failed', e);
+  }
 
   await setLastSync(now);
 }
