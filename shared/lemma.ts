@@ -38,17 +38,24 @@ export function lemmatize(raw: string): string {
 export function lemmaCandidates(raw: string): string[] {
   const w = raw.trim().toLowerCase();
   if (w.length < 2) return [w];
-  if (ALT_MAP[w]) return ALT_MAP[w];
 
-  const chain: string[] = [];
-  let cur = w;
-  const seen = new Set<string>([w]);
-  while (LEMMA_MAP[cur] && !seen.has(LEMMA_MAP[cur])) {
-    cur = LEMMA_MAP[cur];
-    seen.add(cur);
-    chain.push(cur);
+  let cands: string[];
+  if (ALT_MAP[w]) {
+    cands = ALT_MAP[w];
+  } else {
+    const chain: string[] = [];
+    let cur = w;
+    const seen = new Set<string>([w]);
+    while (LEMMA_MAP[cur] && !seen.has(LEMMA_MAP[cur])) {
+      cur = LEMMA_MAP[cur];
+      seen.add(cur);
+      chain.push(cur);
+    }
+    cands = chain.length ? chain.reverse() : [w];
   }
-  return chain.length ? chain.reverse() : [w];
+
+  // Always offer the original form too, so the exact word can be kept.
+  return cands.includes(w) ? cands : [...cands, w];
 }
 
 /** Definite article (de/het) for a noun lemma, or null if not a known noun. */

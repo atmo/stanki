@@ -22,6 +22,12 @@ JUNK_TAGS = {'table-tags', 'inflection-template', 'class', 'auxiliary',
 WORD_RE = re.compile(r"^[a-zà-ÿ][a-zà-ÿ'’-]*[a-zà-ÿ]$")
 
 
+def is_participle(w):
+    """A present (-end) or past (ge…t/d/en) participle — a deverbal adjective that
+    should still reduce to its verb (opvallend -> opvallen, gemaakt -> maken)."""
+    return w.endswith('end') or (w.startswith('ge') and (w[-1] in 'td' or w.endswith('en')))
+
+
 def is_real_lemma(entry):
     """True unless every sense is obsolete/archaic or merely an alt/form-of pointer
     (e.g. "loopen" = obsolete spelling of lopen) — those aren't headwords we keep."""
@@ -50,7 +56,7 @@ def main(path):
     pairs = collections.defaultdict(collections.Counter)   # form -> {lemma: n}
     genders = collections.defaultdict(collections.Counter)  # noun lemma -> {de/het: n}
     verb_inf = set()     # true infinitives: offer verb-vs-noun choice, default verb
-    noun_lemmas = set()  # noun headwords: don't reduce (e.g. brief, not briefen)
+    protect = set()  # noun/adjective/adverb headwords: don't reduce (brief, vrij)
 
     with open(path, encoding='utf-8') as f:
         for line in f:
@@ -69,12 +75,17 @@ def main(path):
             # entries (loopt, werkten) or participles.
             if e['pos'] == 'verb' and 'nl-verb' in heads:
                 verb_inf.add(lemma)
-            if e['pos'] == 'noun':
+            elif e['pos'] == 'noun':
                 if 'nl-noun' in heads:
-                    noun_lemmas.add(lemma)
+                    protect.add(lemma)
                 art = gender_article(e)
                 if art:
                     genders[lemma][art] += 1
+            # Base adjectives/adverbs are headwords; don't reduce them to a
+            # coincidental verb (vrij -> vrijen). Participles are excluded so they
+            # still reduce (opvallend -> opvallen, gemaakt -> maken).
+            elif e['pos'] in ('adj', 'adv') and (heads & {'nl-adj', 'nl-adv'}) and not is_participle(lemma):
+                protect.add(lemma)
 
             for fo in e.get('forms') or []:
                 tags = set(fo.get('tags') or [])
@@ -95,7 +106,7 @@ def main(path):
         reductions = [lemma for lemma, _ in ctr.most_common()]
         if form in verb_inf:
             cands = [form] + [r for r in reductions if r != form]
-        elif form in noun_lemmas:
+        elif form in protect:
             cands = [form]  # protected headword: don't reduce
         else:
             data[form] = reductions[0]

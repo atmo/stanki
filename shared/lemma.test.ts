@@ -62,8 +62,8 @@ describe('lemmaCandidates', () => {
     expect(lemmaCandidates('werken')).toEqual(['werken', 'werk']);
   });
 
-  it('offers each step of a reduction chain (most-reduced first)', () => {
-    expect(lemmaCandidates('opvallender')).toEqual(['opvallen', 'opvallend']);
+  it('offers each step of a reduction chain, then the original (most-reduced first)', () => {
+    expect(lemmaCandidates('opvallender')).toEqual(['opvallen', 'opvallend', 'opvallender']);
   });
 
   it('candidates[0] matches lemmatize', () => {
@@ -72,9 +72,13 @@ describe('lemmaCandidates', () => {
     }
   });
 
-  it('returns a single candidate when unambiguous', () => {
-    expect(lemmaCandidates('mannen')).toEqual(['man']);
-    expect(lemmaCandidates('loopt')).toEqual(['lopen']);
+  it('always includes the original form as a choice', () => {
+    expect(lemmaCandidates('mannen')).toEqual(['man', 'mannen']);
+    expect(lemmaCandidates('loopt')).toEqual(['lopen', 'loopt']);
+  });
+
+  it('collapses to one when the base form is the original', () => {
+    expect(lemmaCandidates('huis')).toEqual(['huis']);
   });
 });
 
