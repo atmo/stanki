@@ -239,7 +239,7 @@ function renderBubble(payload: BubblePayload) {
     // Front defaults to the base form (with article for nouns); editable if the
     // user wants the selected form instead.
     const frontInput = addField('Front', payload.front, false);
-    const backInput = addField('Back', back, false);
+    const backInput = addField('Back', back, true);
     const explInput = addField('Explanation', explanation, true);
     const ctxInput = addField('Context', payload.context, true);
     card.appendChild(form);

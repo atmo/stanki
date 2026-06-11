@@ -108,7 +108,7 @@ export function AddWord() {
             Look up
           </button>
         </div>
-        <input className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
+        <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation" rows={3} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
         <div className="row">

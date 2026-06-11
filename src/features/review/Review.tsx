@@ -34,7 +34,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
   return (
     <div className="card-form">
       <input className="input" placeholder="Front" value={front} onChange={(e) => setFront(e.target.value)} />
-      <input className="input" placeholder="Back" value={back} onChange={(e) => setBack(e.target.value)} />
+      <textarea className="input" placeholder="Back" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
       <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
       <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
       <div className="row">

@@ -1,2 +1,1 @@
-Back should be able to render multiple lines
 Lookup in extension bubble

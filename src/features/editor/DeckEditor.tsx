@@ -46,7 +46,7 @@ function CardRow({
     return (
       <li className="card-row editing">
         <input className="input" value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front" />
-        <input className="input" value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
+        <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
         <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
         <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
         <div className="row">
@@ -247,7 +247,7 @@ export function DeckEditor() {
             Look up
           </button>
         </div>
-        <input className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
+        <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <textarea className="input" placeholder="Context (optional)" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
         <div className="row">
