@@ -72,9 +72,22 @@ async function lookupAnw(word: string): Promise<LookupResult | null> {
   return { source: 'ANW', lemma: article.lemma ?? word, senses: senses.slice(0, 10) };
 }
 
+interface FreeSense {
+  definition?: string;
+  examples?: string[];
+  subsenses?: FreeSense[];
+}
 interface FreeDict {
   word?: string;
-  entries?: Array<{ senses?: Array<{ definition?: string; examples?: string[] }> }>;
+  entries?: Array<{ senses?: FreeSense[] }>;
+}
+
+/** Flatten a sense and its nested subsenses into Sense[], preserving order. */
+function collectSenses(senses: FreeSense[] | undefined, out: Sense[]): void {
+  for (const s of senses ?? []) {
+    if (s.definition) out.push({ definition: s.definition, examples: (s.examples ?? []).slice(0, 1) });
+    collectSenses(s.subsenses, out);
+  }
 }
 
 async function lookupFreeDict(word: string): Promise<LookupResult | null> {
@@ -83,13 +96,9 @@ async function lookupFreeDict(word: string): Promise<LookupResult | null> {
 
   const data = (await res.json()) as FreeDict;
   const senses: Sense[] = [];
-  for (const e of data.entries ?? []) {
-    for (const s of e.senses ?? []) {
-      if (s.definition) senses.push({ definition: s.definition, examples: (s.examples ?? []).slice(0, 1) });
-    }
-  }
+  for (const e of data.entries ?? []) collectSenses(e.senses, senses);
   if (!senses.length) return null;
-  return { source: 'Wiktionary (EN)', lemma: data.word ?? word, senses: senses.slice(0, 6) };
+  return { source: 'Wiktionary (EN)', lemma: data.word ?? word, senses };
 }
 
 /** Look up a word in both sources (ANW + Wiktionary) in parallel. */
@@ -111,10 +120,20 @@ export function anwExplanation(anw: LookupResult | null): string {
     .join('\n');
 }
 
-/** All of a result's sense definitions joined (one per line; numbered if many). */
+/**
+ * All of a result's senses joined for a card back: one definition per line
+ * (numbered when there are several), each followed by its example(s) on their
+ * own line in „…” quotes.
+ */
 export function joinSenses(result: LookupResult | null): string {
   if (!result) return '';
   const ss = result.senses;
-  if (ss.length <= 1) return ss[0]?.definition ?? '';
-  return ss.map((s, i) => `${i + 1}. ${s.definition}`).join('\n');
+  const numbered = ss.length > 1;
+  return ss
+    .map((s, i) => {
+      const head = numbered ? `${i + 1}. ${s.definition}` : (s.definition ?? '');
+      const examples = (s.examples ?? []).map((e) => `\n„${e}”`).join('');
+      return head + examples;
+    })
+    .join('\n');
 }

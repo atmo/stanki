@@ -10,7 +10,7 @@ import {
   getAuthUrl,
   storeOAuthToken,
 } from './drive-ext';
-import { lookupWord, type Lookups, type Sense } from '@shared/lookup';
+import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
 import { lemmaCandidates, withArticle } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
@@ -58,6 +58,8 @@ interface BubblePayload {
   rect?: { left: number; top: number; bottom: number }; // anchor, kept across re-lookups
   loading?: boolean;
   lookups: Lookups;
+  back: string; // card back: Wiktionary senses (with examples), from the lookup
+  explanation: string; // card explanation: ANW senses
 }
 
 /**
@@ -198,18 +200,10 @@ function renderBubble(payload: BubblePayload) {
   }
 
   if (!payload.loading) {
-    // card back = all Wiktionary glosses (numbered when there's more than one)
-    const back = free
-      ? free.senses.length > 1
-        ? free.senses.map((s, i) => `${i + 1}. ${s.definition}`).join('\n')
-        : (free.senses[0]?.definition ?? '')
-      : '';
-    // card explanation = ANW Dutch senses, one per line
-    const explanation = anw
-      ? anw.senses
-          .map((s, i) => `${s.sense ? s.sense.replace(/\.0$/, '') : String(i + 1)}. ${s.definition}`)
-          .join('\n')
-      : '';
+    // Back (Wiktionary senses with examples) and Explanation (ANW) are formatted
+    // in the background via the shared joinSenses/anwExplanation helpers.
+    const back = payload.back;
+    const explanation = payload.explanation;
     const vd = document.createElement('a');
     vd.className = 'vd';
     vd.href = `https://zoeken.vandale.nl/?query=${encodeURIComponent(term)}`;
@@ -414,20 +408,28 @@ async function updateBadge(): Promise<void> {
   }
 }
 
-type LookupBase = Omit<BubblePayload, 'loading' | 'lookups'>;
+type LookupBase = Omit<BubblePayload, 'loading' | 'lookups' | 'back' | 'explanation'>;
 
 /** Show a loading bubble, look up base.lemma in both dictionaries, show results. */
 async function showLookup(tabId: number, base: LookupBase): Promise<void> {
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
-    args: [{ ...base, loading: true, lookups: { anw: null, free: null } }],
+    args: [{ ...base, loading: true, lookups: { anw: null, free: null }, back: '', explanation: '' }],
   });
   const lookups = await lookupWord(base.lemma);
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
-    args: [{ ...base, loading: false, lookups }],
+    args: [
+      {
+        ...base,
+        loading: false,
+        lookups,
+        back: joinSenses(lookups.free),
+        explanation: anwExplanation(lookups.anw),
+      },
+    ],
   });
 }
 
