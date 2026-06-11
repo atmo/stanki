@@ -130,7 +130,19 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
   return { newToday, reviewsToday };
 }
 
-/** The review queue for a deck: due items capped by the per-day limits. */
+/** In-place Fisher-Yates shuffle. */
+function shuffle<T>(a: T[]): T[] {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/**
+ * The review queue for a deck: due items capped by the per-day limits, with due
+ * reviews and new cards interleaved in random order.
+ */
 export async function reviewQueue(
   deckId: string,
   settings: SrSettings,
@@ -143,7 +155,7 @@ export async function reviewQueue(
   ]);
   const direction = deck?.reviewDirection ?? 'forward';
   const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
-  return selectDue(items, daily, settings, now);
+  return shuffle(selectDue(items, daily, settings, now));
 }
 
 export interface NewCardInput {
