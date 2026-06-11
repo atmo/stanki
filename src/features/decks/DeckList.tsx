@@ -37,7 +37,10 @@ export function DeckList() {
       cardsByDeck.set(c.deckId, arr);
     }
 
-    const byDeck = new Map<string, { total: number; newDue: number; reviewDue: number }>();
+    const byDeck = new Map<
+      string,
+      { total: number; newDue: number; reviewDue: number; dueReviews: number }
+    >();
     for (const deck of decks) {
       const dc = cardsByDeck.get(deck.id) ?? [];
       const d = daily.get(deck.id) ?? { newToday: 0, reviewsToday: 0 };
@@ -45,7 +48,12 @@ export function DeckList() {
       const items = dc.flatMap((c) => itemsForCard(c, direction, settings));
       const due = selectDue(items, d, settings, now);
       const newDue = due.filter((i) => i.schedule.interval === 0).length;
-      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue });
+      // All due reviews ignoring the daily cap — so a capped-out deck can still
+      // be opened to study extra reviews.
+      const dueReviews = items.filter(
+        (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate <= now,
+      ).length;
+      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue, dueReviews });
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
@@ -79,8 +87,10 @@ export function DeckList() {
 
       <ul className="deck-list">
         {data.decks.map((deck) => {
-          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0 };
-          const due = stats.newDue + stats.reviewDue;
+          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0, dueReviews: 0 };
+          // Enable Review if anything's in today's session, or extra reviews are
+          // due beyond the cap (studyable over the limit from the done screen).
+          const canReview = stats.newDue + stats.reviewDue > 0 || stats.dueReviews > 0;
           return (
             <li key={deck.id} className="deck-item">
               <div className="deck-main">
@@ -98,9 +108,9 @@ export function DeckList() {
               <div className="deck-actions">
                 <Link className="btn" to={`/deck/${deck.id}`}>Edit</Link>
                 <Link
-                  className={`btn ${due > 0 ? 'btn-primary' : 'btn-disabled'}`}
-                  to={due > 0 ? `/review/${deck.id}` : '#'}
-                  aria-disabled={due === 0}
+                  className={`btn ${canReview ? 'btn-primary' : 'btn-disabled'}`}
+                  to={canReview ? `/review/${deck.id}` : '#'}
+                  aria-disabled={!canReview}
                 >
                   Review
                 </Link>

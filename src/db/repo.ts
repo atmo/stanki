@@ -142,11 +142,16 @@ function shuffle<T>(a: T[]): T[] {
 /**
  * The review queue for a deck: due items capped by the per-day limits, with due
  * reviews and new cards interleaved in random order.
+ *
+ * `overLimit` builds an extra, reviews-only queue that ignores the per-day
+ * review cap (all due reviews) and introduces no new cards — for studying past
+ * the daily limit without exceeding the new-card cap.
  */
 export async function reviewQueue(
   deckId: string,
   settings: SrSettings,
   now = Date.now(),
+  overLimit = false,
 ): Promise<ReviewItem[]> {
   const [deck, cards, daily] = await Promise.all([
     db.decks.get(deckId),
@@ -155,6 +160,12 @@ export async function reviewQueue(
   ]);
   const direction = deck?.reviewDirection ?? 'forward';
   const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
+  if (overLimit) {
+    const due = items.filter(
+      (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate <= now,
+    );
+    return shuffle(due);
+  }
   return shuffle(selectDue(items, daily, settings, now));
 }
 

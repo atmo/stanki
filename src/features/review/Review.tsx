@@ -85,6 +85,7 @@ export function Review() {
   const [settings, setSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
   const [deckName, setDeckName] = useState('');
   const [undoSnap, setUndoSnap] = useState<UndoSnapshot | null>(null);
+  const [more, setMore] = useState<ReviewItem[] | null>(null); // extra over-limit reviews
 
   useEffect(() => {
     void (async () => {
@@ -94,6 +95,22 @@ export function Review() {
       setQueue(await reviewQueue(id, s));
     })();
   }, [id]);
+
+  // When the session empties, look for due reviews beyond the daily cap to offer.
+  useEffect(() => {
+    if (queue && queue.length === 0) {
+      void reviewQueue(id, settings, Date.now(), true).then(setMore);
+    }
+  }, [queue, id, settings]);
+
+  function studyMore() {
+    if (more && more.length) {
+      setQueue(more);
+      setMore(null);
+      setRevealed(false);
+      setEditing(false);
+    }
+  }
 
   const item = queue?.[0];
   const card = item?.card;
@@ -156,8 +173,16 @@ export function Review() {
           {done > 0 ? `${done} card${done === 1 ? '' : 's'} reviewed in ` : 'No more cards due in '}
           “{deckName}”.
         </p>
+        {more && more.length > 0 && (
+          <p className="muted">
+            {more.length} more review{more.length === 1 ? '' : 's'} due beyond today’s limit.
+          </p>
+        )}
         <div className="row">
           <Link className="btn btn-primary" to="/">Back to decks</Link>
+          {more && more.length > 0 && (
+            <button className="btn" onClick={studyMore}>Study {more.length} more</button>
+          )}
           {undoSnap && <button className="btn" onClick={() => void undoReview()}>Undo last</button>}
         </div>
       </div>
