@@ -22,6 +22,22 @@ function pickNewer<T extends { updatedAt: number; deleted?: boolean }>(a: T, b: 
   return a;
 }
 
+/**
+ * Merge two versions of one card. Like pickNewer, but never lets a synced "new"
+ * (interval 0) copy override a reviewed (interval > 0) one: reverting a graded
+ * card back to new is a last-write-wins / clock-skew artifact, never intent, and
+ * silently loses study progress. Deletions and same-progress conflicts still use
+ * last-write-wins. (A reviewed card always has interval > 0, even a fresh lapse.)
+ */
+function pickCard(a: Card, b: Card): Card {
+  const aReviewed = a.interval > 0;
+  const bReviewed = b.interval > 0;
+  if (!a.deleted && !b.deleted && aReviewed !== bReviewed) {
+    return aReviewed ? a : b;
+  }
+  return pickNewer(a, b);
+}
+
 export function mergeDeck(local: Deck | undefined, remote: Deck | undefined): Deck {
   if (local && remote) return pickNewer(local, remote);
   // Non-null assertion is safe: callers always pass at least one side.
@@ -30,14 +46,15 @@ export function mergeDeck(local: Deck | undefined, remote: Deck | undefined): De
 
 /**
  * Last-write-wins card merge keyed on `updatedAt`, with tombstone support so
- * deletions propagate instead of being resurrected.
+ * deletions propagate, and review-progress protection so a graded card is never
+ * reverted to "new" by an older copy winning the merge.
  */
 export function mergeCards(local: Card[] = [], remote: Card[] = []): Card[] {
   const byId = new Map<string, Card>();
   for (const c of local) byId.set(c.id, c);
   for (const c of remote) {
     const existing = byId.get(c.id);
-    byId.set(c.id, existing ? pickNewer(existing, c) : c);
+    byId.set(c.id, existing ? pickCard(existing, c) : c);
   }
   return [...byId.values()];
 }

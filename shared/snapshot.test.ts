@@ -53,6 +53,19 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
       new Map(ba.map((c) => [c.id, c.updatedAt])),
     );
   });
+
+  it('never reverts a reviewed card to "new", even if the new copy is newer', () => {
+    const reviewed = card('a', 100, { interval: 6, repetitions: 2 });
+    const fresh = card('a', 200, { interval: 0, repetitions: 0 }); // newer but unreviewed
+    expect(mergeCards([reviewed], [fresh])[0].interval).toBe(6);
+    expect(mergeCards([fresh], [reviewed])[0].interval).toBe(6); // order-independent
+  });
+
+  it('a delete still wins over a reviewed card', () => {
+    const reviewed = card('a', 100, { interval: 6 });
+    const del = card('a', 200, { deleted: true });
+    expect(mergeCards([reviewed], [del])[0].deleted).toBe(true);
+  });
 });
 
 describe('mergeDeck', () => {
