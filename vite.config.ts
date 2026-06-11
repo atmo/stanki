@@ -32,6 +32,17 @@ export default defineConfig({
       '@shared': fileURLToPath(new URL('./shared', import.meta.url)),
     },
   },
+  build: {
+    // The Wiktionary lemma map is large; keep it in its own chunk so its hash
+    // stays stable across code changes (the SW re-downloads only the small app
+    // bundle on most deploys, not the multi-MB data).
+    chunkSizeWarningLimit: 6000,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => (id.includes('lemma-data') ? 'lemma-data' : undefined),
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -63,6 +74,8 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         // The app is local-first; cache the shell so it runs fully offline.
         navigateFallback: 'index.html',
+        // Allow precaching the large lemma-data chunk (~4 MB).
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
       },
       devOptions: { enabled: false },
     }),
