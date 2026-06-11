@@ -45,6 +45,11 @@ export function startOfLocalDay(now = Date.now()): number {
   return d.getTime();
 }
 
+/** Next local midnight — the cutoff for "due today" (cards due any time today). */
+export function endOfLocalDay(now = Date.now()): number {
+  return startOfLocalDay(now) + DAY_MS;
+}
+
 /** One thing to review: a card shown in a particular direction, with its schedule. */
 export interface ReviewItem {
   card: Card;
@@ -86,8 +91,11 @@ export function selectDue(
   settings: SrSettings,
   now = Date.now(),
 ): ReviewItem[] {
+  // Day-level scheduling: a card due any time today is due today (not only once
+  // its exact timestamp passes), matching the local-midnight due dates.
+  const cutoff = endOfLocalDay(now);
   const due = items
-    .filter((i) => !i.card.deleted && i.schedule.dueDate <= now)
+    .filter((i) => !i.card.deleted && i.schedule.dueDate < cutoff)
     .sort((a, b) => a.schedule.dueDate - b.schedule.dueDate);
   const newRemaining = Math.max(0, settings.newCardsPerDay - daily.newToday);
   const reviewRemaining = Math.max(0, settings.maxReviewsPerDay - daily.reviewsToday);

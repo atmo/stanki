@@ -102,13 +102,13 @@ describe('selectDue (daily limits)', () => {
     schedule: { interval, easeFactor: 2.5, repetitions: 0, dueDate },
   });
   const settings = { ...DEFAULT_SETTINGS, newCardsPerDay: 2, maxReviewsPerDay: 3 };
-  const at = 1000;
+  const at = 10 * DAY;
 
   it('caps new and review items separately, and excludes not-yet-due', () => {
     const items = [
       item('n1', 0, 0), item('n2', 0, 0), item('n3', 0, 0), // 3 new, due
       item('r1', 5, 0), item('r2', 5, 0), item('r3', 5, 0), item('r4', 5, 0), // 4 review, due
-      item('future', 0, 5000), // not due
+      item('future', 0, at + 2 * DAY), // due in 2 days — not today
     ];
     const q = selectDue(items, { newToday: 0, reviewsToday: 0 }, settings, at);
     expect(q.filter((x) => x.schedule.interval === 0)).toHaveLength(2); // newCardsPerDay

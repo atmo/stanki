@@ -8,6 +8,7 @@ import {
   directionSchedule,
   itemsForCard,
   startOfDay,
+  endOfLocalDay,
   DEFAULT_SETTINGS,
   type ReviewItem,
   type SrSettings,
@@ -161,8 +162,9 @@ export async function reviewQueue(
   const direction = deck?.reviewDirection ?? 'forward';
   const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
   if (overLimit) {
+    const cutoff = endOfLocalDay(now);
     const due = items.filter(
-      (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate <= now,
+      (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < cutoff,
     );
     return shuffle(due);
   }

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createDeck, getSettings } from '../../db/repo';
-import { selectDue, itemsForCard, startOfDay } from '@shared/sm2';
+import { selectDue, itemsForCard, startOfDay, endOfLocalDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
 export function DeckList() {
@@ -48,10 +48,10 @@ export function DeckList() {
       const items = dc.flatMap((c) => itemsForCard(c, direction, settings));
       const due = selectDue(items, d, settings, now);
       const newDue = due.filter((i) => i.schedule.interval === 0).length;
-      // All due reviews ignoring the daily cap — so a capped-out deck can still
-      // be opened to study extra reviews.
+      // All reviews due today ignoring the daily cap — so a capped-out deck can
+      // still be opened to study extra reviews.
       const dueReviews = items.filter(
-        (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate <= now,
+        (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < endOfLocalDay(now),
       ).length;
       byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue, dueReviews });
     }
