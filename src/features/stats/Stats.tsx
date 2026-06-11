@@ -43,19 +43,22 @@ export function Stats() {
     const localStart = today.getTime();
 
     const maturity: Maturity = { nw: 0, young: 0, mature: 0 };
-    const forecast = new Array(7).fill(0) as number[];
+    // Review forecast (scheduled cards only; new cards aren't scheduled): when
+    // each one next comes due, bucketed relative to local midnight. "today"
+    // includes overdue.
+    const due = { today: 0, tomorrow: 0, week: 0, month: 0, later: 0 };
     let dueNow = 0;
-    let later = 0;
 
     for (const c of cards) {
       bucketCard(c, maturity);
-      if (c.dueDate <= now) {
-        dueNow++;
-      } else {
-        const idx = Math.floor((c.dueDate - localStart) / DAY);
-        if (idx < 7) forecast[idx]++;
-        else later++;
-      }
+      if (c.dueDate <= now) dueNow++;
+      if (c.interval === 0) continue; // new cards are introduced on demand, not scheduled
+      const days = (c.dueDate - localStart) / DAY; // negative = overdue
+      if (days < 1) due.today++;
+      else if (days < 2) due.tomorrow++;
+      else if (days < 7) due.week++;
+      else if (days < 30) due.month++;
+      else due.later++;
     }
 
     const byDeck = decks
@@ -72,7 +75,7 @@ export function Stats() {
       .filter((d) => d.total > 0)
       .sort((a, b) => b.total - a.total);
 
-    return { total: cards.length, ...maturity, dueNow, forecast, later, byDeck, history };
+    return { total: cards.length, ...maturity, dueNow, due, byDeck, history };
   }, []);
 
   if (!data) return <p className="muted">Loading…</p>;
@@ -80,15 +83,14 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { total, nw, young, mature, dueNow, forecast, later, byDeck, history } = data;
-  const fcLabels = Array.from({ length: 7 }, (_, i) => {
-    if (i === 0) return 'Today';
-    if (i === 1) return 'Tomorrow';
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return new Date(d.getTime() + i * DAY).toLocaleDateString(undefined, { weekday: 'short' });
-  });
-  const fcRows = [...forecast.map((v, i) => ({ label: fcLabels[i], value: v })), { label: 'Later', value: later }];
+  const { total, nw, young, mature, dueNow, due, byDeck, history } = data;
+  const fcRows = [
+    { label: 'Today', value: due.today },
+    { label: 'Tomorrow', value: due.tomorrow },
+    { label: 'Next week', value: due.week },
+    { label: 'Next month', value: due.month },
+    { label: 'Later', value: due.later },
+  ];
   const fcMax = Math.max(1, ...fcRows.map((r) => r.value));
 
   return (
@@ -127,7 +129,7 @@ export function Stats() {
       </section>
 
       <section className="panel">
-        <h2>Due in the next week</h2>
+        <h2>Reviews due</h2>
         <div className="forecast">
           {fcRows.map((r) => (
             <div className="fc-row" key={r.label}>

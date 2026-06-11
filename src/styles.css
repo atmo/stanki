@@ -103,9 +103,9 @@ body {
 .stat-legend b { font-variant-numeric: tabular-nums; }
 .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
 .forecast { display: flex; flex-direction: column; gap: 6px; }
-.fc-row { display: grid; grid-template-columns: 84px 1fr 32px; align-items: center; gap: 10px; font-size: 0.88rem; }
-.fc-track { background: var(--panel-2); border-radius: 6px; height: 18px; overflow: hidden; }
-.fc-fill { background: var(--primary); height: 100%; border-radius: 6px; min-width: 2px; }
+.fc-row { display: grid; grid-template-columns: 96px 1fr 32px; align-items: center; gap: 10px; font-size: 0.88rem; }
+.fc-track { display: block; background: var(--panel-2); border-radius: 6px; height: 18px; overflow: hidden; }
+.fc-fill { display: block; background: var(--primary); height: 100%; border-radius: 6px; min-width: 2px; }
 .fc-num { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .deck-stats { display: flex; flex-direction: column; }
 .deck-stat { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
