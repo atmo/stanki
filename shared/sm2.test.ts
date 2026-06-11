@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { schedule, newCardState, previewIntervals, selectDue, itemsForCard, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import { schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
 import type { Card, Grade } from './types';
 
 const NOW = 1_700_000_000_000;
@@ -28,7 +28,12 @@ describe('schedule', () => {
     const c = run(['good']);
     expect(c.repetitions).toBe(1);
     expect(c.interval).toBe(1);
-    expect(c.dueDate).toBe(NOW + 1 * DAY);
+    expect(c.dueDate).toBe(startOfLocalDay(NOW + 1 * DAY)); // due at local midnight
+  });
+
+  it('day-scheduled reviews are due at local midnight', () => {
+    const due = new Date(run(['good']).dueDate);
+    expect([due.getHours(), due.getMinutes(), due.getSeconds()]).toEqual([0, 0, 0]);
   });
 
   it('second Good -> 6 days', () => {
@@ -70,7 +75,7 @@ describe('schedule', () => {
   it('Good after Again graduates to at least the next day', () => {
     const c = run(['again', 'good']);
     expect(c.interval).toBe(1);
-    expect(c.dueDate).toBe(NOW + 1 * DAY);
+    expect(c.dueDate).toBe(startOfLocalDay(NOW + 1 * DAY));
   });
 
   it('a mature lapse lowers ease but never below 1.3', () => {

@@ -38,6 +38,13 @@ export function startOfDay(now = Date.now()): number {
   return Math.floor(now / 86_400_000) * 86_400_000;
 }
 
+/** Local midnight for `now` — when a day-scheduled review card becomes due. */
+export function startOfLocalDay(now = Date.now()): number {
+  const d = new Date(now);
+  d.setHours(0, 0, 0, 0);
+  return d.getTime();
+}
+
 /** One thing to review: a card shown in a particular direction, with its schedule. */
 export interface ReviewItem {
   card: Card;
@@ -141,7 +148,9 @@ export function scheduleState(
 
   interval = Math.max(1, interval);
 
-  return { interval, easeFactor, repetitions, dueDate: now + interval * DAY_MS };
+  // Day-scheduled reviews become due at local midnight of the target day, so the
+  // card is available all that day rather than only after the exact review time.
+  return { interval, easeFactor, repetitions, dueDate: startOfLocalDay(now + interval * DAY_MS) };
 }
 
 /** Apply a grade to a card's forward schedule (kept for tests/back-compat). */
