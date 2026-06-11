@@ -62,9 +62,45 @@ async function maybeBackup(
   if (backups[0]?.appProperties?.hash === hash) return; // unchanged since last backup
 
   const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards };
-  await createFile(getToken, `backup-${new Date().toISOString()}.json`, { kind: BACKUP_KIND, hash }, bundle);
+  await createFile(
+    getToken,
+    `backup-${new Date().toISOString()}.json`,
+    { kind: BACKUP_KIND, hash, cards: String(cards.length) },
+    bundle,
+  );
   // Keep the newest MAX_BACKUPS (the new one + MAX_BACKUPS-1 existing); drop the rest.
   for (const f of backups.slice(MAX_BACKUPS - 1)) await deleteFile(getToken, f.id);
+}
+
+export interface BackupRef {
+  id: string;
+  at: string; // ISO modified time
+  cards: number;
+}
+
+/** The available backups, newest first. */
+export async function listBackups(getToken: TokenProvider): Promise<BackupRef[]> {
+  const files = await listAppFiles(getToken);
+  return files
+    .filter((f) => f.appProperties?.kind === BACKUP_KIND)
+    .sort((a, b) => (a.modifiedTime < b.modifiedTime ? 1 : -1))
+    .map((f) => ({ id: f.id, at: f.modifiedTime, cards: Number(f.appProperties?.cards ?? 0) }));
+}
+
+/**
+ * Restore a backup: overwrite local decks+cards with the snapshot's versions
+ * (cards added since the backup are kept). Bumps updatedAt so the restore wins
+ * the next sync and propagates to other devices. Caller should sync afterwards.
+ */
+export async function restoreBackup(getToken: TokenProvider, fileId: string): Promise<void> {
+  const bundle = await downloadJson<{ decks: Deck[]; cards: Card[] }>(getToken, fileId);
+  const now = Date.now();
+  const decks = (bundle.decks ?? []).map((d) => ({ ...d, updatedAt: now }));
+  const cards = (bundle.cards ?? []).map((c) => ({ ...c, updatedAt: now }));
+  await db.transaction('rw', db.decks, db.cards, async () => {
+    await db.decks.bulkPut(decks);
+    await db.cards.bulkPut(cards);
+  });
 }
 
 function synthDeck(id: string): Deck {

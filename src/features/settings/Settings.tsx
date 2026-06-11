@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store/store';
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { getSettings, saveSettings, exportAll, importBundle, type ExportBundle } from '../../db/repo';
+import { listBackups, restoreBackup, type BackupRef } from '../../sync/sync';
+import { getToken } from '../../sync/googleAuth';
 
 function fmtTime(ts: number | null): string {
   return ts ? new Date(ts).toLocaleString() : 'never';
@@ -11,10 +13,39 @@ export function Settings() {
   const { connected, configured, syncStatus, syncError, lastSync, connect, disconnect, syncNow } = useStore();
   const [s, setS] = useState<SrSettings>(DEFAULT_SETTINGS);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [backups, setBackups] = useState<BackupRef[] | null>(null);
+  const [backupBusy, setBackupBusy] = useState(false);
 
   useEffect(() => {
     void getSettings().then(setS);
   }, []);
+
+  async function loadBackups() {
+    setBackupBusy(true);
+    try {
+      setBackups(await listBackups(getToken));
+    } catch (e) {
+      alert(`Could not load backups: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
+  async function restore(b: BackupRef) {
+    if (!confirm(`Restore the backup from ${new Date(b.at).toLocaleString()} (${b.cards} cards)?\n\nIt overwrites current cards with that snapshot; cards added since are kept.`)) {
+      return;
+    }
+    setBackupBusy(true);
+    try {
+      await restoreBackup(getToken, b.id);
+      await syncNow();
+      alert('Backup restored.');
+    } catch (e) {
+      alert(`Restore failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
 
   function update<K extends keyof SrSettings>(key: K, value: number) {
     const next = { ...s, [key]: value };
@@ -74,6 +105,32 @@ export function Settings() {
           </>
         )}
       </section>
+
+      {configured && connected && (
+        <section className="panel">
+          <h2>Backups</h2>
+          <p className="muted small">
+            Automatic snapshots in your Drive (the 5 most recent, written when your data changes).
+            Restoring overwrites current cards with the chosen snapshot.
+          </p>
+          {!backups ? (
+            <button className="btn" onClick={() => void loadBackups()} disabled={backupBusy}>
+              {backupBusy ? 'Loading…' : 'Show backups'}
+            </button>
+          ) : backups.length === 0 ? (
+            <p className="muted">No backups yet — they're written on sync once you have cards.</p>
+          ) : (
+            <ul className="backup-list">
+              {backups.map((b) => (
+                <li key={b.id} className="backup-item">
+                  <span>{new Date(b.at).toLocaleString()} · {b.cards} cards</span>
+                  <button className="btn" onClick={() => void restore(b)} disabled={backupBusy}>Restore</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
 
       <section className="panel">
         <h2>Scheduling</h2>
