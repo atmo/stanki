@@ -20,15 +20,14 @@ import {
   listAppFiles,
   downloadSnapshot,
   downloadJson,
-  updateSnapshot,
+  mergeJsonFile,
   createSnapshot,
-  updateFile,
   createFile,
   deleteFile,
   type DriveFile,
   type TokenProvider,
 } from '@shared/drive';
-import type { Card, Deck, ReviewLog, ReviewSnapshot } from '@shared/types';
+import type { Card, Deck, DeckSnapshot, ReviewLog, ReviewSnapshot } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME, SCHEMA_VERSION } from '@shared/types';
 
 // appProperties tag identifying the single shared review-log file.
@@ -182,26 +181,45 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     else cardsByDeck.set(c.deckId, [c]);
   }
 
-  // Sequential to keep Drive request volume low and avoid 429s.
+  // Sequential to keep Drive request volume low and avoid 429s. Each existing
+  // snapshot is rewritten under optimistic locking (re-merge against the current
+  // Drive copy on conflict), so a concurrent push from another device — the
+  // extension adding cards, or another client's reviews — is never clobbered.
   for (const [id, deck] of mergedDecks) {
-    const snapshot = buildSnapshot(deck, cardsByDeck.get(id) ?? [], deviceId);
     const file = fileByDeck.get(id);
-    if (file) await updateSnapshot(getToken, file.id, snapshot);
-    else await createSnapshot(getToken, id, `deck-${id}.json`, snapshot);
+    const intended = cardsByDeck.get(id) ?? [];
+    if (file) {
+      await mergeJsonFile<DeckSnapshot>(getToken, file.id, (current) => {
+        const cards = gcTombstones(mergeCards(current.cards ?? [], intended));
+        return buildSnapshot(mergeDeck(deck, current.deck), cards, deviceId);
+      });
+    } else {
+      await createSnapshot(getToken, id, `deck-${id}.json`, buildSnapshot(deck, intended, deviceId));
+    }
   }
 
   // --- push the shared review log (trimmed to the rolling window) -------
   const now = Date.now();
   const recentReviews = gcReviews(mergeReviews(localReviews, remoteReviews), now);
-  const reviewSnapshot: ReviewSnapshot = {
-    schemaVersion: SCHEMA_VERSION,
-    reviews: recentReviews,
-    exportedAt: now,
-    deviceId,
-  };
   const canonical = reviewsFiles[0];
-  if (canonical) await updateFile(getToken, canonical.id, reviewSnapshot);
-  else await createFile(getToken, 'reviews.json', { kind: REVIEWS_KIND }, reviewSnapshot);
+  if (canonical) {
+    // Re-union with the canonical file's current reviews so a concurrently
+    // pushed review isn't dropped by our overwrite.
+    await mergeJsonFile<ReviewSnapshot>(getToken, canonical.id, (current) => ({
+      schemaVersion: SCHEMA_VERSION,
+      reviews: gcReviews(mergeReviews(recentReviews, current.reviews ?? []), now),
+      exportedAt: now,
+      deviceId,
+    }));
+  } else {
+    const reviewSnapshot: ReviewSnapshot = {
+      schemaVersion: SCHEMA_VERSION,
+      reviews: recentReviews,
+      exportedAt: now,
+      deviceId,
+    };
+    await createFile(getToken, 'reviews.json', { kind: REVIEWS_KIND }, reviewSnapshot);
+  }
   // Collapse any duplicate reviews files into the canonical one.
   for (const f of reviewsFiles.slice(1)) await deleteFile(getToken, f.id);
 

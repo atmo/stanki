@@ -63,10 +63,19 @@ export async function findFileByDeckId(
 
 /** Download and parse any appDataFolder JSON file. */
 export async function downloadJson<T>(getToken: TokenProvider, fileId: string): Promise<T> {
+  return (await downloadJsonWithTag<T>(getToken, fileId)).data;
+}
+
+/** Like downloadJson, but also returns the content ETag for optimistic locking. */
+export async function downloadJsonWithTag<T>(
+  getToken: TokenProvider,
+  fileId: string,
+): Promise<{ data: T; etag: string | null }> {
   const res = await fetch(`${FILES}/${fileId}?alt=media`, {
     headers: await authHeader(getToken),
   });
-  return asJson<T>(res);
+  const etag = res.headers.get('ETag');
+  return { data: await asJson<T>(res), etag };
 }
 
 export const downloadSnapshot = (getToken: TokenProvider, fileId: string) =>
@@ -107,22 +116,25 @@ export async function createFile(
   return asJson<DriveFile>(res);
 }
 
-/** Overwrite an existing appDataFolder file's contents. */
+/**
+ * Overwrite an existing appDataFolder file's contents. With `ifMatch`, the write
+ * is conditional on the file still having that ETag — the server rejects it with
+ * 412 if another writer changed the file first (optimistic locking).
+ */
 export async function updateFile(
   getToken: TokenProvider,
   fileId: string,
   body: object,
+  ifMatch?: string,
 ): Promise<DriveFile> {
+  const headers: Record<string, string> = {
+    ...(await authHeader(getToken)),
+    'Content-Type': 'application/json; charset=UTF-8',
+  };
+  if (ifMatch) headers['If-Match'] = ifMatch;
   const res = await fetch(
     `${UPLOAD}/${fileId}?uploadType=media&fields=id,name,modifiedTime,appProperties`,
-    {
-      method: 'PATCH',
-      headers: {
-        ...(await authHeader(getToken)),
-        'Content-Type': 'application/json; charset=UTF-8',
-      },
-      body: JSON.stringify(body),
-    },
+    { method: 'PATCH', headers, body: JSON.stringify(body) },
   );
   return asJson<DriveFile>(res);
 }
@@ -138,6 +150,33 @@ export const createSnapshot = (
 /** Overwrite an existing snapshot file's contents. */
 export const updateSnapshot = (getToken: TokenProvider, fileId: string, snapshot: DeckSnapshot) =>
   updateFile(getToken, fileId, snapshot);
+
+/**
+ * Read-merge-write an appDataFolder JSON file with optimistic locking, so a
+ * concurrent writer's changes are never silently clobbered: download the current
+ * contents (with their ETag), apply `merge`, and write the result back guarded by
+ * If-Match. If another writer changed the file first the server returns 412, so
+ * re-download and re-merge, up to `retries` times. When the server returns no
+ * ETag the write is unconditional — no regression on backends without precondition
+ * support, just no protection.
+ */
+export async function mergeJsonFile<T extends object>(
+  getToken: TokenProvider,
+  fileId: string,
+  merge: (current: T) => T,
+  retries = 4,
+): Promise<DriveFile> {
+  for (let attempt = 0; ; attempt++) {
+    const { data, etag } = await downloadJsonWithTag<T>(getToken, fileId);
+    const next = merge(data);
+    try {
+      return await updateFile(getToken, fileId, next, etag ?? undefined);
+    } catch (e) {
+      if (e instanceof DriveError && e.status === 412 && attempt < retries) continue;
+      throw e;
+    }
+  }
+}
 
 /** Delete an appDataFolder file. A 404 is treated as already-gone. */
 export async function deleteFile(getToken: TokenProvider, fileId: string): Promise<void> {
