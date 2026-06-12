@@ -166,14 +166,18 @@ export function Stats() {
 
       <section className="panel">
         <h2>Study history</h2>
-        <p className="muted small">New cards introduced vs. repeats reviewed, per day (from the review log).</p>
+        <p className="muted small">
+          First-time introductions vs. repeats reviewed, per day (from the review log).
+          A two-sided deck introduces each card twice — once per direction — so this
+          can run ahead of the “young” card count.
+        </p>
         {history.length === 0 ? (
           <p className="muted">No reviews logged yet.</p>
         ) : (
           <div className="deck-stats">
             <div className="deck-stat deck-stat-head">
               <span>Day</span>
-              <span className="ds-cols2"><span>new</span><span>review</span></span>
+              <span className="ds-cols2"><span>introduced</span><span>review</span></span>
             </div>
             {history.map((h) => (
               <div className="deck-stat" key={h.day}>
