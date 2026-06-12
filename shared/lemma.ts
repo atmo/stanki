@@ -7,7 +7,9 @@
 // returned unchanged. No fuzzy rules, so it never emits a wrong guess — it
 // either normalizes a word it knows or leaves it alone.
 
-import { LEMMA_MAP, ALT_MAP, ARTICLE_MAP } from './lemma-data';
+import { LEMMA_MAP, ALT_MAP, ARTICLE_MAP, NOUN_ADJ } from './lemma-data';
+
+const NOUN_ADJ_SET = new Set(NOUN_ADJ);
 
 /**
  * Dutch lemma for a word, from the Wiktionary-derived map. Follows the map
@@ -67,4 +69,17 @@ export function nounArticle(lemma: string): string | null {
 export function withArticle(lemma: string): string {
   const art = nounArticle(lemma);
   return art ? `${art} ${lemma}` : lemma;
+}
+
+/**
+ * Display label(s) for a base lemma. A noun gets its article ("het huis"). A noun
+ * that is *also* a base adjective is genuinely ambiguous, so both readings are
+ * offered, adjective first: "scheef" -> ["scheef", "de scheef"]. Anything else is
+ * the bare word.
+ */
+export function lemmaLabels(lemma: string): string[] {
+  const w = lemma.trim().toLowerCase();
+  const art = ARTICLE_MAP[w];
+  if (!art) return [w];
+  return NOUN_ADJ_SET.has(w) ? [w, `${art} ${w}`] : [`${art} ${w}`];
 }

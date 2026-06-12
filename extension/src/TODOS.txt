@@ -1,4 +1,3 @@
-- create a deck for 1000 most popular de/het words
-- create a deck for 1000 most popular irregular verbs
-idiom research
-Cloudflare token?
+- PWA does not render \n
+- lowercase the idioms and remove the dot at the end 
+- Cloudflare token?

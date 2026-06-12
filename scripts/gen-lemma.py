@@ -59,6 +59,7 @@ def main(path):
     genders = collections.defaultdict(collections.Counter)  # noun lemma -> {de/het: n}
     verb_inf = set()     # true infinitives: offer verb-vs-noun choice, default verb
     protect = set()  # noun/adjective/adverb headwords: don't reduce (brief, vrij)
+    adjectives = set()  # base adjectives/adverbs (to flag noun∩adjective homographs)
 
     with open(path, encoding='utf-8') as f:
         for line in f:
@@ -88,6 +89,7 @@ def main(path):
             # still reduce (opvallend -> opvallen, gemaakt -> maken).
             elif e['pos'] in ('adj', 'adv') and (heads & {'nl-adj', 'nl-adv'}) and not is_participle(lemma):
                 protect.add(lemma)
+                adjectives.add(lemma)
 
             for fo in e.get('forms') or []:
                 tags = set(fo.get('tags') or [])
@@ -129,6 +131,10 @@ def main(path):
         if lemma not in verb_inf
     }
 
+    # Nouns that are also a base adjective ("scheef" = de scheef / scheef): the UI
+    # offers both the article-noun and the bare-adjective reading.
+    noun_adj = sorted(w for w in articles if w in adjectives)
+
     out = os.path.join(os.path.dirname(__file__), '..', 'shared', 'lemma-data.ts')
     with open(out, 'w', encoding='utf-8') as f:
         f.write(f'// AUTO-GENERATED. Dutch form -> lemma map ({len(data)} forms), ambiguous\n')
@@ -149,8 +155,14 @@ def main(path):
         f.write('export const ARTICLE_MAP: Record<string, string> = {\n')
         for k, v in articles.items():
             f.write(f'  {json.dumps(k, ensure_ascii=False)}: {json.dumps(v, ensure_ascii=False)},\n')
-        f.write('};\n')
-    print(f'wrote {out}: {len(data)} forms, {len(alts)} ambiguous, {len(articles)} nouns')
+        f.write('};\n\n')
+        f.write('// Noun lemmas that are also a base adjective; the UI offers both the\n')
+        f.write('// article-noun and the bare-adjective reading (e.g. "de scheef" / "scheef").\n')
+        f.write('export const NOUN_ADJ: string[] = [\n')
+        for w in noun_adj:
+            f.write(f'  {json.dumps(w, ensure_ascii=False)},\n')
+        f.write('];\n')
+    print(f'wrote {out}: {len(data)} forms, {len(alts)} ambiguous, {len(articles)} nouns, {len(noun_adj)} noun∩adj')
 
 
 if __name__ == '__main__':

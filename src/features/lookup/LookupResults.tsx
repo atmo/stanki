@@ -1,5 +1,5 @@
 import { anwUrl, wiktionaryUrl, vanDaleUrl, type Lookups, type LookupResult } from '@shared/lookup';
-import { lemmaCandidates, withArticle } from '@shared/lemma';
+import { lemmaCandidates, lemmaLabels } from '@shared/lemma';
 
 function Section({ label, result, url }: { label: string; result: LookupResult; url: string }) {
   return (
@@ -37,7 +37,7 @@ export function LookupResults({
   // ["opvallen","opvallend"]), each shown with its article for nouns. The user
   // picks which to use; clicking looks the bare lemma up and fills the Front.
   const candidates = front && onUseLemma ? lemmaCandidates(front) : [];
-  const choices = candidates.map((c) => ({ lemma: c, label: withArticle(c) }));
+  const choices = candidates.flatMap((c) => lemmaLabels(c).map((label) => ({ lemma: c, label })));
   const showChoices =
     choices.length > 1 ||
     (choices.length === 1 && choices[0].label.toLowerCase() !== (front ?? '').trim().toLowerCase());
@@ -47,7 +47,7 @@ export function LookupResults({
         <div className="lk-baseforms">
           <span className="muted small">Base form:</span>
           {choices.map((c) => (
-            <button key={c.lemma} className="lk-baseform" onClick={() => onUseLemma!(c.lemma, c.label)}>
+            <button key={c.label} className="lk-baseform" onClick={() => onUseLemma!(c.lemma, c.label)}>
               {c.label}
             </button>
           ))}

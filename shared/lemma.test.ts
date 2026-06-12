@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { lemmatize, lemmaCandidates, nounArticle, withArticle } from './lemma';
+import { lemmatize, lemmaCandidates, nounArticle, withArticle, lemmaLabels } from './lemma';
 
 describe('lemmatize', () => {
   it('verb present-tense -t -> infinitive', () => {
@@ -107,5 +107,21 @@ describe('noun articles', () => {
     expect(withArticle('huis')).toBe('het huis');
     expect(withArticle('hond')).toBe('de hond');
     expect(withArticle('lopen')).toBe('lopen');
+  });
+});
+
+describe('lemmaLabels', () => {
+  it('gives a plain noun just its article', () => {
+    expect(lemmaLabels('huis')).toEqual(['het huis']);
+    expect(lemmaLabels('hond')).toEqual(['de hond']);
+  });
+
+  it('offers both readings for a noun that is also a base adjective, adjective first', () => {
+    // "scheef" is the adjective (crooked) and an obscure noun (de scheef = shive).
+    expect(lemmaLabels('scheef')).toEqual(['scheef', 'de scheef']);
+  });
+
+  it('leaves a non-noun bare', () => {
+    expect(lemmaLabels('lopen')).toEqual(['lopen']);
   });
 });

@@ -14,7 +14,7 @@ import {
   type WordEntry,
 } from './drive-ext';
 import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
-import { lemmaCandidates, withArticle } from '@shared/lemma';
+import { lemmaCandidates, lemmaLabels } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
 
@@ -509,7 +509,9 @@ function baseForWord(
   title: string,
   rect?: BubblePayload['rect'],
 ): LookupBase {
-  const candidates = lemmaCandidates(word).map((l) => ({ lemma: l, label: withArticle(l) }));
+  const candidates = lemmaCandidates(word).flatMap((l) =>
+    lemmaLabels(l).map((label) => ({ lemma: l, label })),
+  );
   return { word, lemma: candidates[0].lemma, front: candidates[0].label, candidates, context, url, title, rect };
 }
 
