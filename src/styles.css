@@ -176,6 +176,24 @@ body {
 .add-done { text-align: center; padding: 40px 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
 .add-screen .card-form .row .input { flex: 1; }
 
+/* Autocomplete of existing entries while typing the Front. */
+.ac-wrap { position: relative; }
+.ac-list {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 4px);
+  margin: 0; padding: 4px; list-style: none; background: var(--panel-2);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); max-height: 220px; overflow: auto;
+}
+.ac-item {
+  display: flex; align-items: baseline; gap: 8px; padding: 7px 9px;
+  border-radius: 8px; text-decoration: none; color: var(--text);
+}
+.ac-item:hover { background: var(--panel); }
+.ac-front { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ac-deck { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
+.dup-warn { margin: -4px 0 4px; font-size: 0.85rem; color: #fcd34d; }
+.dup-warn a { color: #fcd34d; }
+
 .lookup-results { margin-top: 18px; display: flex; flex-direction: column; gap: 4px; }
 .lk-loading { margin-top: 18px; }
 .lk-section { background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 10px; }

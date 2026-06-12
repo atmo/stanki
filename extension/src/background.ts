@@ -7,8 +7,10 @@ import {
   flushPending,
   getPending,
   getTargetDeck,
+  getWordMatches,
   getAuthUrl,
   storeOAuthToken,
+  type WordEntry,
 } from './drive-ext';
 import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
 import { lemmaCandidates, withArticle } from '@shared/lemma';
@@ -60,6 +62,7 @@ interface BubblePayload {
   lookups: Lookups;
   back: string; // card back: Wiktionary senses (with examples), from the lookup
   explanation: string; // card explanation: ANW senses
+  duplicates: WordEntry[]; // existing cards for this word (article-insensitive)
 }
 
 /**
@@ -121,6 +124,10 @@ function renderBubble(payload: BubblePayload) {
     '.ftext{resize:vertical;line-height:1.4;}' +
     '.add{margin-top:12px;width:100%;padding:7px;border:none;border-radius:8px;' +
     'background:#2563eb;color:#fff;font-size:13px;cursor:pointer;}.add:disabled{opacity:.6;cursor:default;}' +
+    '.dup{margin-top:12px;padding:7px 9px;border-radius:8px;background:rgba(234,179,8,.12);' +
+    'border:1px solid rgba(234,179,8,.35);font-size:12px;color:#fde68a;}' +
+    '.dup-h{font-weight:700;margin-bottom:3px;}.dup-row{margin:1px 0;}' +
+    '.dup-f{color:#fcd34d;}.dup-d{color:#94a3b8;}' +
     '.vd{display:block;margin-top:10px;font-size:11px;color:#93c5fd;text-decoration:none;}.vd:hover{text-decoration:underline;}';
   shadow.appendChild(style);
 
@@ -313,6 +320,33 @@ function renderBubble(payload: BubblePayload) {
       card.insertBefore(bf, form);
     }
 
+    // Duplicate overview: existing cards already saved for this word (any deck).
+    if (payload.duplicates && payload.duplicates.length) {
+      const dup = document.createElement('div');
+      dup.className = 'dup';
+      const h = document.createElement('div');
+      h.className = 'dup-h';
+      h.textContent =
+        payload.duplicates.length === 1
+          ? '⚠ Already saved'
+          : `⚠ Already saved (${payload.duplicates.length})`;
+      dup.appendChild(h);
+      for (const e of payload.duplicates) {
+        const row = document.createElement('div');
+        row.className = 'dup-row';
+        const f = document.createElement('span');
+        f.className = 'dup-f';
+        f.textContent = e.front;
+        row.appendChild(f);
+        const d = document.createElement('span');
+        d.className = 'dup-d';
+        d.textContent = ` — ${e.deck}`;
+        row.appendChild(d);
+        dup.appendChild(row);
+      }
+      card.appendChild(dup);
+    }
+
     const add = document.createElement('button');
     add.className = 'add';
     add.textContent = 'Add to Stanki';
@@ -408,14 +442,21 @@ async function updateBadge(): Promise<void> {
   }
 }
 
-type LookupBase = Omit<BubblePayload, 'loading' | 'lookups' | 'back' | 'explanation'>;
+type LookupBase = Omit<
+  BubblePayload,
+  'loading' | 'lookups' | 'back' | 'explanation' | 'duplicates'
+>;
 
 /** Show a loading bubble, look up base.lemma in both dictionaries, show results. */
 async function showLookup(tabId: number, base: LookupBase): Promise<void> {
+  // Existing cards for the word the user would add (the chosen Front, article-stripped).
+  const duplicates = await getWordMatches(base.front).catch(() => []);
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
-    args: [{ ...base, loading: true, lookups: { anw: null, free: null }, back: '', explanation: '' }],
+    args: [
+      { ...base, loading: true, lookups: { anw: null, free: null }, back: '', explanation: '', duplicates },
+    ],
   });
   const lookups = await lookupWord(base.lemma);
   await scripting.executeScript({
@@ -428,6 +469,7 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
         lookups,
         back: joinSenses(lookups.free),
         explanation: anwExplanation(lookups.anw),
+        duplicates,
       },
     ],
   });

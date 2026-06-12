@@ -1,3 +1,2 @@
 idiom research
-• deduplication on add
-Cloudflare token? 
+Cloudflare token?
