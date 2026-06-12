@@ -28,17 +28,19 @@ def is_participle(w):
     return w.endswith('end') or (w.startswith('ge') and (w[-1] in 'td' or w.endswith('en')))
 
 
-def is_real_lemma(entry):
-    """True unless every sense is obsolete/archaic or merely an alt/form-of pointer
-    (e.g. "loopen" = obsolete spelling of lopen) — those aren't headwords we keep."""
+def skip_entirely(entry):
+    """Dead or variant-spelling entries we drop completely (headword *and* forms):
+    obsolete/archaic, or pure alt-of pointers like "loopen" = obsolete spelling of
+    lopen. Form-of entries are kept — a participle like "aanhoudend" (form of
+    aanhouden) carries the inflected forms (aanhoudende, …) we want to harvest."""
     senses = entry.get('senses') or []
     if not senses:
-        return True
+        return False
     for s in senses:
         t = set(s.get('tags') or [])
-        if not (t & {'obsolete', 'archaic'}) and 'alt-of' not in t and 'form-of' not in t:
-            return True
-    return False
+        if not (t & {'obsolete', 'archaic'}) and 'alt-of' not in t:
+            return False  # has a live, non-alt sense — keep it
+    return True
 
 
 def gender_article(entry):
@@ -67,7 +69,7 @@ def main(path):
             if e.get('lang_code') != 'nl' or e.get('pos') not in POS:
                 continue
             lemma = (e.get('word') or '').lower()
-            if not WORD_RE.match(lemma) or not is_real_lemma(e):
+            if not WORD_RE.match(lemma) or skip_entirely(e):
                 continue
 
             heads = {h.get('name') for h in (e.get('head_templates') or [])}
@@ -107,7 +109,10 @@ def main(path):
         if form in verb_inf:
             cands = [form] + [r for r in reductions if r != form]
         elif form in protect:
-            cands = [form]  # protected headword: don't reduce
+            # Protected headword stays the default (no LEMMA_MAP entry, so lemmatize
+            # leaves it), but still offer any reduction as a pickable alternative —
+            # e.g. "wens" -> [de wens, wensen], "gemaakte" -> [gemaakte, gemaakt].
+            cands = [form] + [r for r in reductions if r != form]
         else:
             data[form] = reductions[0]
             cands = reductions

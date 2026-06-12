@@ -1,9 +1,3 @@
-Due breakdown:
-- Today
-- Tomorrow
-- Next week
-- Next month
-- Later
-Fix histogram
-Backups
+idiom research
+• deduplication on add
 Cloudflare token? 

@@ -41,6 +41,9 @@ describe('lemmatize', () => {
     expect(lemmatize('opvallende')).toBe('opvallen');
     expect(lemmatize('opvallender')).toBe('opvallen');
     expect(lemmatize('opvallendste')).toBe('opvallen');
+    // Inflected participle whose -e form lives only in a form-of entry.
+    expect(lemmatize('aanhoudend')).toBe('aanhouden');
+    expect(lemmatize('aanhoudende')).toBe('aanhouden');
   });
 
   it('leaves infinitives and bare lemmas unchanged', () => {
@@ -77,8 +80,14 @@ describe('lemmaCandidates', () => {
     expect(lemmaCandidates('loopt')).toEqual(['lopen', 'loopt']);
   });
 
-  it('collapses to one when the base form is the original', () => {
-    expect(lemmaCandidates('huis')).toEqual(['huis']);
+  it('collapses to one when the base form is the original with no homograph', () => {
+    expect(lemmaCandidates('venster')).toEqual(['venster']);
+  });
+
+  it('offers a protected noun plus its verb homograph (noun stays default)', () => {
+    // "wens" is the noun (de wens) and the 1sg of the verb "wensen" — offer both.
+    expect(lemmaCandidates('wens')).toEqual(['wens', 'wensen']);
+    expect(lemmatize('wens')).toBe('wens'); // default stays the headword
   });
 });
 
