@@ -1,6 +1,7 @@
 import { db } from './db';
 import type { Card, CardDirection, Deck, Grade, ReviewDirection } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME } from '@shared/types';
+import { dedupKey } from '@shared/dedup';
 import {
   scheduleState,
   newCardState,
@@ -283,4 +284,75 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
     await db.decks.bulkPut(bundle.decks);
     await db.cards.bulkPut(bundle.cards);
   });
+}
+
+// ---- single-deck export / import (share a deck as JSON) --------------------
+
+/** Export one deck and its (non-deleted) cards as a portable bundle. */
+export async function exportDeck(deckId: string): Promise<ExportBundle> {
+  const deck = await db.decks.get(deckId);
+  if (!deck) throw new Error('Deck not found');
+  const cards = await db.cards.where('deckId').equals(deckId).filter((c) => !c.deleted).toArray();
+  return { app: 'stanki', schemaVersion: 1, exportedAt: Date.now(), decks: [deck], cards };
+}
+
+export interface ImportResult {
+  deck: Deck;
+  added: number; // new cards written
+  skipped: number; // words already present in the target deck
+  merged: boolean; // true = merged into an existing same-named deck
+}
+
+/**
+ * Import a deck bundle. If a deck with the same name already exists, merge into
+ * it — adding only words not already present (matched article-insensitively) and
+ * leaving every existing card's study progress untouched. Otherwise create a new
+ * deck. Newly added cards start as "new" (unstudied).
+ */
+export async function importDeck(bundle: ExportBundle): Promise<ImportResult> {
+  if (bundle?.app !== 'stanki') throw new Error('Not a Stanki deck file.');
+  const src = bundle.decks?.[0];
+  const name = src?.name?.trim();
+  if (!src || !name) throw new Error('This file has no deck to import.');
+
+  const now = Date.now();
+  const decks = await db.decks.filter((d) => !d.deleted).toArray();
+  const existing = decks.find((d) => d.name.trim().toLowerCase() === name.toLowerCase());
+  const deck: Deck = existing ?? { id: uid(), name, createdAt: now, updatedAt: now };
+
+  // Words already in the target deck — skip these so existing progress is kept.
+  const have = new Set<string>();
+  if (existing) {
+    const current = await db.cards.where('deckId').equals(existing.id).filter((c) => !c.deleted).toArray();
+    for (const c of current) have.add(dedupKey(c.front));
+  }
+
+  // A single-deck export holds just this deck's cards; be lenient about deckId.
+  const single = (bundle.decks?.length ?? 0) === 1;
+  const incoming = (bundle.cards ?? []).filter((c) => !c.deleted && (single || c.deckId === src.id));
+
+  const toAdd: Card[] = [];
+  for (const c of incoming) {
+    const key = dedupKey(c.front);
+    if (have.has(key)) continue; // already present (or a dup within the file)
+    have.add(key);
+    toAdd.push({
+      id: uid(),
+      deckId: deck.id,
+      front: c.front,
+      back: c.back,
+      context: c.context,
+      explanation: c.explanation,
+      source: c.source,
+      createdAt: now,
+      updatedAt: now,
+      ...newCardState(now), // new cards start unstudied
+    });
+  }
+
+  await db.transaction('rw', db.decks, db.cards, async () => {
+    if (!existing) await db.decks.put(deck);
+    if (toAdd.length) await db.cards.bulkPut(toAdd);
+  });
+  return { deck, added: toAdd.length, skipped: incoming.length - toAdd.length, merged: !!existing };
 }

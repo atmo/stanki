@@ -1,13 +1,14 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { createDeck, getSettings } from '../../db/repo';
+import { createDeck, getSettings, importDeck, type ExportBundle } from '../../db/repo';
 import { selectDue, itemsForCard, startOfDay, endOfLocalDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
 export function DeckList() {
   const [name, setName] = useState('');
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const data = useLiveQuery(async () => {
     const now = Date.now();
@@ -67,6 +68,22 @@ export function DeckList() {
     setName('');
   }
 
+  async function onImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) {
+      try {
+        const bundle = JSON.parse(await file.text()) as ExportBundle;
+        const { deck, added, skipped, merged } = await importDeck(bundle);
+        const where = merged ? `into existing “${deck.name}”` : `as new deck “${deck.name}”`;
+        const extra = skipped ? `; skipped ${skipped} already present` : '';
+        alert(`Imported ${added} card${added === 1 ? '' : 's'} ${where}${extra}.`);
+      } catch (err) {
+        alert(`Import failed: ${err instanceof Error ? err.message : String(err)}`);
+      }
+    }
+    if (fileRef.current) fileRef.current.value = '';
+  }
+
   if (!data) return <p className="muted">Loading…</p>;
 
   return (
@@ -79,6 +96,14 @@ export function DeckList() {
           onChange={(e) => setName(e.target.value)}
         />
         <button className="btn btn-primary" type="submit">Add deck</button>
+        <button className="btn" type="button" onClick={() => fileRef.current?.click()}>Import</button>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="application/json,.json"
+          hidden
+          onChange={(e) => void onImport(e)}
+        />
       </form>
 
       {data.decks.length === 0 && (

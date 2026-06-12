@@ -11,6 +11,7 @@ import {
   deleteCard,
   deleteCards,
   deleteDeck,
+  exportDeck,
   moveCards,
   renameDeck,
   setReviewDirection,
@@ -197,6 +198,19 @@ export function DeckEditor() {
     navigate('/');
   }
 
+  async function doExport() {
+    const bundle = await exportDeck(id);
+    const name = bundle.decks[0]?.name ?? 'deck';
+    const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'deck';
+    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stanki-deck-${slug}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   if (!data) return <p className="muted">Loading…</p>;
   if (!data.deck) return <p className="muted">Deck not found. <Link to="/">Back</Link></p>;
 
@@ -219,6 +233,7 @@ export function DeckEditor() {
           onChange={(e) => void renameDeck(id, e.target.value)}
         />
         <Link className="btn" to="/">Done</Link>
+        <button className="btn" onClick={() => void doExport()}>Export</button>
         <button
           className="btn btn-danger"
           onClick={() => void removeDeck(deck.name, data.cards.length)}
