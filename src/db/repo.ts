@@ -318,7 +318,14 @@ export async function importDeck(bundle: ExportBundle): Promise<ImportResult> {
   const now = Date.now();
   const decks = await db.decks.filter((d) => !d.deleted).toArray();
   const existing = decks.find((d) => d.name.trim().toLowerCase() === name.toLowerCase());
-  const deck: Deck = existing ?? { id: uid(), name, createdAt: now, updatedAt: now };
+  const deck: Deck =
+    existing ?? {
+      id: uid(),
+      name,
+      reviewDirection: src.reviewDirection, // carry one-sided/both setting from the file
+      createdAt: now,
+      updatedAt: now,
+    };
 
   // Words already in the target deck — skip these so existing progress is kept.
   const have = new Set<string>();
