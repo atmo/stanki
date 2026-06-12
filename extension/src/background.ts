@@ -98,7 +98,8 @@ function renderBubble(payload: BubblePayload) {
     'display:block;width:300px;max-height:calc(100vh - 16px);overflow:auto;background:#0f172a;color:#e2e8f0;' +
     'border:1px solid #334155;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.5);' +
     'padding:12px 14px;font-size:13px;line-height:1.45;box-sizing:border-box;}' +
-    '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;}' +
+    '.hd{display:flex;align-items:baseline;gap:8px;margin-bottom:4px;cursor:move;' +
+    'user-select:none;-webkit-user-select:none;}.hd .x{cursor:pointer;}' +
     '.lemma{font-weight:700;font-size:15px;color:#fff;}' +
     '.x{margin-left:auto;cursor:pointer;color:#94a3b8;font-size:15px;line-height:1;background:none;border:none;}' +
     '.slabel{display:flex;align-items:center;gap:6px;font-size:10px;text-transform:uppercase;' +
@@ -388,7 +389,31 @@ function renderBubble(payload: BubblePayload) {
   host.style.left = `${left}px`;
   host.style.top = `${top}px`;
 
+  // Drag the bubble by its header (so it can be moved off the word it covers).
+  let drag: { dx: number; dy: number } | null = null;
+  const onDragMove = (e: MouseEvent) => {
+    if (!drag) return;
+    const nx = Math.min(Math.max(8, e.clientX - drag.dx), window.innerWidth - host.offsetWidth - 8);
+    const ny = Math.min(Math.max(8, e.clientY - drag.dy), window.innerHeight - host.offsetHeight - 8);
+    host.style.left = `${nx}px`;
+    host.style.top = `${ny}px`;
+  };
+  const endDrag = () => {
+    drag = null;
+    document.removeEventListener('mousemove', onDragMove, true);
+    document.removeEventListener('mouseup', endDrag, true);
+  };
+  hd.addEventListener('mousedown', (e: MouseEvent) => {
+    if (e.button !== 0 || e.composedPath().includes(x)) return; // left-button only; not the ✕
+    const r = host.getBoundingClientRect();
+    drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+    e.preventDefault();
+    document.addEventListener('mousemove', onDragMove, true);
+    document.addEventListener('mouseup', endDrag, true);
+  });
+
   const close = () => {
+    endDrag();
     document.removeEventListener('keydown', onKey, true);
     document.removeEventListener('mousedown', onDown, true);
     window.removeEventListener('resize', close, true);
