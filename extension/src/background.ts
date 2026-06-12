@@ -10,6 +10,7 @@ import {
   getWordMatches,
   getAuthUrl,
   storeOAuthToken,
+  listRemoteDecks,
   type WordEntry,
 } from './drive-ext';
 import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
@@ -563,6 +564,7 @@ runtime.onMessage.addListener(
         if (msg.accessToken) {
           await storeOAuthToken(msg.accessToken, msg.expiresIn ?? 0);
           await flushPending();
+          await listRemoteDecks().catch(() => {}); // refresh deck cache + duplicate index
           await updateBadge();
         } else {
           console.error('[Stanki] OAuth redirect error:', msg.error);

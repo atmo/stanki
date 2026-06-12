@@ -1,4 +1,3 @@
-- only one button "sync with google drive" in extension
 - create a deck for 1000 most popular de/het words
 - create a deck for 1000 most popular irregular verbs
 idiom research

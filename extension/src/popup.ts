@@ -61,35 +61,13 @@ deckEl.addEventListener('change', async () => {
   setStatus(`Words will be added to “${name}”.`, 'ok');
 });
 
-$('refreshDecks').addEventListener('click', async () => {
-  setStatus('Loading decks from Drive…');
-  try {
-    const decks = await listRemoteDecks();
-    renderDecks(decks, currentTarget?.id ?? decks[0]?.id ?? '');
-    setStatus(`Loaded ${decks.length} deck(s).`, 'ok');
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    setStatus(
-      msg.includes('Not connected')
-        ? 'Connect to Google Drive first (button above), then refresh.'
-        : `Could not load decks: ${msg}`,
-      'err',
-    );
-  }
-});
+// ---- sync (one button: sign in if needed, else push + refresh decks) -------
 
-// ---- client id + connect ---------------------------------------------------
-
-$('saveId').addEventListener('click', async () => {
-  await setClientId(clientIdEl.value);
-  setStatus('Client ID saved.', 'ok');
-});
-
-$('connect').addEventListener('click', () => {
+// The background opens sign-in in a real tab (so the multi-account chooser
+// works); after you approve, it stores the token, pushes pending cards, refreshes
+// the deck list, and closes the tab.
+function startSignIn() {
   setStatus('Opening Google sign-in…');
-  // The background opens sign-in in a real tab (so the multi-account chooser
-  // works); after you approve, it stores the token, pushes pending cards, and
-  // closes the tab.
   runtime.sendMessage({ type: 'connect' }, (resp: { ok?: boolean; error?: string }) => {
     if (resp?.ok) {
       setStatus('Finish sign-in in the new tab — your cards sync automatically.', 'ok');
@@ -97,21 +75,39 @@ $('connect').addEventListener('click', () => {
       setStatus(resp?.error ?? 'Could not start sign-in', 'err');
     }
   });
+}
+
+$('sync').addEventListener('click', () => {
+  setStatus('Syncing…');
+  // Push pending via the background (it owns the stored token and auto-push
+  // de-dupe). If we're not connected yet, fall back to sign-in.
+  runtime.sendMessage({ type: 'flush' }, (resp: { ok?: boolean; pushed?: number; error?: string }) => {
+    if (!resp?.ok) {
+      if ((resp?.error ?? '').includes('Not connected')) startSignIn();
+      else setStatus(resp?.error ?? 'Sync failed', 'err');
+      return;
+    }
+    // Connected and pushed — pull the deck list (also rebuilds the duplicate index).
+    void (async () => {
+      const n = resp.pushed ?? 0;
+      try {
+        const decks = await listRemoteDecks();
+        renderDecks(decks, currentTarget?.id ?? decks[0]?.id ?? '');
+        await refresh();
+        setStatus(`Synced — ${n > 0 ? `pushed ${n} card(s), ` : ''}${decks.length} deck(s).`, 'ok');
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e);
+        setStatus(`Pushed, but couldn't refresh decks: ${msg}`, 'err');
+      }
+    })();
+  });
 });
 
-$('push').addEventListener('click', () => {
-  setStatus('Pushing…');
-  // Pushes whatever is pending using the stored token (no sign-in window).
-  runtime.sendMessage({ type: 'flush' }, (resp: { ok?: boolean; pushed?: number; error?: string }) => {
-    if (resp?.ok) {
-      const n = resp.pushed ?? 0;
-      // 0 usually means the cards were already pushed automatically on capture.
-      setStatus(n > 0 ? `Pushed ${n} card(s) to Drive.` : 'All cards already synced.', 'ok');
-      void refresh();
-    } else {
-      setStatus(resp?.error ?? 'Push failed', 'err');
-    }
-  });
+// ---- client id (one-time setup) --------------------------------------------
+
+$('saveId').addEventListener('click', async () => {
+  await setClientId(clientIdEl.value);
+  setStatus('Client ID saved.', 'ok');
 });
 
 // ---- init ------------------------------------------------------------------
