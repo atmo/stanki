@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import { lemmatize } from '@shared/lemma';
+import { dedupKey } from '@shared/dedup';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
@@ -68,14 +70,47 @@ function Context({ text, word }: { text: string; word: string }) {
   );
 }
 
+/** Spoiler hiding the target word so an example doesn't give it away. Uncovered
+ * automatically once the answer is revealed, or by clicking to peek beforehand. */
+function Spoiler({ children, reveal }: { children: ReactNode; reveal: boolean }) {
+  const [clicked, setClicked] = useState(false);
+  const shown = reveal || clicked;
+  return (
+    <span
+      className={'spoiler' + (shown ? ' shown' : '')}
+      onClick={() => setClicked(true)}
+      role="button"
+      tabIndex={0}
+      title={shown ? undefined : 'Reveal'}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** Wrap occurrences of the card's word (matched by lemma, so inflections count) in a spoiler. */
+function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
+  if (!lemma) return text;
+  return text
+    .split(/([\p{L}][\p{L}'’-]*)/u)
+    .map((part, i) =>
+      i % 2 === 1 && lemmatize(part.toLowerCase()) === lemma ? (
+        <Spoiler key={i} reveal={reveal}>{part}</Spoiler>
+      ) : (
+        part
+      ),
+    );
+}
+
 /** Render an answer, styling Wiktionary example lines (marked „…” by joinSenses)
- * italic/muted like the extension bubble. Plain answers render line-for-line. */
-function Answer({ text }: { text: string }) {
+ * italic/muted like the extension bubble, with the card's word spoiler-blocked in
+ * them so it isn't a clue (uncovered once `reveal` is true). Plain lines render as-is. */
+function Answer({ text, lemma, reveal }: { text: string; lemma: string; reveal: boolean }) {
   return (
     <>
       {text.split('\n').map((line, i) =>
         line.trim().startsWith('„') ? (
-          <div key={i} className="card-ex">{line}</div>
+          <div key={i} className="card-ex">{maskText(line, lemma, reveal)}</div>
         ) : (
           <div key={i}>{line}</div>
         ),
@@ -139,6 +174,14 @@ export function Review() {
     () => (item ? previewIntervals(item.schedule, settings) : null),
     [item, settings],
   );
+
+  // The card's word, as a lemma, to spoiler-block inside example sentences. Empty
+  // for multi-word fronts (phrase cards), where per-word masking doesn't apply.
+  const targetLemma = useMemo(() => {
+    if (!card) return '';
+    const key = dedupKey(card.front);
+    return key.includes(' ') ? '' : lemmatize(key);
+  }, [card]);
 
   async function grade(g: Grade) {
     if (!item || !card || !queue) return;
@@ -243,13 +286,14 @@ export function Review() {
       </div>
 
       <div className="card-face">
-        <div className="card-front">{prompt}</div>
+        <div className="card-front"><Answer text={prompt} lemma={targetLemma} reveal={revealed} /></div>
 
         {revealed && (
           <>
             <hr className="divider" />
             <div className="card-back">
-              {answer ? <Answer text={answer} /> : <span className="muted">(no answer yet)</span>}
+              {/* Answer side: no spoiler — in forward review the examples live here and are the answer. */}
+              {answer ? <Answer text={answer} lemma="" reveal /> : <span className="muted">(no answer yet)</span>}
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {card.context && <Context text={card.context} word={card.front} />}
