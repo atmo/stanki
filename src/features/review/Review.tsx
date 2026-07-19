@@ -68,6 +68,22 @@ function Context({ text, word }: { text: string; word: string }) {
   );
 }
 
+/** Render an answer, styling Wiktionary example lines (marked „…” by joinSenses)
+ * italic/muted like the extension bubble. Plain answers render line-for-line. */
+function Answer({ text }: { text: string }) {
+  return (
+    <>
+      {text.split('\n').map((line, i) =>
+        line.trim().startsWith('„') ? (
+          <div key={i} className="card-ex">{line}</div>
+        ) : (
+          <div key={i}>{line}</div>
+        ),
+      )}
+    </>
+  );
+}
+
 const GRADES: { grade: Grade; label: string; cls: string }[] = [
   { grade: 'again', label: 'Again', cls: 'btn-again' },
   { grade: 'good', label: 'Good', cls: 'btn-good' },
@@ -232,7 +248,9 @@ export function Review() {
         {revealed && (
           <>
             <hr className="divider" />
-            <div className="card-back">{answer || <span className="muted">(no answer yet)</span>}</div>
+            <div className="card-back">
+              {answer ? <Answer text={answer} /> : <span className="muted">(no answer yet)</span>}
+            </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {card.context && <Context text={card.context} word={card.front} />}
             {card.source?.url && (
