@@ -97,7 +97,10 @@ $('sync').addEventListener('click', () => {
         setStatus(`Synced — ${n > 0 ? `pushed ${n} card(s), ` : ''}${decks.length} deck(s).`, 'ok');
       } catch (e) {
         const msg = e instanceof Error ? e.message : String(e);
-        setStatus(`Pushed, but couldn't refresh decks: ${msg}`, 'err');
+        // A push with nothing pending succeeds without a token, so an expired
+        // session only surfaces here — prompt sign-in rather than error out.
+        if (msg.includes('Not connected')) startSignIn();
+        else setStatus(`Pushed, but couldn't refresh decks: ${msg}`, 'err');
       }
     })();
   });
