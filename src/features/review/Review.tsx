@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
 
 interface UndoSnapshot {
   prior: Card; // card state before the grade
@@ -154,6 +154,18 @@ export function Review() {
     setRevealed(true); // show the answer so the card can be re-graded immediately
   }
 
+  async function deleteCurrent() {
+    if (!card) return;
+    if (!confirm(`Delete card “${card.front}”? This cannot be undone.`)) return;
+    const cardId = card.id;
+    await deleteCard(cardId);
+    setUndoSnap(null); // the grade-undo no longer applies to a deleted card
+    setEditing(false);
+    setRevealed(false);
+    // Drop every queue item for this card (both directions can be queued).
+    setQueue((q) => (q ? q.filter((it) => it.card.id !== cardId) : q));
+  }
+
   function applyEdit(patch: CardPatch) {
     if (!card) return;
     const cardId = card.id;
@@ -210,6 +222,7 @@ export function Review() {
         <span className="review-actions">
           {undoSnap && <button className="btn btn-link" onClick={() => void undoReview()}>Undo</button>}
           <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
+          <button className="btn btn-link danger" onClick={() => void deleteCurrent()}>Delete</button>
         </span>
       </div>
 
