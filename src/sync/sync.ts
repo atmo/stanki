@@ -37,6 +37,9 @@ const REVIEWS_KIND = 'reviews';
 // only when the content changed since the last one, keeping the newest few.
 const BACKUP_KIND = 'backup';
 const MAX_BACKUPS = 5;
+// Don't write a fresh backup more than once per this interval, even if the data
+// changed — a full decks+cards dump every sync is the main sync-time cost.
+const BACKUP_MIN_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6 hours
 
 /** Stable SHA-256 of the decks+cards content, for change detection. */
 async function contentHash(decks: Deck[], cards: Card[]): Promise<string> {
@@ -59,6 +62,11 @@ async function maybeBackup(
     .filter((f) => f.appProperties?.kind === BACKUP_KIND)
     .sort((a, b) => (a.modifiedTime < b.modifiedTime ? 1 : -1)); // newest first
   if (backups[0]?.appProperties?.hash === hash) return; // unchanged since last backup
+  // Throttle: skip if the newest backup is still recent (the per-deck snapshots
+  // already hold the live data; backups are just rollback points).
+  if (backups[0] && Date.now() - new Date(backups[0].modifiedTime).getTime() < BACKUP_MIN_INTERVAL_MS) {
+    return;
+  }
 
   const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards };
   await createFile(
@@ -107,21 +115,39 @@ function synthDeck(id: string): Deck {
   return { id, name: id === INBOX_DECK_ID ? INBOX_DECK_NAME : id, createdAt: now, updatedAt: now };
 }
 
+/**
+ * Order-independent content signature for a deck and its cards. Equal signatures
+ * mean the push would be a no-op, so it can be skipped. `updatedAt` changes on
+ * any edit or review and the id set changes on add/delete, so any real change
+ * shows up here.
+ */
+function deckSig(deck: Deck | undefined, cards: Card[]): string {
+  const cs = cards
+    .map((c) => `${c.id}:${c.updatedAt}:${c.deleted ? 1 : 0}`)
+    .sort()
+    .join(',');
+  return `${deck?.updatedAt ?? 0}:${deck?.deleted ? 1 : 0}|${cs}`;
+}
+
 export async function syncAll(getToken: TokenProvider): Promise<void> {
   const deviceId = await getDeviceId();
 
-  // --- pull every remote snapshot ---------------------------------------
+  // --- pull every remote snapshot (concurrently) ------------------------
   const files = await listAppFiles(getToken);
   const fileByDeck = new Map<string, DriveFile>();
   const remoteDecks = new Map<string, Deck>();
-  let remoteCards: Card[] = [];
-  for (const f of files) {
-    const id = f.appProperties?.deckId;
-    if (!id) continue;
+  const remoteByDeck = new Map<string, Card[]>();
+  const remoteCards: Card[] = [];
+  const deckFiles = files.filter((f) => f.appProperties?.deckId);
+  const snaps = await Promise.all(
+    deckFiles.map((f) => downloadSnapshot(getToken, f.id).then((snap) => ({ f, snap }))),
+  );
+  for (const { f, snap } of snaps) {
+    const id = f.appProperties!.deckId;
     fileByDeck.set(id, f);
-    const snap = await downloadSnapshot(getToken, f.id);
     remoteDecks.set(id, snap.deck);
-    remoteCards = remoteCards.concat(snap.cards);
+    remoteByDeck.set(id, snap.cards);
+    for (const c of snap.cards) remoteCards.push(c);
   }
 
   // --- pull the shared review log ---------------------------------------
@@ -185,10 +211,15 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
   // snapshot is rewritten under optimistic locking (re-merge against the current
   // Drive copy on conflict), so a concurrent push from another device — the
   // extension adding cards, or another client's reviews — is never clobbered.
+  // Decks whose merged content matches what we just pulled are skipped entirely,
+  // so unchanged decks (e.g. imported reference decks) aren't re-uploaded.
   for (const [id, deck] of mergedDecks) {
     const file = fileByDeck.get(id);
     const intended = cardsByDeck.get(id) ?? [];
     if (file) {
+      if (deckSig(remoteDecks.get(id), remoteByDeck.get(id) ?? []) === deckSig(deck, intended)) {
+        continue; // our merge adds nothing to the remote copy — no write needed
+      }
       await mergeJsonFile<DeckSnapshot>(getToken, file.id, (current) => {
         const cards = gcTombstones(mergeCards(current.cards ?? [], intended));
         return buildSnapshot(mergeDeck(deck, current.deck), cards, deviceId);
