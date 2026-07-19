@@ -18,6 +18,35 @@ import {
 } from '../../db/repo';
 import type { Card, Deck, ReviewDirection } from '@shared/types';
 
+const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
+
+/** Read-only provenance + scheduling info shown while editing a card. */
+function CardMeta({ card }: { card: Card }) {
+  const sched = (
+    label: string,
+    s: { interval: number; repetitions: number; easeFactor: number; dueDate: number },
+  ) =>
+    s.interval > 0
+      ? `${label}: due ${fmtDate(s.dueDate)} · interval ${s.interval}d · reviews ${s.repetitions} · ease ${s.easeFactor.toFixed(2)}`
+      : `${label}: new (not yet reviewed)`;
+  return (
+    <div className="card-meta muted small">
+      {card.source?.url && (
+        <div>
+          Source:{' '}
+          <a href={card.source.url} target="_blank" rel="noreferrer">
+            {card.source.title || card.source.url}
+          </a>
+          {card.source.addedAt ? ` · added ${fmtDate(card.source.addedAt)}` : ''}
+        </div>
+      )}
+      <div>{sched('Forward', card)}</div>
+      {card.reverse && <div>{sched('Reverse', card.reverse)}</div>}
+      <div>Created {fmtDate(card.createdAt)}</div>
+    </div>
+  );
+}
+
 function CardRow({
   card,
   selected,
@@ -50,6 +79,7 @@ function CardRow({
         <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
         <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
         <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
+        <CardMeta card={card} />
         <div className="row">
           <button className="btn btn-primary" onClick={() => void save()}>Save</button>
           <button className="btn" onClick={() => setEditing(false)}>Cancel</button>
@@ -72,6 +102,11 @@ function CardRow({
         <span className="muted"> — {card.back || '(no answer)'}</span>
         {card.explanation && <p className="explanation small">{card.explanation}</p>}
         {card.context && <p className="context small">{card.context}</p>}
+        {card.source?.url && (
+          <a className="source-link small" href={card.source.url} target="_blank" rel="noreferrer">
+            {card.source.title || card.source.url}
+          </a>
+        )}
       </div>
       <div className="row">
         <button className="btn" onClick={() => setEditing(true)}>Edit</button>

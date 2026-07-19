@@ -167,6 +167,8 @@ body {
 .explanation.small { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
 .context mark { background: rgba(250, 204, 21, 0.35); color: inherit; padding: 0 2px; border-radius: 3px; }
 .source-link { color: #93c5fd; font-size: 0.8rem; text-align: center; word-break: break-all; }
+.card-meta { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px; word-break: break-word; }
+.card-meta a { color: #93c5fd; }
 .grade-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 .review-done { text-align: center; padding: 40px 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
 
