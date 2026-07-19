@@ -5,6 +5,7 @@ import { db } from '../../db/db';
 import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { LookupResults } from '../lookup/LookupResults';
+import { useLookup } from '../lookup/useLookup';
 import {
   createCard,
   updateCard,
@@ -61,6 +62,7 @@ function CardRow({
   const [back, setBack] = useState(card.back);
   const [context, setContext] = useState(card.context ?? '');
   const [explanation, setExplanation] = useState(card.explanation ?? '');
+  const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
     await updateCard(card.id, {
@@ -75,7 +77,12 @@ function CardRow({
   if (editing) {
     return (
       <li className="card-row editing">
-        <input className="input" value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front" />
+        <div className="row">
+          <input className="input" value={front} onChange={(e) => setFront(e.target.value)} placeholder="Front" />
+          <button className="btn" type="button" onClick={() => lookup(front.trim())} disabled={!front.trim()}>
+            Look up
+          </button>
+        </div>
         <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
         <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
         <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
@@ -84,6 +91,17 @@ function CardRow({
           <button className="btn btn-primary" onClick={() => void save()}>Save</button>
           <button className="btn" onClick={() => setEditing(false)}>Cancel</button>
         </div>
+        {lookupTerm && (
+          <LookupResults
+            lookups={lookups}
+            term={lemmatize(lookupTerm || front)}
+            front={front}
+            onUseLemma={(lemma, frontForm) => {
+              setFront(frontForm);
+              lookup(lemma);
+            }}
+          />
+        )}
       </li>
     );
   }

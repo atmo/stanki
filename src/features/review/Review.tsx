@@ -5,6 +5,8 @@ import { dedupKey } from '@shared/dedup';
 import type { Card, Grade } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
+import { LookupResults } from '../lookup/LookupResults';
+import { useLookup } from '../lookup/useLookup';
 
 interface UndoSnapshot {
   prior: Card; // card state before the grade
@@ -21,6 +23,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
   const [back, setBack] = useState(card.back);
   const [context, setContext] = useState(card.context ?? '');
   const [explanation, setExplanation] = useState(card.explanation ?? '');
+  const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
     const patch: CardPatch = {
@@ -35,7 +38,12 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
 
   return (
     <div className="card-form">
-      <input className="input" placeholder="Front" value={front} onChange={(e) => setFront(e.target.value)} />
+      <div className="row">
+        <input className="input" placeholder="Front" value={front} onChange={(e) => setFront(e.target.value)} />
+        <button className="btn" type="button" onClick={() => lookup(front.trim())} disabled={!front.trim()}>
+          Look up
+        </button>
+      </div>
       <textarea className="input" placeholder="Back" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
       <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
       <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
@@ -43,6 +51,17 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
         <button className="btn btn-primary" onClick={() => void save()}>Save</button>
         <button className="btn" onClick={onCancel}>Cancel</button>
       </div>
+      {lookupTerm && (
+        <LookupResults
+          lookups={lookups}
+          term={lemmatize(lookupTerm || front)}
+          front={front}
+          onUseLemma={(lemma, frontForm) => {
+            setFront(frontForm);
+            lookup(lemma);
+          }}
+        />
+      )}
     </div>
   );
 }
