@@ -128,6 +128,20 @@ describe('selectDue (daily limits)', () => {
     expect(q[0].schedule.interval).toBeGreaterThan(0);
     expect(q[1].schedule.interval).toBe(0);
   });
+
+  it('buries siblings: only one direction of a card per session', () => {
+    const fwd = { ...item('c', 0, 0), direction: 'forward' as const };
+    const rev = { ...item('c', 0, 0), direction: 'reverse' as const };
+    expect(selectDue([fwd, rev], { newToday: 0, reviewsToday: 0 }, settings, at)).toHaveLength(1);
+  });
+
+  it('bury prefers the due review over introducing the card’s other side', () => {
+    const fwdReview = { ...item('c', 5, 0), direction: 'forward' as const }; // reviewed, due
+    const revNew = { ...item('c', 0, 0), direction: 'reverse' as const }; // new side
+    const q = selectDue([fwdReview, revNew], { newToday: 0, reviewsToday: 0 }, settings, at);
+    expect(q).toHaveLength(1);
+    expect(q[0].schedule.interval).toBeGreaterThan(0); // the review, not the new sibling
+  });
 });
 
 describe('itemsForCard (review directions)', () => {

@@ -164,9 +164,13 @@ export async function reviewQueue(
   const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
   if (overLimit) {
     const cutoff = endOfLocalDay(now);
-    const due = items.filter(
-      (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < cutoff,
-    );
+    const seen = new Set<string>(); // bury siblings here too (one direction per card)
+    const due = items.filter((i) => {
+      if (i.card.deleted || i.schedule.interval === 0 || i.schedule.dueDate >= cutoff) return false;
+      if (seen.has(i.card.id)) return false;
+      seen.add(i.card.id);
+      return true;
+    });
     return shuffle(due);
   }
   return shuffle(selectDue(items, daily, settings, now));

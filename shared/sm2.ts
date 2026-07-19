@@ -84,6 +84,10 @@ export function itemsForCard(
 /**
  * Review items due now, capped by the per-day new/review limits. An item is
  * "new" until its first review (interval === 0). Reviews come first, then new.
+ *
+ * Buries siblings (Anki-style): a card's two directions never appear in the same
+ * session — reviews are picked first, so a due review wins over introducing that
+ * card's other side, and the buried side simply becomes due again another day.
  */
 export function selectDue(
   items: ReviewItem[],
@@ -99,8 +103,22 @@ export function selectDue(
     .sort((a, b) => a.schedule.dueDate - b.schedule.dueDate);
   const newRemaining = Math.max(0, settings.newCardsPerDay - daily.newToday);
   const reviewRemaining = Math.max(0, settings.maxReviewsPerDay - daily.reviewsToday);
-  const newItems = due.filter((i) => i.schedule.interval === 0).slice(0, newRemaining);
-  const reviewItems = due.filter((i) => i.schedule.interval > 0).slice(0, reviewRemaining);
+
+  const seen = new Set<string>(); // card ids already chosen — bury the sibling
+  const reviewItems: ReviewItem[] = [];
+  for (const it of due) {
+    if (it.schedule.interval === 0 || seen.has(it.card.id)) continue;
+    if (reviewItems.length >= reviewRemaining) continue;
+    reviewItems.push(it);
+    seen.add(it.card.id);
+  }
+  const newItems: ReviewItem[] = [];
+  for (const it of due) {
+    if (it.schedule.interval > 0 || seen.has(it.card.id)) continue;
+    if (newItems.length >= newRemaining) continue;
+    newItems.push(it);
+    seen.add(it.card.id);
+  }
   return [...reviewItems, ...newItems];
 }
 
