@@ -57,15 +57,14 @@ function fmt(days: number): string {
   return `${(days / 365).toFixed(1)}y`;
 }
 
-/** Render `context` with the captured word highlighted. */
-function Context({ text, word }: { text: string; word: string }) {
-  const i = word ? text.toLowerCase().indexOf(word.toLowerCase()) : -1;
-  if (i < 0) return <p className="context">{text}</p>;
+/** Render `context` with the card's word highlighted — matched by lemma, so an
+ * inflected form (plural, past participle, …) is highlighted too. */
+function Context({ text, lemma }: { text: string; lemma: string }) {
   return (
     <p className="context">
-      {text.slice(0, i)}
-      <mark>{text.slice(i, i + word.length)}</mark>
-      {text.slice(i + word.length)}
+      {mapWord(text, lemma, (w, k) => (
+        <mark key={k}>{w}</mark>
+      ))}
     </p>
   );
 }
@@ -88,18 +87,24 @@ function Spoiler({ children, reveal }: { children: ReactNode; reveal: boolean })
   );
 }
 
-/** Wrap occurrences of the card's word (matched by lemma, so inflections count) in a spoiler. */
-function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
+/** Split text and wrap each word whose lemma matches `lemma` (so inflected forms
+ * — plurals, past participles — are caught, not just the exact word). */
+function mapWord(
+  text: string,
+  lemma: string,
+  wrap: (word: string, key: number) => ReactNode,
+): ReactNode {
   if (!lemma) return text;
   return text
     .split(/([\p{L}][\p{L}'’-]*)/u)
-    .map((part, i) =>
-      i % 2 === 1 && lemmatize(part.toLowerCase()) === lemma ? (
-        <Spoiler key={i} reveal={reveal}>{part}</Spoiler>
-      ) : (
-        part
-      ),
-    );
+    .map((part, i) => (i % 2 === 1 && lemmatize(part.toLowerCase()) === lemma ? wrap(part, i) : part));
+}
+
+/** Wrap occurrences of the card's word in a spoiler. */
+function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
+  return mapWord(text, lemma, (w, k) => (
+    <Spoiler key={k} reveal={reveal}>{w}</Spoiler>
+  ));
 }
 
 /** Render an answer, styling Wiktionary example lines (marked „…” by joinSenses)
@@ -296,7 +301,7 @@ export function Review() {
               {answer ? <Answer text={answer} lemma="" reveal /> : <span className="muted">(no answer yet)</span>}
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
-            {card.context && <Context text={card.context} word={card.front} />}
+            {card.context && <Context text={card.context} lemma={targetLemma} />}
             {card.source?.url && (
               <a className="source-link" href={card.source.url} target="_blank" rel="noreferrer">
                 {card.source.title || card.source.url}
