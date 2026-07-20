@@ -34,10 +34,12 @@ export interface Card extends CardSchedule {
   id: string;
   deckId: string;
   front: string;
-  back: string;
+  back: string; // definitions only; example sentences live in `examples`
   context?: string; // sentence/paragraph captured from a webpage
   explanation?: string; // dictionary explanation (e.g. ANW), filled via lookup
-  source?: CardSource; // provenance when added via the extension
+  examples?: string[]; // example sentences, accumulated across captures
+  sources?: CardSource[]; // provenance (one per capture) when added via the extension
+  source?: CardSource; // deprecated single-source shape; read via cardSources()
 
   // Inline CardSchedule fields above are the *forward* schedule (prompt = front).
   reverse?: CardSchedule; // independent schedule for the reverse direction (prompt = back)
@@ -45,6 +47,11 @@ export interface Card extends CardSchedule {
   createdAt: number;
   updatedAt: number; // last edit OR last review (drives LWW merge)
   deleted?: boolean; // tombstone
+}
+
+/** Provenance list, tolerating both the new `sources[]` and the old single `source`. */
+export function cardSources(card: Pick<Card, 'sources' | 'source'>): CardSource[] {
+  return card.sources ?? (card.source ? [card.source] : []);
 }
 
 export interface ReviewLog {

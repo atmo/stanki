@@ -1,5 +1,10 @@
 import type { Card, Deck, DeckSnapshot, ReviewLog } from './types';
-import { SCHEMA_VERSION } from './types';
+import { SCHEMA_VERSION, cardSources } from './types';
+
+function dedupe<T>(arr: T[], key: (x: T) => string): T[] {
+  const seen = new Set<string>();
+  return arr.filter((x) => (seen.has(key(x)) ? false : (seen.add(key(x)), true)));
+}
 
 const TOMBSTONE_TTL_MS = 60 * 86_400_000; // GC deleted records after ~60 days
 export const REVIEW_SYNC_TTL_MS = 14 * 86_400_000; // only sync the last ~2 weeks of reviews
@@ -32,10 +37,18 @@ function pickNewer<T extends { updatedAt: number; deleted?: boolean }>(a: T, b: 
 function pickCard(a: Card, b: Card): Card {
   const aReviewed = a.interval > 0;
   const bReviewed = b.interval > 0;
-  if (!a.deleted && !b.deleted && aReviewed !== bReviewed) {
-    return aReviewed ? a : b;
-  }
-  return pickNewer(a, b);
+  const winner =
+    !a.deleted && !b.deleted && aReviewed !== bReviewed ? (aReviewed ? a : b) : pickNewer(a, b);
+
+  // examples and sources accumulate — union both copies so a capture on one
+  // device is never dropped by the other winning the last-write-wins merge.
+  const merged: Card = { ...winner };
+  const examples = dedupe([...(a.examples ?? []), ...(b.examples ?? [])], (e) => e);
+  const sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => s.url);
+  merged.examples = examples.length ? examples : undefined;
+  merged.sources = sources.length ? sources : undefined;
+  delete merged.source; // canonicalized into `sources`
+  return merged;
 }
 
 export function mergeDeck(local: Deck | undefined, remote: Deck | undefined): Deck {

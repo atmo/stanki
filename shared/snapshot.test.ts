@@ -66,6 +66,26 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
     const del = card('a', 200, { deleted: true });
     expect(mergeCards([reviewed], [del])[0].deleted).toBe(true);
   });
+
+  it('unions examples and sources from both copies (no capture lost)', () => {
+    const s1 = { url: 'u1', title: 't1', addedAt: 1 };
+    const s2 = { url: 'u2', title: 't2', addedAt: 2 };
+    const a = card('a', 100, { examples: ['ex1'], sources: [s1] });
+    const b = card('a', 200, { examples: ['ex2'], sources: [s2] });
+    const merged = mergeCards([a], [b])[0];
+    expect(merged.examples).toEqual(['ex1', 'ex2']);
+    expect(merged.sources).toEqual([s1, s2]);
+  });
+
+  it('de-dupes union entries and migrates a legacy single source', () => {
+    const s1 = { url: 'u1', title: 't1', addedAt: 1 };
+    const a = card('a', 100, { examples: ['ex1'], source: s1 }); // legacy shape
+    const b = card('a', 200, { examples: ['ex1'], sources: [s1] }); // same values
+    const merged = mergeCards([a], [b])[0];
+    expect(merged.examples).toEqual(['ex1']);
+    expect(merged.sources).toEqual([s1]);
+    expect(merged.source).toBeUndefined();
+  });
 });
 
 describe('mergeDeck', () => {
