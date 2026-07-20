@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createCard, ensureInboxDeck, getLastAddDeck, setLastAddDeck } from '../../db/repo';
-import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
+import { lookupWord, anwExplanation, joinSenses, senseExamples, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
 import { LookupResults } from '../lookup/LookupResults';
@@ -15,6 +15,7 @@ export function AddWord() {
   const [front, setFront] = useState(sharedText);
   const [back, setBack] = useState('');
   const [explanation, setExplanation] = useState('');
+  const [examples, setExamples] = useState<string[]>([]);
   const [context, setContext] = useState((params.get('context') ?? '').trim());
   const [deckId, setDeckId] = useState('');
   const [lookupTerm, setLookupTerm] = useState(sharedText);
@@ -79,6 +80,7 @@ export function AddWord() {
       setLookups(l);
       setBack((p) => p || joinSenses(l.free));
       setExplanation((p) => p || anwExplanation(l.anw));
+      setExamples((p) => (p.length ? p : senseExamples(l.free)));
     });
     return () => {
       cancelled = true;
@@ -92,6 +94,7 @@ export function AddWord() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
+      examples: examples.map((e) => e.trim()).filter(Boolean),
       context: context.trim() || undefined,
     });
     await setLastAddDeck(deckId);
@@ -103,6 +106,7 @@ export function AddWord() {
     setFront('');
     setBack('');
     setExplanation('');
+    setExamples([]);
     setContext('');
     setLookupTerm('');
     setLookups({ anw: null, free: null });
@@ -163,6 +167,7 @@ export function AddWord() {
         )}
         <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation" rows={3} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+        <textarea className="input" placeholder="Examples (one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
         <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
         <div className="row">
           <select className="input sel-move" value={deckId} onChange={(e) => setDeckId(e.target.value)}>

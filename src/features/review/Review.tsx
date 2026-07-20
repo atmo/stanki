@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
-import type { Card, Grade } from '@shared/types';
+import { type Card, type Grade, cardSources } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
 import { LookupResults } from '../lookup/LookupResults';
@@ -15,7 +15,7 @@ interface UndoSnapshot {
   done: number; // done count before the grade
 }
 
-type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation'>;
+type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation' | 'examples'>;
 
 /** Inline editor for the card under review. Keyed by card id so it resets per card. */
 function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: CardPatch) => void; onCancel: () => void }) {
@@ -23,6 +23,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
   const [back, setBack] = useState(card.back);
   const [context, setContext] = useState(card.context ?? '');
   const [explanation, setExplanation] = useState(card.explanation ?? '');
+  const [examples, setExamples] = useState<string[]>(card.examples ?? []);
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
@@ -31,6 +32,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
       back: back.trim(),
       context: context.trim() || undefined,
       explanation: explanation.trim() || undefined,
+      examples: examples.map((e) => e.trim()).filter(Boolean),
     };
     await updateCard(card.id, patch);
     onSave(patch);
@@ -46,6 +48,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
       </div>
       <textarea className="input" placeholder="Back" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
       <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+      <textarea className="input" placeholder="Examples (one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
       <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
       <div className="row">
         <button className="btn btn-primary" onClick={() => void save()}>Save</button>
@@ -126,7 +129,7 @@ function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
   ));
 }
 
-/** Render an answer, styling Wiktionary example lines (marked „…” by joinSenses)
+/** Render an answer, styling legacy example lines (marked „…” inside the back)
  * italic/muted like the extension bubble, with the card's word spoiler-blocked in
  * them so it isn't a clue (uncovered once `reveal` is true). Plain lines render as-is. */
 function Answer({ text, lemma, reveal }: { text: string; lemma: string; reveal: boolean }) {
@@ -139,6 +142,19 @@ function Answer({ text, lemma, reveal }: { text: string; lemma: string; reveal: 
           <div key={i}>{line}</div>
         ),
       )}
+    </>
+  );
+}
+
+/** The card's example sentences (in „…” quotes), styled like the bubble, with the
+ * word spoiler-blocked when `lemma` is set (reverse-review prompt). */
+function Examples({ items, lemma, reveal }: { items: string[] | undefined; lemma: string; reveal: boolean }) {
+  if (!items?.length) return null;
+  return (
+    <>
+      {items.map((ex, i) => (
+        <div key={i} className="card-ex">{maskText(`„${ex}”`, lemma, reveal)}</div>
+      ))}
     </>
   );
 }
@@ -310,22 +326,27 @@ export function Review() {
       </div>
 
       <div className="card-face">
-        <div className="card-front"><Answer text={prompt} lemma={targetLemma} reveal={revealed} /></div>
+        <div className="card-front">
+          <Answer text={prompt} lemma={targetLemma} reveal={revealed} />
+          {/* Reverse review: the examples are part of the prompt — spoiler the word. */}
+          {direction === 'reverse' && <Examples items={card.examples} lemma={targetLemma} reveal={revealed} />}
+        </div>
 
         {revealed && (
           <>
             <hr className="divider" />
             <div className="card-back">
-              {/* Answer side: no spoiler — in forward review the examples live here and are the answer. */}
               {answer ? <Answer text={answer} lemma="" reveal /> : <span className="muted">(no answer yet)</span>}
+              {/* Forward review: the examples live with the answer — no spoiler. */}
+              {direction === 'forward' && <Examples items={card.examples} lemma="" reveal />}
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {card.context && <Context text={card.context} lemma={targetLemma} />}
-            {card.source?.url && (
-              <a className="source-link" href={card.source.url} target="_blank" rel="noreferrer">
-                {card.source.title || card.source.url}
+            {cardSources(card).map((s, i) => (
+              <a key={i} className="source-link" href={s.url} target="_blank" rel="noreferrer">
+                {s.title || s.url}
               </a>
-            )}
+            ))}
           </>
         )}
       </div>

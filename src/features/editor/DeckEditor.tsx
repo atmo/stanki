@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
+import { lookupWord, anwExplanation, joinSenses, senseExamples, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
@@ -17,7 +17,7 @@ import {
   renameDeck,
   setReviewDirection,
 } from '../../db/repo';
-import type { Card, Deck, ReviewDirection } from '@shared/types';
+import { type Card, type Deck, type ReviewDirection, cardSources } from '@shared/types';
 
 const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
 
@@ -32,15 +32,15 @@ function CardMeta({ card }: { card: Card }) {
       : `${label}: new (not yet reviewed)`;
   return (
     <div className="card-meta muted small">
-      {card.source?.url && (
-        <div>
+      {cardSources(card).map((s, i) => (
+        <div key={i}>
           Source:{' '}
-          <a href={card.source.url} target="_blank" rel="noreferrer">
-            {card.source.title || card.source.url}
+          <a href={s.url} target="_blank" rel="noreferrer">
+            {s.title || s.url}
           </a>
-          {card.source.addedAt ? ` · added ${fmtDate(card.source.addedAt)}` : ''}
+          {s.addedAt ? ` · added ${fmtDate(s.addedAt)}` : ''}
         </div>
-      )}
+      ))}
       <div>{sched('Forward', card)}</div>
       {card.reverse && <div>{sched('Reverse', card.reverse)}</div>}
       <div>Created {fmtDate(card.createdAt)}</div>
@@ -62,6 +62,7 @@ function CardRow({
   const [back, setBack] = useState(card.back);
   const [context, setContext] = useState(card.context ?? '');
   const [explanation, setExplanation] = useState(card.explanation ?? '');
+  const [examples, setExamples] = useState<string[]>(card.examples ?? []);
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
@@ -70,6 +71,7 @@ function CardRow({
       back,
       context: context || undefined,
       explanation: explanation || undefined,
+      examples: examples.map((e) => e.trim()).filter(Boolean),
     });
     setEditing(false);
   }
@@ -85,6 +87,7 @@ function CardRow({
         </div>
         <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
         <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
+        <textarea className="input" value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} placeholder="Examples (one per line)" rows={2} />
         <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
         <CardMeta card={card} />
         <div className="row">
@@ -119,12 +122,15 @@ function CardRow({
         <strong>{card.front}</strong>
         <span className="muted"> — {card.back || '(no answer)'}</span>
         {card.explanation && <p className="explanation small">{card.explanation}</p>}
+        {card.examples?.map((ex, i) => (
+          <p key={i} className="context small">„{ex}”</p>
+        ))}
         {card.context && <p className="context small">{card.context}</p>}
-        {card.source?.url && (
-          <a className="source-link small" href={card.source.url} target="_blank" rel="noreferrer">
-            {card.source.title || card.source.url}
+        {cardSources(card).map((s, i) => (
+          <a key={i} className="source-link small" href={s.url} target="_blank" rel="noreferrer">
+            {s.title || s.url}
           </a>
-        )}
+        ))}
       </div>
       <div className="row">
         <button className="btn" onClick={() => setEditing(true)}>Edit</button>
@@ -148,6 +154,7 @@ export function DeckEditor() {
   const [back, setBack] = useState('');
   const [context, setContext] = useState('');
   const [explanation, setExplanation] = useState('');
+  const [examples, setExamples] = useState<string[]>([]);
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -178,6 +185,7 @@ export function DeckEditor() {
       setLookups(l);
       setBack((p) => p || joinSenses(l.free));
       setExplanation((p) => p || anwExplanation(l.anw));
+      setExamples((p) => (p.length ? p : senseExamples(l.free)));
     });
     return () => {
       cancelled = true;
@@ -213,11 +221,13 @@ export function DeckEditor() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
+      examples: examples.map((ex) => ex.trim()).filter(Boolean),
       context: context.trim() || undefined,
     });
     setFront('');
     setBack('');
     setExplanation('');
+    setExamples([]);
     setContext('');
     setLookupTerm('');
     setLookups(null);
@@ -317,6 +327,7 @@ export function DeckEditor() {
         </div>
         <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+        <textarea className="input" placeholder="Examples (optional, one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
         <textarea className="input" placeholder="Context (optional)" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
         <div className="row">
           <button className="btn btn-primary" type="submit">Add card</button>
