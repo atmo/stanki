@@ -23,8 +23,9 @@ export class StankiDB extends Dexie {
       meta: '&key',
     };
     this.version(1).stores(stores);
-    // v2: sources became an array and example sentences moved out of `back` into
-    // their own `examples` array. Normalize existing cards in place.
+    // v2: provenance became an array. Dictionary examples deliberately stay
+    // inline in `back`; the `examples` array holds sentences the extension
+    // captures from real pages.
     this.version(2)
       .stores(stores)
       .upgrade((tx) =>
@@ -34,19 +35,6 @@ export class StankiDB extends Dexie {
           .modify((c: Card) => {
             if (c.source && !c.sources) c.sources = [c.source as CardSource];
             delete c.source;
-            if (typeof c.back === 'string' && c.back.includes('„')) {
-              const exs: string[] = [];
-              const kept: string[] = [];
-              for (const line of c.back.split('\n')) {
-                const t = line.trim();
-                if (/^„.*”$/.test(t)) exs.push(t.slice(1, -1));
-                else kept.push(line);
-              }
-              if (exs.length) {
-                c.examples = [...(c.examples ?? []), ...exs];
-                c.back = kept.join('\n').trim();
-              }
-            }
           }),
       );
   }

@@ -121,19 +121,23 @@ export function anwExplanation(anw: LookupResult | null): string {
 }
 
 /**
- * All of a result's senses joined for a card back: one definition per line,
- * numbered when there are several. Examples are returned separately by
- * senseExamples() and stored in the card's `examples` array.
+ * All of a result's senses joined for a card back: one definition per line
+ * (numbered when there are several), each followed by its example(s) on their
+ * own line in „…” quotes.
+ *
+ * Dictionary examples stay inline in the back like this. The card's separate
+ * `examples` array is for sentences captured from real pages by the extension,
+ * which accumulate across captures.
  */
 export function joinSenses(result: LookupResult | null): string {
   if (!result) return '';
   const ss = result.senses;
   const numbered = ss.length > 1;
-  return ss.map((s, i) => (numbered ? `${i + 1}. ${s.definition}` : (s.definition ?? ''))).join('\n');
-}
-
-/** All example sentences across a result's senses, in order. */
-export function senseExamples(result: LookupResult | null): string[] {
-  if (!result) return [];
-  return result.senses.flatMap((s) => s.examples ?? []);
+  return ss
+    .map((s, i) => {
+      const head = numbered ? `${i + 1}. ${s.definition}` : (s.definition ?? '');
+      const examples = (s.examples ?? []).map((e) => `\n„${e}”`).join('');
+      return head + examples;
+    })
+    .join('\n');
 }

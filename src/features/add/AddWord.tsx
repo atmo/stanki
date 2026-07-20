@@ -3,7 +3,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createCard, ensureInboxDeck, getLastAddDeck, setLastAddDeck } from '../../db/repo';
-import { lookupWord, anwExplanation, joinSenses, senseExamples, type Lookups } from '@shared/lookup';
+import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
 import { LookupResults } from '../lookup/LookupResults';
@@ -78,9 +78,10 @@ export function AddWord() {
     void lookupWord(lookupTerm).then((l) => {
       if (cancelled) return;
       setLookups(l);
+      // Dictionary examples stay inline in the back; the examples array is for
+      // sentences captured from real pages by the extension.
       setBack((p) => p || joinSenses(l.free));
       setExplanation((p) => p || anwExplanation(l.anw));
-      setExamples((p) => (p.length ? p : senseExamples(l.free)));
     });
     return () => {
       cancelled = true;

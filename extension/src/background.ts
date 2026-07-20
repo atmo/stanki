@@ -13,7 +13,7 @@ import {
   listRemoteDecks,
   type WordEntry,
 } from './drive-ext';
-import { lookupWord, joinSenses, senseExamples, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
+import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
 import type { CardSource } from '@shared/types';
 import { lemmaCandidates, lemmaLabels } from '@shared/lemma';
 
@@ -62,9 +62,8 @@ interface BubblePayload {
   rect?: { left: number; top: number; bottom: number }; // anchor, kept across re-lookups
   loading?: boolean;
   lookups: Lookups;
-  back: string; // card back: Wiktionary definitions, from the lookup
+  back: string; // card back: Wiktionary definitions with their examples inline
   explanation: string; // card explanation: ANW senses
-  examples: string[]; // example sentences from the lookup, saved to the card
   duplicates: WordEntry[]; // existing cards for this word (article-insensitive)
   updateId?: string; // id of the same-word card in the target deck, if updating it
   existing?: {
@@ -402,7 +401,6 @@ function renderBubble(payload: BubblePayload) {
             context: ctxInput.value.trim(),
             back: backInput.value.trim(),
             explanation: explInput.value.trim(),
-            examples: payload.examples,
             url: payload.url,
             title: payload.title,
             updateId: payload.updateId,
@@ -517,7 +515,7 @@ async function updateBadge(): Promise<void> {
 
 type LookupBase = Omit<
   BubblePayload,
-  'loading' | 'lookups' | 'back' | 'explanation' | 'examples' | 'duplicates' | 'updateId' | 'existing'
+  'loading' | 'lookups' | 'back' | 'explanation' | 'duplicates' | 'updateId' | 'existing'
 >;
 
 /** Show a loading bubble, look up base.lemma in both dictionaries, show results. */
@@ -545,7 +543,6 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
         lookups: { anw: null, free: null },
         back: '',
         explanation: '',
-        examples: [],
         duplicates,
         updateId,
         existing: existingInfo,
@@ -564,7 +561,6 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
         // When updating an existing card, pre-fill from it so its fields are visible.
         back: existing ? existing.back : joinSenses(lookups.free),
         explanation: existing ? (existing.explanation ?? '') : anwExplanation(lookups.anw),
-        examples: senseExamples(lookups.free),
         duplicates,
         updateId,
         existing: existingInfo,
@@ -620,7 +616,6 @@ interface Msg {
     explanation: string;
     url: string;
     title: string;
-    examples?: string[]; // example sentences from the lookup
     updateId?: string; // update this existing card instead of creating a new one
   };
   base?: LookupBase; // for 'lookupBase' (re-run lookup on a chosen base form)
@@ -675,17 +670,14 @@ runtime.onMessage.addListener(
           // card's current arrays and deck.
           const existing = (await getWordMatches(p.word)).find((e) => e.id === p.updateId);
           const deckId = existing?.deckId ?? (await getTargetDeck()).id;
-          const examples = unionBy(
-            [...(existing?.examples ?? []), ...(p.examples ?? []), ...newExample],
-            (e) => e,
-          );
+          const examples = unionBy([...(existing?.examples ?? []), ...newExample], (e) => e);
           const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => s.url);
           await addPending(
             makeCard(deckId, p.word, p.back, p.context, p.explanation, { id: p.updateId, examples, sources }),
           );
         } else {
           const target = await getTargetDeck();
-          const examples = unionBy([...(p.examples ?? []), ...newExample], (e) => e);
+          const examples = newExample;
           await addPending(
             makeCard(target.id, p.word, p.back, p.context, p.explanation, { examples, sources: [newSource] }),
           );
