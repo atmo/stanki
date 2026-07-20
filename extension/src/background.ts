@@ -13,7 +13,8 @@ import {
   listRemoteDecks,
   type WordEntry,
 } from './drive-ext';
-import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
+import { lookupWord, joinSenses, senseExamples, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
+import type { CardSource } from '@shared/types';
 import { lemmaCandidates, lemmaLabels } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
@@ -61,9 +62,20 @@ interface BubblePayload {
   rect?: { left: number; top: number; bottom: number }; // anchor, kept across re-lookups
   loading?: boolean;
   lookups: Lookups;
-  back: string; // card back: Wiktionary senses (with examples), from the lookup
+  back: string; // card back: Wiktionary definitions, from the lookup
   explanation: string; // card explanation: ANW senses
+  examples: string[]; // example sentences from the lookup, saved to the card
   duplicates: WordEntry[]; // existing cards for this word (article-insensitive)
+  updateId?: string; // id of the same-word card in the target deck, if updating it
+  existing?: {
+    // the target-deck card being updated, shown read-only so its fields are visible
+    deck: string;
+    back: string;
+    context?: string;
+    explanation?: string;
+    examples?: string[];
+    sources?: CardSource[];
+  };
 }
 
 /**
@@ -322,18 +334,45 @@ function renderBubble(payload: BubblePayload) {
       card.insertBefore(bf, form);
     }
 
-    // Duplicate overview: existing cards already saved for this word (any deck).
-    if (payload.duplicates && payload.duplicates.length) {
+    // When the word is already in the target deck, show that card's current
+    // fields (read-only) — saving updates it: overwrites text, adds this
+    // example + URL.
+    if (payload.updateId && payload.existing) {
+      const ex = payload.existing;
+      const box = document.createElement('div');
+      box.className = 'dup';
+      const h = document.createElement('div');
+      h.className = 'dup-h';
+      h.textContent = `↻ Updating card in “${ex.deck}”`;
+      box.appendChild(h);
+      const addLine = (label: string, value: string) => {
+        if (!value) return;
+        const row = document.createElement('div');
+        row.className = 'dup-row';
+        const l = document.createElement('span');
+        l.className = 'dup-d';
+        l.textContent = `${label}: `;
+        row.appendChild(l);
+        row.appendChild(document.createTextNode(value));
+        box.appendChild(row);
+      };
+      addLine('Back', ex.back);
+      addLine('Context', ex.context ?? '');
+      for (const e of ex.examples ?? []) addLine('Example', `„${e}”`);
+      for (const s of ex.sources ?? []) addLine('URL', s.title || s.url);
+      card.appendChild(box);
+    }
+
+    // Cross-deck duplicates: the same word saved in *other* decks (info only).
+    const otherDecks = (payload.duplicates ?? []).filter((e) => e.id !== payload.updateId);
+    if (otherDecks.length) {
       const dup = document.createElement('div');
       dup.className = 'dup';
       const h = document.createElement('div');
       h.className = 'dup-h';
-      h.textContent =
-        payload.duplicates.length === 1
-          ? '⚠ Already saved'
-          : `⚠ Already saved (${payload.duplicates.length})`;
+      h.textContent = `⚠ Also saved elsewhere (${otherDecks.length})`;
       dup.appendChild(h);
-      for (const e of payload.duplicates) {
+      for (const e of otherDecks) {
         const row = document.createElement('div');
         row.className = 'dup-row';
         const f = document.createElement('span');
@@ -351,10 +390,10 @@ function renderBubble(payload: BubblePayload) {
 
     const add = document.createElement('button');
     add.className = 'add';
-    add.textContent = 'Add to Stanki';
+    add.textContent = payload.updateId ? 'Update in Stanki' : 'Add to Stanki';
     add.addEventListener('click', () => {
       add.disabled = true;
-      add.textContent = 'Adding…';
+      add.textContent = payload.updateId ? 'Updating…' : 'Adding…';
       chrome.runtime.sendMessage(
         {
           type: 'addFromLookup',
@@ -363,13 +402,15 @@ function renderBubble(payload: BubblePayload) {
             context: ctxInput.value.trim(),
             back: backInput.value.trim(),
             explanation: explInput.value.trim(),
+            examples: payload.examples,
             url: payload.url,
             title: payload.title,
+            updateId: payload.updateId,
           },
         },
         (resp: { ok?: boolean } | undefined) => {
           const ok = !!resp?.ok;
-          add.textContent = ok ? 'Added ✓' : 'Error — try again';
+          add.textContent = ok ? (payload.updateId ? 'Updated ✓' : 'Added ✓') : 'Error — try again';
           if (!ok) add.disabled = false;
         },
       );
@@ -440,22 +481,28 @@ function makeCard(
   back: string,
   context: string,
   explanation: string,
-  url: string,
-  title: string,
+  opts: { id?: string; examples?: string[]; sources?: CardSource[] },
 ): Card {
   const now = Date.now();
   return {
-    id: crypto.randomUUID(),
+    id: opts.id ?? crypto.randomUUID(),
     deckId,
     front: word,
     back,
-    context,
+    context: context || undefined,
     explanation: explanation || undefined,
-    source: { url, title, addedAt: now },
+    examples: opts.examples?.length ? opts.examples : undefined,
+    sources: opts.sources?.length ? opts.sources : undefined,
     createdAt: now,
     updatedAt: now,
     ...newCardState(now),
   };
+}
+
+/** Union arrays keeping first occurrence, keyed by `key`. */
+function unionBy<T>(arr: T[], key: (x: T) => string): T[] {
+  const seen = new Set<string>();
+  return arr.filter((x) => (seen.has(key(x)) ? false : (seen.add(key(x)), true)));
 }
 
 async function updateBadge(): Promise<void> {
@@ -470,18 +517,39 @@ async function updateBadge(): Promise<void> {
 
 type LookupBase = Omit<
   BubblePayload,
-  'loading' | 'lookups' | 'back' | 'explanation' | 'duplicates'
+  'loading' | 'lookups' | 'back' | 'explanation' | 'examples' | 'duplicates' | 'updateId' | 'existing'
 >;
 
 /** Show a loading bubble, look up base.lemma in both dictionaries, show results. */
 async function showLookup(tabId: number, base: LookupBase): Promise<void> {
   // Existing cards for the word the user would add (the chosen Front, article-stripped).
-  const duplicates = await getWordMatches(base.front).catch(() => []);
+  const duplicates: WordEntry[] = await getWordMatches(base.front).catch(() => []);
+  const target = await getTargetDeck();
+  const existing = duplicates.find((e) => e.deckId === target.id);
+  const updateId = existing?.id;
+  const existingInfo = existing && {
+    deck: existing.deck,
+    back: existing.back,
+    context: existing.context,
+    explanation: existing.explanation,
+    examples: existing.examples,
+    sources: existing.sources,
+  };
   await scripting.executeScript({
     target: { tabId },
     func: renderBubble,
     args: [
-      { ...base, loading: true, lookups: { anw: null, free: null }, back: '', explanation: '', duplicates },
+      {
+        ...base,
+        loading: true,
+        lookups: { anw: null, free: null },
+        back: '',
+        explanation: '',
+        examples: [],
+        duplicates,
+        updateId,
+        existing: existingInfo,
+      },
     ],
   });
   const lookups = await lookupWord(base.lemma);
@@ -493,9 +561,13 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
         ...base,
         loading: false,
         lookups,
-        back: joinSenses(lookups.free),
-        explanation: anwExplanation(lookups.anw),
+        // When updating an existing card, pre-fill from it so its fields are visible.
+        back: existing ? existing.back : joinSenses(lookups.free),
+        explanation: existing ? (existing.explanation ?? '') : anwExplanation(lookups.anw),
+        examples: senseExamples(lookups.free),
         duplicates,
+        updateId,
+        existing: existingInfo,
       },
     ],
   });
@@ -541,7 +613,16 @@ const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 interface Msg {
   type?: string;
-  payload?: { word: string; context: string; back: string; explanation: string; url: string; title: string };
+  payload?: {
+    word: string;
+    context: string;
+    back: string;
+    explanation: string;
+    url: string;
+    title: string;
+    examples?: string[]; // example sentences from the lookup
+    updateId?: string; // update this existing card instead of creating a new one
+  };
   base?: LookupBase; // for 'lookupBase' (re-run lookup on a chosen base form)
   typed?: { word: string; context: string; url: string; title: string; rect?: BubblePayload['rect'] };
   accessToken?: string | null;
@@ -585,8 +666,30 @@ runtime.onMessage.addListener(
     if (msg?.type === 'addFromLookup' && msg.payload) {
       const p = msg.payload;
       (async () => {
-        const target = await getTargetDeck();
-        await addPending(makeCard(target.id, p.word, p.back, p.context, p.explanation, p.url, p.title));
+        const now = Date.now();
+        const newSource: CardSource = { url: p.url, title: p.title, addedAt: now };
+        const newExample = p.context ? [p.context] : []; // this page's sentence
+        if (p.updateId) {
+          // Update the same-word card in the target deck: overwrite the text
+          // fields, accumulate examples + sources (union). Re-fetch to get the
+          // card's current arrays and deck.
+          const existing = (await getWordMatches(p.word)).find((e) => e.id === p.updateId);
+          const deckId = existing?.deckId ?? (await getTargetDeck()).id;
+          const examples = unionBy(
+            [...(existing?.examples ?? []), ...(p.examples ?? []), ...newExample],
+            (e) => e,
+          );
+          const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => s.url);
+          await addPending(
+            makeCard(deckId, p.word, p.back, p.context, p.explanation, { id: p.updateId, examples, sources }),
+          );
+        } else {
+          const target = await getTargetDeck();
+          const examples = unionBy([...(p.examples ?? []), ...newExample], (e) => e);
+          await addPending(
+            makeCard(target.id, p.word, p.back, p.context, p.explanation, { examples, sources: [newSource] }),
+          );
+        }
         await updateBadge();
         void flushPending().then(updateBadge).catch(() => {});
       })()
