@@ -2,11 +2,23 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store/store';
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { getSettings, saveSettings, exportAll, importBundle, type ExportBundle } from '../../db/repo';
-import { listBackups, restoreBackup, type BackupRef } from '../../sync/sync';
+import { listBackups, restoreBackup, fetchBackup, type BackupRef } from '../../sync/sync';
 import { getToken } from '../../sync/googleAuth';
 
 function fmtTime(ts: number | null): string {
   return ts ? new Date(ts).toLocaleString() : 'never';
+}
+
+/** Trigger a browser download of `data` as a pretty-printed JSON file. */
+function saveJson(data: unknown, filename: string): void {
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' }),
+  );
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function Settings() {
@@ -47,6 +59,19 @@ export function Settings() {
     }
   }
 
+  /** Save a Drive backup to a local JSON file. */
+  async function download(b: BackupRef) {
+    setBackupBusy(true);
+    try {
+      const bundle = await fetchBackup(getToken, b.id);
+      saveJson(bundle, `stanki-backup-${b.at.slice(0, 19).replace(/[:T]/g, '-')}.json`);
+    } catch (e) {
+      alert(`Download failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
   function update<K extends keyof SrSettings>(key: K, value: number) {
     const next = { ...s, [key]: value };
     setS(next);
@@ -54,14 +79,7 @@ export function Settings() {
   }
 
   async function doExport() {
-    const bundle = await exportAll();
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `stanki-export-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    saveJson(await exportAll(), `stanki-export-${new Date().toISOString().slice(0, 10)}.json`);
   }
 
   async function doImport(e: React.ChangeEvent<HTMLInputElement>) {
@@ -124,6 +142,7 @@ export function Settings() {
               {backups.map((b) => (
                 <li key={b.id} className="backup-item">
                   <span>{new Date(b.at).toLocaleString()} · {b.cards} cards</span>
+                  <button className="btn" onClick={() => void download(b)} disabled={backupBusy}>Download</button>
                   <button className="btn" onClick={() => void restore(b)} disabled={backupBusy}>Restore</button>
                 </li>
               ))}

@@ -94,6 +94,11 @@ export async function listBackups(getToken: TokenProvider): Promise<BackupRef[]>
     .map((f) => ({ id: f.id, at: f.modifiedTime, cards: Number(f.appProperties?.cards ?? 0) }));
 }
 
+/** A backup's raw contents, for saving to a file. */
+export async function fetchBackup(getToken: TokenProvider, fileId: string): Promise<unknown> {
+  return downloadJson<unknown>(getToken, fileId);
+}
+
 /**
  * Restore a backup: overwrite local decks+cards with the snapshot's versions
  * (cards added since the backup are kept). Bumps updatedAt so the restore wins
