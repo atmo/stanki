@@ -12,3 +12,6 @@ extension/dist
 
 # Machine-specific local agent config (absolute paths)
 .claude/
+
+# Scratch space (local backups, exports, etc.)
+tmp/
