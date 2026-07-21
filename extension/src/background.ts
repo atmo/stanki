@@ -289,6 +289,21 @@ function renderBubble(payload: BubblePayload) {
     const backInput = addField('Back', back, true);
     const explInput = addField('Explanation', explanation, true);
     const ctxInput = addField('Context', payload.context, true);
+    // Flag when this page's sentence is already one of the card's contexts (by
+    // text, not URL). Informational — the URL is still worth adding.
+    if (payload.updateId) {
+      const have = new Set((payload.existing?.contexts ?? []).map((c) => c.trim()));
+      const flag = document.createElement('div');
+      flag.style.cssText = 'color:#fde68a;font-size:11px;margin-top:2px;';
+      const refreshFlag = () => {
+        const dup = !!ctxInput.value.trim() && have.has(ctxInput.value.trim());
+        flag.textContent = dup ? '⚠ This sentence is already on the card' : '';
+        flag.style.display = dup ? 'block' : 'none';
+      };
+      ctxInput.addEventListener('input', refreshFlag);
+      refreshFlag();
+      form.appendChild(flag);
+    }
     card.appendChild(form);
 
     // Base-form choice above the fields: pick the reading you mean (e.g. noun
@@ -666,8 +681,9 @@ runtime.onMessage.addListener(
           // arrays and deck; keep the same rev so the arrays union (not replace).
           const existing = (await getWordMatches(p.word)).find((e) => e.id === p.updateId);
           const deckId = existing?.deckId ?? (await getTargetDeck()).id;
-          const contexts = unionBy([...(existing?.contexts ?? []), ...newContext], (c) => c);
-          const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => s.url);
+          // Skip a context already on the card (by trimmed text); URLs may repeat.
+          const contexts = unionBy([...(existing?.contexts ?? []), ...newContext], (c) => c.trim());
+          const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => `${s.url}\n${s.addedAt}`);
           await addPending(
             makeCard(deckId, existing?.front ?? p.word, existing?.back ?? p.back, existing?.explanation ?? p.explanation, {
               id: p.updateId,

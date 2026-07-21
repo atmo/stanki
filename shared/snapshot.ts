@@ -50,8 +50,10 @@ function pickCard(a: Card, b: Card): Card {
   let contexts: string[];
   let sources: CardSource[];
   if (ra === rb) {
-    contexts = dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c);
-    sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => s.url);
+    // Contexts de-dupe by their (trimmed) text; sources may repeat a URL, so key
+    // them by url+addedAt — enough to collapse the *same* capture synced twice.
+    contexts = dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c.trim());
+    sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => `${s.url}\n${s.addedAt}`);
   } else {
     const hi = ra > rb ? a : b;
     contexts = cardContexts(hi);
