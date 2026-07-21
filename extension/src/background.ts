@@ -479,7 +479,7 @@ function makeCard(
   back: string,
   context: string,
   explanation: string,
-  opts: { id?: string; examples?: string[]; sources?: CardSource[] },
+  opts: { id?: string; examples?: string[]; sources?: CardSource[]; rev?: number },
 ): Card {
   const now = Date.now();
   return {
@@ -491,6 +491,7 @@ function makeCard(
     explanation: explanation || undefined,
     examples: opts.examples?.length ? opts.examples : undefined,
     sources: opts.sources?.length ? opts.sources : undefined,
+    rev: opts.rev, // keep the card's array-authority so this update unions, not replaces
     createdAt: now,
     updatedAt: now,
     ...newCardState(now),
@@ -673,7 +674,12 @@ runtime.onMessage.addListener(
           const examples = unionBy([...(existing?.examples ?? []), ...newExample], (e) => e);
           const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => s.url);
           await addPending(
-            makeCard(deckId, p.word, p.back, p.context, p.explanation, { id: p.updateId, examples, sources }),
+            makeCard(deckId, p.word, p.back, p.context, p.explanation, {
+              id: p.updateId,
+              examples,
+              sources,
+              rev: existing?.rev, // same rev as the card being updated -> arrays union
+            }),
           );
         } else {
           const target = await getTargetDeck();

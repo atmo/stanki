@@ -40,6 +40,10 @@ export interface Card extends CardSchedule {
   examples?: string[]; // example sentences, accumulated across captures
   sources?: CardSource[]; // provenance (one per capture) when added via the extension
   source?: CardSource; // deprecated single-source shape; read via cardSources()
+  // Monotonic authority for the arrays above: on merge, a higher `rev` *replaces*
+  // examples/sources (rather than unioning), so an authoritative import/restore
+  // can drop entries. Equal `rev` still unions, so normal accumulation works.
+  rev?: number;
 
   // Inline CardSchedule fields above are the *forward* schedule (prompt = front).
   reverse?: CardSchedule; // independent schedule for the reverse direction (prompt = back)

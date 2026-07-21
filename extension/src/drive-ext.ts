@@ -113,6 +113,7 @@ export interface WordEntry {
   explanation?: string;
   examples?: string[];
   sources?: CardSource[];
+  rev?: number; // array-merge authority, carried so an update keeps accumulating
 }
 
 /** Project a Card into an index entry (normalizing old `source` → `sources`). */
@@ -127,6 +128,7 @@ export function cardEntry(c: Card, deckId: string, deckName: string): WordEntry 
     explanation: c.explanation,
     examples: c.examples,
     sources: cardSources(c),
+    rev: c.rev,
   };
 }
 

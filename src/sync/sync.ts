@@ -108,7 +108,8 @@ export async function restoreBackup(getToken: TokenProvider, fileId: string): Pr
   const bundle = await downloadJson<{ decks: Deck[]; cards: Card[] }>(getToken, fileId);
   const now = Date.now();
   const decks = (bundle.decks ?? []).map((d) => ({ ...d, updatedAt: now }));
-  const cards = (bundle.cards ?? []).map((c) => ({ ...c, updatedAt: now }));
+  // Authoritative: bump rev so the snapshot's arrays replace (not union) on sync.
+  const cards = (bundle.cards ?? []).map((c) => ({ ...c, updatedAt: now, rev: now }));
   await db.transaction('rw', db.decks, db.cards, async () => {
     await db.decks.bulkPut(decks);
     await db.cards.bulkPut(cards);

@@ -86,6 +86,24 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
     expect(merged.sources).toEqual([s1]);
     expect(merged.source).toBeUndefined();
   });
+
+  it('a higher rev replaces the arrays instead of unioning (authoritative import)', () => {
+    // The wrong copy still on Drive; the corrected import cleared examples with a bump.
+    const wrong = card('a', 100, { examples: ['dict-ex'], rev: 0 });
+    const fixed = card('a', 200, { examples: undefined, rev: 5 });
+    for (const merged of [mergeCards([wrong], [fixed])[0], mergeCards([fixed], [wrong])[0]]) {
+      expect(merged.examples).toBeUndefined(); // not resurrected
+      expect(merged.rev).toBe(5);
+    }
+  });
+
+  it('equal rev still unions, so later captures accumulate', () => {
+    const a = card('a', 100, { examples: ['ex1'], rev: 5 });
+    const b = card('a', 200, { examples: ['ex1', 'ex2'], rev: 5 });
+    const merged = mergeCards([a], [b])[0];
+    expect(merged.examples).toEqual(['ex1', 'ex2']);
+    expect(merged.rev).toBe(5);
+  });
 });
 
 describe('mergeDeck', () => {

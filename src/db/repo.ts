@@ -286,9 +286,14 @@ export async function exportAll(): Promise<ExportBundle> {
 
 export async function importBundle(bundle: ExportBundle): Promise<void> {
   if (bundle.app !== 'stanki') throw new Error('Not a Stanki export file');
+  // Import is authoritative: bump updatedAt (wins last-write-wins) and rev (its
+  // examples/sources replace, not union, so a corrected file isn't resurrected).
+  const now = Date.now();
+  const decks = bundle.decks.map((d) => ({ ...d, updatedAt: now }));
+  const cards = bundle.cards.map((c) => ({ ...c, updatedAt: now, rev: now }));
   await db.transaction('rw', db.decks, db.cards, async () => {
-    await db.decks.bulkPut(bundle.decks);
-    await db.cards.bulkPut(bundle.cards);
+    await db.decks.bulkPut(decks);
+    await db.cards.bulkPut(cards);
   });
 }
 

@@ -1,4 +1,4 @@
-import type { Card, Deck, DeckSnapshot, ReviewLog } from './types';
+import type { Card, CardSource, Deck, DeckSnapshot, ReviewLog } from './types';
 import { SCHEMA_VERSION, cardSources } from './types';
 
 function dedupe<T>(arr: T[], key: (x: T) => string): T[] {
@@ -40,13 +40,26 @@ function pickCard(a: Card, b: Card): Card {
   const winner =
     !a.deleted && !b.deleted && aReviewed !== bReviewed ? (aReviewed ? a : b) : pickNewer(a, b);
 
-  // examples and sources accumulate — union both copies so a capture on one
-  // device is never dropped by the other winning the last-write-wins merge.
+  // examples and sources normally accumulate — union both copies so a capture on
+  // one device is never dropped by the other winning last-write-wins. But a
+  // higher `rev` (bumped by an authoritative import/restore) *replaces* them, so
+  // a correction that removes entries can propagate instead of being resurrected.
   const merged: Card = { ...winner };
-  const examples = dedupe([...(a.examples ?? []), ...(b.examples ?? [])], (e) => e);
-  const sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => s.url);
+  const ra = a.rev ?? 0;
+  const rb = b.rev ?? 0;
+  let examples: string[];
+  let sources: CardSource[];
+  if (ra === rb) {
+    examples = dedupe([...(a.examples ?? []), ...(b.examples ?? [])], (e) => e);
+    sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => s.url);
+  } else {
+    const hi = ra > rb ? a : b;
+    examples = hi.examples ?? [];
+    sources = cardSources(hi);
+  }
   merged.examples = examples.length ? examples : undefined;
   merged.sources = sources.length ? sources : undefined;
+  merged.rev = Math.max(ra, rb) || undefined;
   delete merged.source; // canonicalized into `sources`
   return merged;
 }
