@@ -17,7 +17,8 @@ import {
   renameDeck,
   setReviewDirection,
 } from '../../db/repo';
-import { type Card, type Deck, type ReviewDirection, cardSources } from '@shared/types';
+import { type Card, type Deck, type ReviewDirection, cardSources, cardContexts } from '@shared/types';
+import { ContextsField } from '../../components/ContextsField';
 
 const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
 
@@ -60,18 +61,16 @@ function CardRow({
   const [editing, setEditing] = useState(false);
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
-  const [context, setContext] = useState(card.context ?? '');
+  const [contexts, setContexts] = useState<string[]>(cardContexts(card));
   const [explanation, setExplanation] = useState(card.explanation ?? '');
-  const [examples, setExamples] = useState<string[]>(card.examples ?? []);
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
     await updateCard(card.id, {
       front,
       back,
-      context: context || undefined,
       explanation: explanation || undefined,
-      examples: examples.map((e) => e.trim()).filter(Boolean),
+      contexts: contexts.map((c) => c.trim()).filter(Boolean),
     });
     setEditing(false);
   }
@@ -87,8 +86,8 @@ function CardRow({
         </div>
         <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
         <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
-        <textarea className="input" value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} placeholder="Examples (one per line)" rows={2} />
-        <textarea className="input" value={context} onChange={(e) => setContext(e.target.value)} placeholder="Context" rows={2} />
+        <label className="field-label">Context</label>
+        <ContextsField contexts={contexts} onChange={setContexts} />
         <CardMeta card={card} />
         <div className="row">
           <button className="btn btn-primary" onClick={() => void save()}>Save</button>
@@ -122,10 +121,9 @@ function CardRow({
         <strong>{card.front}</strong>
         <span className="muted"> — {card.back || '(no answer)'}</span>
         {card.explanation && <p className="explanation small">{card.explanation}</p>}
-        {card.examples?.map((ex, i) => (
-          <p key={i} className="context small">„{ex}”</p>
+        {cardContexts(card).map((c, i) => (
+          <p key={i} className="context small">{c}</p>
         ))}
-        {card.context && <p className="context small">{card.context}</p>}
         {cardSources(card).map((s, i) => (
           <a key={i} className="source-link small" href={s.url} target="_blank" rel="noreferrer">
             {s.title || s.url}
@@ -152,9 +150,8 @@ export function DeckEditor() {
   const navigate = useNavigate();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
-  const [context, setContext] = useState('');
+  const [contexts, setContexts] = useState<string[]>([]);
   const [explanation, setExplanation] = useState('');
-  const [examples, setExamples] = useState<string[]>([]);
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -222,14 +219,12 @@ export function DeckEditor() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
-      examples: examples.map((ex) => ex.trim()).filter(Boolean),
-      context: context.trim() || undefined,
+      contexts: contexts.map((c) => c.trim()).filter(Boolean),
     });
     setFront('');
     setBack('');
     setExplanation('');
-    setExamples([]);
-    setContext('');
+    setContexts([]);
     setLookupTerm('');
     setLookups(null);
   }
@@ -283,7 +278,7 @@ export function DeckEditor() {
   const q = search.trim().toLowerCase();
   const visibleCards = q
     ? data.cards.filter((c) =>
-        [c.front, c.back, c.explanation, c.context].some((f) => f?.toLowerCase().includes(q)),
+        [c.front, c.back, c.explanation, ...cardContexts(c)].some((f) => f?.toLowerCase().includes(q)),
       )
     : data.cards;
   const allSelected = visibleCards.length > 0 && visibleCards.every((c) => selected.has(c.id));
@@ -328,8 +323,7 @@ export function DeckEditor() {
         </div>
         <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
-        <textarea className="input" placeholder="Examples (optional, one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
-        <textarea className="input" placeholder="Context (optional)" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
+        <ContextsField contexts={contexts} onChange={setContexts} />
         <div className="row">
           <button className="btn btn-primary" type="submit">Add card</button>
           <button className="btn" type="button" onClick={() => setShowBulk((s) => !s)}>

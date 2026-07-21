@@ -4,7 +4,7 @@
 import { storageLocal } from './browserApi';
 import { DEFAULT_CLIENT_ID, DRIVE_SCOPE, OAUTH_REDIRECT } from './config';
 import type { Card, CardSource, Deck, DeckSnapshot } from '@shared/types';
-import { INBOX_DECK_ID, INBOX_DECK_NAME, cardSources } from '@shared/types';
+import { INBOX_DECK_ID, INBOX_DECK_NAME, cardSources, cardContexts } from '@shared/types';
 import { buildSnapshot, mergeCards } from '@shared/snapshot';
 import { dedupKey } from '@shared/dedup';
 import {
@@ -109,14 +109,13 @@ export interface WordEntry {
   deck: string; // deck name
   front: string;
   back: string;
-  context?: string;
   explanation?: string;
-  examples?: string[];
+  contexts?: string[];
   sources?: CardSource[];
   rev?: number; // array-merge authority, carried so an update keeps accumulating
 }
 
-/** Project a Card into an index entry (normalizing old `source` → `sources`). */
+/** Project a Card into an index entry (normalizing legacy shapes into arrays). */
 export function cardEntry(c: Card, deckId: string, deckName: string): WordEntry {
   return {
     id: c.id,
@@ -124,9 +123,8 @@ export function cardEntry(c: Card, deckId: string, deckName: string): WordEntry 
     deck: deckName,
     front: c.front,
     back: c.back,
-    context: c.context,
     explanation: c.explanation,
-    examples: c.examples,
+    contexts: cardContexts(c),
     sources: cardSources(c),
     rev: c.rev,
   };

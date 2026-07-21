@@ -2,11 +2,12 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
-import { type Card, type Grade, cardSources } from '@shared/types';
+import { type Card, type Grade, cardSources, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
+import { ContextsField } from '../../components/ContextsField';
 
 interface UndoSnapshot {
   prior: Card; // card state before the grade
@@ -15,24 +16,22 @@ interface UndoSnapshot {
   done: number; // done count before the grade
 }
 
-type CardPatch = Pick<Card, 'front' | 'back' | 'context' | 'explanation' | 'examples'>;
+type CardPatch = Pick<Card, 'front' | 'back' | 'explanation' | 'contexts'>;
 
 /** Inline editor for the card under review. Keyed by card id so it resets per card. */
 function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: CardPatch) => void; onCancel: () => void }) {
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
-  const [context, setContext] = useState(card.context ?? '');
+  const [contexts, setContexts] = useState<string[]>(cardContexts(card));
   const [explanation, setExplanation] = useState(card.explanation ?? '');
-  const [examples, setExamples] = useState<string[]>(card.examples ?? []);
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
   async function save() {
     const patch: CardPatch = {
       front: front.trim(),
       back: back.trim(),
-      context: context.trim() || undefined,
       explanation: explanation.trim() || undefined,
-      examples: examples.map((e) => e.trim()).filter(Boolean),
+      contexts: contexts.map((c) => c.trim()).filter(Boolean),
     };
     await updateCard(card.id, patch);
     onSave(patch);
@@ -48,8 +47,8 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
       </div>
       <textarea className="input" placeholder="Back" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
       <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
-      <textarea className="input" placeholder="Examples (one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
-      <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
+      <label className="field-label">Context</label>
+      <ContextsField contexts={contexts} onChange={setContexts} />
       <div className="row">
         <button className="btn btn-primary" onClick={() => void save()}>Save</button>
         <button className="btn" onClick={onCancel}>Cancel</button>
@@ -341,7 +340,9 @@ export function Review() {
               {direction === 'forward' && <Examples items={card.examples} lemma="" reveal />}
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
-            {card.context && <Context text={card.context} lemma={targetLemma} />}
+            {cardContexts(card).map((c, i) => (
+              <Context key={i} text={c} lemma={targetLemma} />
+            ))}
             {cardSources(card).map((s, i) => (
               <a key={i} className="source-link" href={s.url} target="_blank" rel="noreferrer">
                 {s.title || s.url}

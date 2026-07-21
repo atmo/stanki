@@ -7,6 +7,7 @@ import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lo
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
 import { LookupResults } from '../lookup/LookupResults';
+import { ContextsField } from '../../components/ContextsField';
 
 export function AddWord() {
   const [params] = useSearchParams();
@@ -15,8 +16,8 @@ export function AddWord() {
   const [front, setFront] = useState(sharedText);
   const [back, setBack] = useState('');
   const [explanation, setExplanation] = useState('');
-  const [examples, setExamples] = useState<string[]>([]);
-  const [context, setContext] = useState((params.get('context') ?? '').trim());
+  const initialContext = (params.get('context') ?? '').trim();
+  const [contexts, setContexts] = useState<string[]>(initialContext ? [initialContext] : []);
   const [deckId, setDeckId] = useState('');
   const [lookupTerm, setLookupTerm] = useState(sharedText);
   const [lookups, setLookups] = useState<Lookups | null>(lookupTerm ? null : { anw: null, free: null });
@@ -95,8 +96,7 @@ export function AddWord() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
-      examples: examples.map((e) => e.trim()).filter(Boolean),
-      context: context.trim() || undefined,
+      contexts: contexts.map((c) => c.trim()).filter(Boolean),
     });
     await setLastAddDeck(deckId);
     setSaved(true);
@@ -107,8 +107,7 @@ export function AddWord() {
     setFront('');
     setBack('');
     setExplanation('');
-    setExamples([]);
-    setContext('');
+    setContexts([]);
     setLookupTerm('');
     setLookups({ anw: null, free: null });
   }
@@ -168,8 +167,7 @@ export function AddWord() {
         )}
         <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
         <textarea className="input" placeholder="Explanation" rows={3} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
-        <textarea className="input" placeholder="Examples (one per line)" rows={2} value={examples.join('\n')} onChange={(e) => setExamples(e.target.value.split('\n'))} />
-        <textarea className="input" placeholder="Context" rows={2} value={context} onChange={(e) => setContext(e.target.value)} />
+        <ContextsField contexts={contexts} onChange={setContexts} />
         <div className="row">
           <select className="input sel-move" value={deckId} onChange={(e) => setDeckId(e.target.value)}>
             {decks?.map((d) => (

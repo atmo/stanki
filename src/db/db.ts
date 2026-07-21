@@ -37,6 +37,22 @@ export class StankiDB extends Dexie {
             delete c.source;
           }),
       );
+    // v3: the `examples` array is retired and the single `context` becomes an
+    // array. Page captures (previously in `examples`) and any `context` fold into
+    // `contexts`. Dictionary examples are unaffected — they live inline in `back`.
+    this.version(3)
+      .stores(stores)
+      .upgrade((tx) =>
+        tx
+          .table('cards')
+          .toCollection()
+          .modify((c: Card) => {
+            const contexts = [...new Set([...(c.examples ?? []), ...(c.context ? [c.context] : [])])];
+            if (contexts.length) c.contexts = contexts;
+            delete c.examples;
+            delete c.context;
+          }),
+      );
   }
 }
 

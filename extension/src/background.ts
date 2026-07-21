@@ -67,12 +67,11 @@ interface BubblePayload {
   duplicates: WordEntry[]; // existing cards for this word (article-insensitive)
   updateId?: string; // id of the same-word card in the target deck, if updating it
   existing?: {
-    // the target-deck card being updated, shown read-only so its fields are visible
+    // the target-deck card the capture will enrich, shown read-only
     deck: string;
     back: string;
-    context?: string;
     explanation?: string;
-    examples?: string[];
+    contexts?: string[];
     sources?: CardSource[];
   };
 }
@@ -334,15 +333,15 @@ function renderBubble(payload: BubblePayload) {
     }
 
     // When the word is already in the target deck, show that card's current
-    // fields (read-only) — saving updates it: overwrites text, adds this
-    // example + URL.
+    // fields (read-only) — the button becomes "Add context", appending this
+    // page's sentence + URL without touching the card's other fields.
     if (payload.updateId && payload.existing) {
       const ex = payload.existing;
       const box = document.createElement('div');
       box.className = 'dup';
       const h = document.createElement('div');
       h.className = 'dup-h';
-      h.textContent = `↻ Updating card in “${ex.deck}”`;
+      h.textContent = `＋ Add context to card in “${ex.deck}”`;
       box.appendChild(h);
       const addLine = (label: string, value: string) => {
         if (!value) return;
@@ -356,8 +355,7 @@ function renderBubble(payload: BubblePayload) {
         box.appendChild(row);
       };
       addLine('Back', ex.back);
-      addLine('Context', ex.context ?? '');
-      for (const e of ex.examples ?? []) addLine('Example', `„${e}”`);
+      for (const c of ex.contexts ?? []) addLine('Context', c);
       for (const s of ex.sources ?? []) addLine('URL', s.title || s.url);
       card.appendChild(box);
     }
@@ -389,10 +387,10 @@ function renderBubble(payload: BubblePayload) {
 
     const add = document.createElement('button');
     add.className = 'add';
-    add.textContent = payload.updateId ? 'Update in Stanki' : 'Add to Stanki';
+    add.textContent = payload.updateId ? 'Add context' : 'Add to Stanki';
     add.addEventListener('click', () => {
       add.disabled = true;
-      add.textContent = payload.updateId ? 'Updating…' : 'Adding…';
+      add.textContent = payload.updateId ? 'Adding context…' : 'Adding…';
       chrome.runtime.sendMessage(
         {
           type: 'addFromLookup',
@@ -408,7 +406,7 @@ function renderBubble(payload: BubblePayload) {
         },
         (resp: { ok?: boolean } | undefined) => {
           const ok = !!resp?.ok;
-          add.textContent = ok ? (payload.updateId ? 'Updated ✓' : 'Added ✓') : 'Error — try again';
+          add.textContent = ok ? (payload.updateId ? 'Context added ✓' : 'Added ✓') : 'Error — try again';
           if (!ok) add.disabled = false;
         },
       );
@@ -477,9 +475,8 @@ function makeCard(
   deckId: string,
   word: string,
   back: string,
-  context: string,
   explanation: string,
-  opts: { id?: string; examples?: string[]; sources?: CardSource[]; rev?: number },
+  opts: { id?: string; contexts?: string[]; sources?: CardSource[]; rev?: number },
 ): Card {
   const now = Date.now();
   return {
@@ -487,9 +484,8 @@ function makeCard(
     deckId,
     front: word,
     back,
-    context: context || undefined,
     explanation: explanation || undefined,
-    examples: opts.examples?.length ? opts.examples : undefined,
+    contexts: opts.contexts?.length ? opts.contexts : undefined,
     sources: opts.sources?.length ? opts.sources : undefined,
     rev: opts.rev, // keep the card's array-authority so this update unions, not replaces
     createdAt: now,
@@ -529,9 +525,8 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
   const existingInfo = existing && {
     deck: existing.deck,
     back: existing.back,
-    context: existing.context,
     explanation: existing.explanation,
-    examples: existing.examples,
+    contexts: existing.contexts,
     sources: existing.sources,
   };
   await scripting.executeScript({
@@ -664,28 +659,27 @@ runtime.onMessage.addListener(
       (async () => {
         const now = Date.now();
         const newSource: CardSource = { url: p.url, title: p.title, addedAt: now };
-        const newExample = p.context ? [p.context] : []; // this page's sentence
+        const newContext = p.context ? [p.context] : []; // this page's sentence
         if (p.updateId) {
-          // Update the same-word card in the target deck: overwrite the text
-          // fields, accumulate examples + sources (union). Re-fetch to get the
-          // card's current arrays and deck.
+          // "Add context": append this page's sentence + URL to the existing
+          // card, leaving its other fields alone. Re-fetch to get its current
+          // arrays and deck; keep the same rev so the arrays union (not replace).
           const existing = (await getWordMatches(p.word)).find((e) => e.id === p.updateId);
           const deckId = existing?.deckId ?? (await getTargetDeck()).id;
-          const examples = unionBy([...(existing?.examples ?? []), ...newExample], (e) => e);
+          const contexts = unionBy([...(existing?.contexts ?? []), ...newContext], (c) => c);
           const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => s.url);
           await addPending(
-            makeCard(deckId, p.word, p.back, p.context, p.explanation, {
+            makeCard(deckId, existing?.front ?? p.word, existing?.back ?? p.back, existing?.explanation ?? p.explanation, {
               id: p.updateId,
-              examples,
+              contexts,
               sources,
-              rev: existing?.rev, // same rev as the card being updated -> arrays union
+              rev: existing?.rev,
             }),
           );
         } else {
           const target = await getTargetDeck();
-          const examples = newExample;
           await addPending(
-            makeCard(target.id, p.word, p.back, p.context, p.explanation, { examples, sources: [newSource] }),
+            makeCard(target.id, p.word, p.back, p.explanation, { contexts: newContext, sources: [newSource] }),
           );
         }
         await updateBadge();

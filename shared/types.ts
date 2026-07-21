@@ -34,14 +34,16 @@ export interface Card extends CardSchedule {
   id: string;
   deckId: string;
   front: string;
-  back: string; // definitions only; example sentences live in `examples`
-  context?: string; // sentence/paragraph captured from a webpage
+  back: string; // definitions, with any dictionary examples inline
   explanation?: string; // dictionary explanation (e.g. ANW), filled via lookup
-  examples?: string[]; // example sentences, accumulated across captures
-  sources?: CardSource[]; // provenance (one per capture) when added via the extension
-  source?: CardSource; // deprecated single-source shape; read via cardSources()
+  contexts?: string[]; // sentences captured from pages, one per capture (accumulate)
+  sources?: CardSource[]; // provenance URL, one per capture (accumulate)
+  // Legacy shapes, read via cardContexts()/cardSources() and migrated away locally.
+  context?: string;
+  examples?: string[];
+  source?: CardSource;
   // Monotonic authority for the arrays above: on merge, a higher `rev` *replaces*
-  // examples/sources (rather than unioning), so an authoritative import/restore
+  // contexts/sources (rather than unioning), so an authoritative import/restore
   // can drop entries. Equal `rev` still unions, so normal accumulation works.
   rev?: number;
 
@@ -56,6 +58,16 @@ export interface Card extends CardSchedule {
 /** Provenance list, tolerating both the new `sources[]` and the old single `source`. */
 export function cardSources(card: Pick<Card, 'sources' | 'source'>): CardSource[] {
   return card.sources ?? (card.source ? [card.source] : []);
+}
+
+/**
+ * Captured context sentences, tolerating legacy shapes: the old single `context`
+ * and the retired `examples[]` (which held page captures) both fold in here.
+ */
+export function cardContexts(card: Pick<Card, 'contexts' | 'context' | 'examples'>): string[] {
+  if (card.contexts) return card.contexts;
+  const legacy = [...(card.examples ?? []), ...(card.context ? [card.context] : [])];
+  return [...new Set(legacy)];
 }
 
 export interface ReviewLog {
