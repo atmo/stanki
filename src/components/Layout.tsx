@@ -1,6 +1,15 @@
-import type { ReactNode } from 'react';
+import type { ClipboardEvent, ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useStore } from '../store/store';
+
+/** Copy as plain text so pasting a word/sentence elsewhere (e.g. Google Docs)
+ * doesn't carry the card's fonts, colours, highlights, or spoiler blocks. */
+function plainCopy(e: ClipboardEvent) {
+  const text = window.getSelection()?.toString();
+  if (!text) return;
+  e.clipboardData.setData('text/plain', text);
+  e.preventDefault();
+}
 
 function SyncBadge() {
   const { connected, syncStatus, configured, syncNow } = useStore();
@@ -32,7 +41,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <SyncBadge />
         </nav>
       </header>
-      <main className="content">{children}</main>
+      <main className="content" onCopy={plainCopy}>{children}</main>
     </div>
   );
 }
