@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
-import { dedupKey } from '@shared/dedup';
+import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type Grade, cardSources, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
@@ -78,12 +78,12 @@ function fmt(days: number): string {
   return `${(days / 365).toFixed(1)}y`;
 }
 
-/** Render `context` with the card's word highlighted — matched by lemma, so an
- * inflected form (plural, past participle, …) is highlighted too. */
-function Context({ text, lemma }: { text: string; lemma: string }) {
+/** Render `context` with the card's word highlighted — lemma-aware (inflections),
+ * and separable-verb-aware. */
+function Context({ text, match }: { text: string; match: Matcher }) {
   return (
     <p className="context">
-      {mapWord(text, lemma, (w, k) => (
+      {mapWord(text, match, (w, k) => (
         <mark key={k}>{w}</mark>
       ))}
     </p>
@@ -108,22 +108,22 @@ function Spoiler({ children, reveal }: { children: ReactNode; reveal: boolean })
   );
 }
 
-/** Split text and wrap each word whose lemma matches `lemma` (so inflected forms
- * — plurals, past participles — are caught, not just the exact word). */
+/** Split text and wrap each word the sentence's matcher accepts (lemma-aware, so
+ * inflections and separable-verb parts are caught, not just the exact word). */
 function mapWord(
   text: string,
-  lemma: string,
+  matcher: Matcher,
   wrap: (word: string, key: number) => ReactNode,
 ): ReactNode {
-  if (!lemma) return text;
+  const match = matcher(text);
   return text
     .split(/([\p{L}][\p{L}'’-]*)/u)
-    .map((part, i) => (i % 2 === 1 && lemmatize(part.toLowerCase()) === lemma ? wrap(part, i) : part));
+    .map((part, i) => (i % 2 === 1 && match(part) ? wrap(part, i) : part));
 }
 
 /** Wrap occurrences of the card's word in a spoiler. */
-function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
-  return mapWord(text, lemma, (w, k) => (
+function maskText(text: string, match: Matcher, reveal: boolean): ReactNode {
+  return mapWord(text, match, (w, k) => (
     <Spoiler key={k} reveal={reveal}>{w}</Spoiler>
   ));
 }
@@ -131,29 +131,16 @@ function maskText(text: string, lemma: string, reveal: boolean): ReactNode {
 /** Render an answer, styling legacy example lines (marked „…” inside the back)
  * italic/muted like the extension bubble, with the card's word spoiler-blocked in
  * them so it isn't a clue (uncovered once `reveal` is true). Plain lines render as-is. */
-function Answer({ text, lemma, reveal }: { text: string; lemma: string; reveal: boolean }) {
+function Answer({ text, match, reveal }: { text: string; match: Matcher; reveal: boolean }) {
   return (
     <>
       {text.split('\n').map((line, i) =>
         line.trim().startsWith('„') ? (
-          <div key={i} className="card-ex">{maskText(line, lemma, reveal)}</div>
+          <div key={i} className="card-ex">{maskText(line, match, reveal)}</div>
         ) : (
           <div key={i}>{line}</div>
         ),
       )}
-    </>
-  );
-}
-
-/** The card's example sentences (in „…” quotes), styled like the bubble, with the
- * word spoiler-blocked when `lemma` is set (reverse-review prompt). */
-function Examples({ items, lemma, reveal }: { items: string[] | undefined; lemma: string; reveal: boolean }) {
-  if (!items?.length) return null;
-  return (
-    <>
-      {items.map((ex, i) => (
-        <div key={i} className="card-ex">{maskText(`„${ex}”`, lemma, reveal)}</div>
-      ))}
     </>
   );
 }
@@ -214,13 +201,9 @@ export function Review() {
     [item, settings],
   );
 
-  // The card's word, as a lemma, to spoiler-block inside example sentences. Empty
-  // for multi-word fronts (phrase cards), where per-word masking doesn't apply.
-  const targetLemma = useMemo(() => {
-    if (!card) return '';
-    const key = dedupKey(card.front);
-    return key.includes(' ') ? '' : lemmatize(key);
-  }, [card]);
+  // Predicate matching the card's word (and, for separable verbs, its parts) to
+  // spoiler-block / highlight inside sentences. Matches nothing for phrase cards.
+  const matchWord = useMemo(() => (card ? wordMatcher(card.front) : NO_MATCH), [card]);
 
   async function grade(g: Grade) {
     if (!item || !card || !queue) return;
@@ -325,23 +308,21 @@ export function Review() {
       </div>
 
       <div className="card-face">
+        {/* Reverse review: the prompt is the back, whose examples must not reveal
+            the word — spoiler it. Forward: prompt is just the word, nothing to mask. */}
         <div className="card-front">
-          <Answer text={prompt} lemma={targetLemma} reveal={revealed} />
-          {/* Reverse review: the examples are part of the prompt — spoiler the word. */}
-          {direction === 'reverse' && <Examples items={card.examples} lemma={targetLemma} reveal={revealed} />}
+          <Answer text={prompt} match={direction === 'reverse' ? matchWord : NO_MATCH} reveal={revealed} />
         </div>
 
         {revealed && (
           <>
             <hr className="divider" />
             <div className="card-back">
-              {answer ? <Answer text={answer} lemma="" reveal /> : <span className="muted">(no answer yet)</span>}
-              {/* Forward review: the examples live with the answer — no spoiler. */}
-              {direction === 'forward' && <Examples items={card.examples} lemma="" reveal />}
+              {answer ? <Answer text={answer} match={NO_MATCH} reveal /> : <span className="muted">(no answer yet)</span>}
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {cardContexts(card).map((c, i) => (
-              <Context key={i} text={c} lemma={targetLemma} />
+              <Context key={i} text={c} match={matchWord} />
             ))}
             {cardSources(card).map((s, i) => (
               <a key={i} className="source-link" href={s.url} target="_blank" rel="noreferrer">
