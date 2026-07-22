@@ -128,19 +128,19 @@ function maskText(text: string, match: Matcher, reveal: boolean): ReactNode {
   ));
 }
 
-/** Render an answer, styling legacy example lines (marked „…” inside the back)
- * italic/muted like the extension bubble, with the card's word spoiler-blocked in
- * them so it isn't a clue (uncovered once `reveal` is true). Plain lines render as-is. */
+/** Render an answer, styling example lines (marked „…” inside the back)
+ * italic/muted like the extension bubble. The card's word is spoiler-blocked in
+ * every line (uncovered once `reveal` is true) so that when the back is the
+ * reverse-review prompt, a word sitting in a plain definition or an un-quoted
+ * example isn't a clue. In forward review `match` is NO_MATCH, so nothing masks. */
 function Answer({ text, match, reveal }: { text: string; match: Matcher; reveal: boolean }) {
   return (
     <>
-      {text.split('\n').map((line, i) =>
-        line.trim().startsWith('„') ? (
-          <div key={i} className="card-ex">{maskText(line, match, reveal)}</div>
-        ) : (
-          <div key={i}>{line}</div>
-        ),
-      )}
+      {text.split('\n').map((line, i) => (
+        <div key={i} className={line.trim().startsWith('„') ? 'card-ex' : undefined}>
+          {maskText(line, match, reveal)}
+        </div>
+      ))}
     </>
   );
 }
