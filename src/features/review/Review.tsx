@@ -163,6 +163,7 @@ export function Review() {
   const [deckName, setDeckName] = useState('');
   const [undoSnap, setUndoSnap] = useState<UndoSnapshot | null>(null);
   const [more, setMore] = useState<ReviewItem[] | null>(null); // extra over-limit reviews
+  const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
 
   useEffect(() => {
     void (async () => {
@@ -204,6 +205,8 @@ export function Review() {
   // Predicate matching the card's word (and, for separable verbs, its parts) to
   // spoiler-block / highlight inside sentences. Matches nothing for phrase cards.
   const matchWord = useMemo(() => (card ? wordMatcher(card.front) : NO_MATCH), [card]);
+  // Hide the clue again whenever we move to a new card / direction.
+  useEffect(() => setClue(false), [card?.id, direction]);
 
   async function grade(g: Grade) {
     if (!item || !card || !queue) return;
@@ -314,6 +317,16 @@ export function Review() {
           <Answer text={prompt} match={direction === 'reverse' ? matchWord : NO_MATCH} reveal={revealed} />
         </div>
 
+        {!revealed && clue && (
+          <div className="clue">
+            {/* Contexts with the word covered — a usage hint that doesn't give the
+                answer away (tap the block to peek at the word itself). */}
+            {cardContexts(card).map((c, i) => (
+              <p key={i} className="context">{maskText(c, matchWord, false)}</p>
+            ))}
+          </div>
+        )}
+
         {revealed && (
           <>
             <hr className="divider" />
@@ -334,9 +347,16 @@ export function Review() {
       </div>
 
       {!revealed ? (
-        <button className="btn btn-primary btn-block" onClick={() => setRevealed(true)}>
-          Show answer
-        </button>
+        <>
+          {cardContexts(card).length > 0 && (
+            <button className="btn btn-block btn-clue" onClick={() => setClue((v) => !v)}>
+              {clue ? 'Hide clue' : '💡 Show clue'}
+            </button>
+          )}
+          <button className="btn btn-primary btn-block" onClick={() => setRevealed(true)}>
+            Show answer
+          </button>
+        </>
       ) : (
         <div className="grade-row">
           {GRADES.map(({ grade: g, label, cls }) => (
