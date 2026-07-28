@@ -17,9 +17,14 @@ import {
   renameDeck,
   setReviewDirection,
   setDeckDescription,
+  setDeckSettings,
+  effectiveSettings,
+  getSettings,
 } from '../../db/repo';
 import { type Card, type Deck, type ReviewDirection, cardSources, cardContexts } from '@shared/types';
+import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { ContextsField } from '../../components/ContextsField';
+import { SettingsFields } from '../../components/SettingsFields';
 
 const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
 
@@ -159,6 +164,11 @@ export function DeckEditor() {
   const [search, setSearch] = useState('');
   const [lookupTerm, setLookupTerm] = useState('');
   const [lookups, setLookups] = useState<Lookups | null>(null);
+  const [globalSettings, setGlobalSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
+
+  useEffect(() => {
+    void getSettings().then(setGlobalSettings);
+  }, []);
 
   const data = useLiveQuery(async () => {
     const deck = await db.decks.get(id);
@@ -325,6 +335,24 @@ export function DeckEditor() {
           onBlur={(e) => void setDeckDescription(id, e.target.value)}
         />
       </label>
+
+      <div className="field">
+        <label className="checkline">
+          <input
+            type="checkbox"
+            checked={!!deck.settings}
+            onChange={(e) => void setDeckSettings(id, e.target.checked ? effectiveSettings(deck, globalSettings) : undefined)}
+          />
+          <span>Custom scheduling &amp; limits for this deck</span>
+        </label>
+        {deck.settings ? (
+          <div className="deck-settings">
+            <SettingsFields value={deck.settings} onChange={(key, v) => void setDeckSettings(id, { ...deck.settings!, [key]: v })} />
+          </div>
+        ) : (
+          <p className="muted small">Using the global settings.</p>
+        )}
+      </div>
 
       <form className="card-form" onSubmit={add}>
         <div className="row">

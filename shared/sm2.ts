@@ -1,18 +1,11 @@
-import type { Card, CardDirection, CardSchedule, Grade, ReviewDirection } from './types';
+import type { Card, CardDirection, CardSchedule, Grade, ReviewDirection, SrSettings } from './types';
+
+export type { SrSettings }; // re-export so existing '@shared/sm2' importers keep working
 
 const DAY_MS = 86_400_000;
 const MIN_MS = 60_000;
 const MINS_PER_DAY = 1440;
 const MIN_EASE = 1.3;
-
-export interface SrSettings {
-  startingEase: number; // default 2.5
-  easyBonus: number; // multiplier applied to interval on "easy"
-  easyFirstInterval: number; // days a new card jumps to when graded "easy"
-  againInterval: number; // minutes to wait after "again" (min 1)
-  newCardsPerDay: number; // max brand-new cards introduced per deck per day
-  maxReviewsPerDay: number; // max review (non-new) cards per deck per day
-}
 
 export const DEFAULT_SETTINGS: SrSettings = {
   startingEase: 2.5,

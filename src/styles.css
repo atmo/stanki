@@ -152,6 +152,8 @@ body {
 .deck-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .deck-name { font-weight: 600; }
 .deck-desc { color: var(--muted); font-size: 0.82rem; white-space: pre-wrap; }
+.checkline { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.deck-settings { border-left: 2px solid var(--border); padding-left: 12px; margin-top: 8px; }
 .deck-meta { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; }
 .deck-actions { display: flex; gap: 8px; flex-shrink: 0; }
 

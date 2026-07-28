@@ -4,7 +4,7 @@ import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type Grade, cardSources, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
@@ -166,7 +166,7 @@ export function Review() {
 
   useEffect(() => {
     void (async () => {
-      const s = await getSettings();
+      const s = await getDeckSettings(id);
       setSettings(s);
       setDeckName((await getDeck(id))?.name ?? '');
       setQueue(await reviewQueue(id, s));

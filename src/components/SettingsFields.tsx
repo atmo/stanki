@@ -1,0 +1,41 @@
+import type { SrSettings } from '@shared/sm2';
+
+/** The scheduling + daily-limit inputs, shared by global Settings and the
+ * per-deck override editor. Purely controlled: it renders `value` and reports
+ * each change via `onChange`. */
+export function SettingsFields({ value: s, onChange }: { value: SrSettings; onChange: <K extends keyof SrSettings>(key: K, v: number) => void }) {
+  return (
+    <>
+      <label className="field">
+        <span>Starting ease ({s.startingEase.toFixed(2)})</span>
+        <input type="range" min={1.3} max={3.5} step={0.1} value={s.startingEase}
+          onChange={(e) => onChange('startingEase', Number(e.target.value))} />
+      </label>
+      <label className="field">
+        <span>Easy bonus ({s.easyBonus.toFixed(2)}×)</span>
+        <input type="range" min={1} max={2} step={0.05} value={s.easyBonus}
+          onChange={(e) => onChange('easyBonus', Number(e.target.value))} />
+      </label>
+      <label className="field">
+        <span>Easy first interval (days)</span>
+        <input type="number" className="input" min={1} max={365} value={s.easyFirstInterval}
+          onChange={(e) => onChange('easyFirstInterval', Math.max(1, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
+        <span>Again interval (minutes)</span>
+        <input type="number" className="input" min={1} max={1440} value={s.againInterval}
+          onChange={(e) => onChange('againInterval', Math.max(1, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
+        <span>New cards / day</span>
+        <input type="number" className="input" min={0} max={500} value={s.newCardsPerDay}
+          onChange={(e) => onChange('newCardsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
+        <span>Max reviews / day</span>
+        <input type="number" className="input" min={0} max={9999} value={s.maxReviewsPerDay}
+          onChange={(e) => onChange('maxReviewsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />
+      </label>
+    </>
+  );
+}

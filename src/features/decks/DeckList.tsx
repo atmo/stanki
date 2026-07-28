@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
-import { createDeck, getSettings, importDeck, type ExportBundle } from '../../db/repo';
+import { createDeck, getSettings, importDeck, effectiveSettings, type ExportBundle } from '../../db/repo';
 import { selectDue, itemsForCard, startOfDay, endOfLocalDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
@@ -40,25 +40,26 @@ export function DeckList() {
 
     const byDeck = new Map<
       string,
-      { total: number; newDue: number; reviewDue: number; dueReviews: number }
+      { total: number; newDue: number; reviewDue: number; dueReviews: number; reviewCap: number }
     >();
     for (const deck of decks) {
       const dc = cardsByDeck.get(deck.id) ?? [];
       const d = daily.get(deck.id) ?? { newToday: 0, reviewsToday: 0 };
       const direction = deck.reviewDirection ?? 'forward';
-      const items = dc.flatMap((c) => itemsForCard(c, direction, settings));
-      const due = selectDue(items, d, settings, now);
+      const eff = effectiveSettings(deck, settings); // per-deck overrides win
+      const items = dc.flatMap((c) => itemsForCard(c, direction, eff));
+      const due = selectDue(items, d, eff, now);
       const newDue = due.filter((i) => i.schedule.interval === 0).length;
       // All reviews due today ignoring the daily cap — so a capped-out deck can
       // still be opened to study extra reviews.
       const dueReviews = items.filter(
         (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < endOfLocalDay(now),
       ).length;
-      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue, dueReviews });
+      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
-    return { decks, byDeck, reviewCap: settings.maxReviewsPerDay };
+    return { decks, byDeck };
   }, []);
 
   async function onCreate(e: React.FormEvent) {
@@ -112,7 +113,7 @@ export function DeckList() {
 
       <ul className="deck-list">
         {data.decks.map((deck) => {
-          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0, dueReviews: 0 };
+          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0, dueReviews: 0, reviewCap: 0 };
           // Reviews due today beyond today's cap — studyable over the limit.
           const extraReviews = Math.max(0, stats.dueReviews - stats.reviewDue);
           // Enable Review if anything's in today's session, or extra reviews are
@@ -132,7 +133,7 @@ export function DeckList() {
                     <span className="badge badge-due" title="Cards to revisit">{stats.reviewDue} review</span>
                   )}
                   {extraReviews > 0 && (
-                    <span className="badge badge-extra" title={`${extraReviews} more due today, beyond the ${data.reviewCap}/day review cap`}>
+                    <span className="badge badge-extra" title={`${extraReviews} more due today, beyond the ${stats.reviewCap}/day review cap`}>
                       +{extraReviews} more
                     </span>
                   )}

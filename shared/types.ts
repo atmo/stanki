@@ -14,7 +14,18 @@ export interface Deck {
   updatedAt: number;
   reviewDirection?: ReviewDirection; // default 'forward'
   description?: string; // optional free-text notes about the deck
+  settings?: SrSettings; // per-deck scheduling/limit overrides; absent = use global
   deleted?: boolean; // soft-delete tombstone for sync convergence
+}
+
+/** Spaced-repetition tuning. Held globally, optionally overridden per deck. */
+export interface SrSettings {
+  startingEase: number; // default 2.5
+  easyBonus: number; // multiplier applied to interval on "easy"
+  easyFirstInterval: number; // days a new card jumps to when graded "easy"
+  againInterval: number; // minutes to wait after "again" (min 1)
+  newCardsPerDay: number; // max brand-new cards introduced per deck per day
+  maxReviewsPerDay: number; // max review (non-new) cards per deck per day
 }
 
 export interface CardSource {

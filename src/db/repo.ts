@@ -43,6 +43,21 @@ export async function getSettings(): Promise<SrSettings> {
 }
 export const saveSettings = (s: SrSettings) => setMeta('srSettings', s);
 
+/** A deck's effective settings: its own overrides if present, else the global set. */
+export function effectiveSettings(deck: Pick<Deck, 'settings'> | undefined, global: SrSettings): SrSettings {
+  return { ...global, ...(deck?.settings ?? {}) };
+}
+
+export async function getDeckSettings(deckId: string): Promise<SrSettings> {
+  const [global, deck] = await Promise.all([getSettings(), db.decks.get(deckId)]);
+  return effectiveSettings(deck, global);
+}
+
+/** Set (or clear, with undefined) a deck's scheduling/limit overrides. */
+export async function setDeckSettings(id: string, settings: SrSettings | undefined): Promise<void> {
+  await db.decks.update(id, { settings, updatedAt: Date.now() });
+}
+
 export const getLastSync = () => getMeta<number | null>('lastSync', null);
 export const setLastSync = (ts: number) => setMeta('lastSync', ts);
 
@@ -165,7 +180,8 @@ export async function reviewQueue(
     dailyCounts(deckId, now),
   ]);
   const direction = deck?.reviewDirection ?? 'forward';
-  const items = cards.flatMap((c) => itemsForCard(c, direction, settings));
+  const eff = effectiveSettings(deck, settings); // per-deck overrides win
+  const items = cards.flatMap((c) => itemsForCard(c, direction, eff));
   if (overLimit) {
     const cutoff = endOfLocalDay(now);
     const seen = new Set<string>(); // bury siblings here too (one direction per card)
@@ -177,7 +193,7 @@ export async function reviewQueue(
     });
     return shuffle(due);
   }
-  return shuffle(selectDue(items, daily, settings, now));
+  return shuffle(selectDue(items, daily, eff, now));
 }
 
 export interface NewCardInput {
@@ -191,6 +207,7 @@ export interface NewCardInput {
 
 export async function createCard(input: NewCardInput): Promise<Card> {
   const now = Date.now();
+  const settings = await getDeckSettings(input.deckId); // per-deck starting ease
   const card: Card = {
     id: uid(),
     deckId: input.deckId,
@@ -201,7 +218,7 @@ export async function createCard(input: NewCardInput): Promise<Card> {
     sources: input.sources?.length ? input.sources : undefined,
     createdAt: now,
     updatedAt: now,
-    ...newCardState(now),
+    ...newCardState(now, settings),
   };
   await db.cards.put(card);
   return card;
@@ -241,7 +258,7 @@ export async function gradeCard(
   direction: CardDirection,
   grade: Grade,
 ): Promise<GradeResult> {
-  const settings = await getSettings();
+  const settings = await getDeckSettings(card.deckId);
   const now = Date.now();
   const prev = directionSchedule(card, direction, settings);
   const next = scheduleState(prev, grade, now, settings);
