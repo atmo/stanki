@@ -118,6 +118,7 @@ body {
 .bar-new { background: #2563eb; }
 .bar-rev { background: #2dd4bf; }
 .bar-due { background: var(--primary); }
+.bar-add { background: #a78bfa; }
 .bar-day { height: 1em; margin-top: 3px; font-size: 0.6rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
 .bar-month { align-self: flex-start; height: 1em; font-size: 0.6rem; line-height: 1; color: var(--muted); white-space: nowrap; overflow: visible; }
 .chart-title { display: flex; align-items: center; gap: 6px; margin: 12px 0 2px; font-size: 0.82rem; color: var(--muted); }

@@ -183,6 +183,24 @@ export function Stats() {
     const history = buildHistory(byDay);
     const historyByDeck = new Map([...byDayByDeck].map(([id, bd]) => [id, buildHistory(bd)] as const));
 
+    // Cards added per day, from each card's createdAt — overall and per deck.
+    const addedByDay = new Map<number, number>();
+    const addedByDayByDeck = new Map<string, Map<number, number>>();
+    for (const c of cards) {
+      const day = startOfDay(c.createdAt);
+      addedByDay.set(day, (addedByDay.get(day) ?? 0) + 1);
+      let ad = addedByDayByDeck.get(c.deckId);
+      if (!ad) addedByDayByDeck.set(c.deckId, (ad = new Map()));
+      ad.set(day, (ad.get(day) ?? 0) + 1);
+    }
+    const buildAdded = (m: Map<number, number>) =>
+      Array.from({ length: HISTORY_DAYS }, (_, i) => {
+        const day = today - (HISTORY_DAYS - 1 - i) * DAY;
+        return { day, value: m.get(day) ?? 0 };
+      });
+    const added = buildAdded(addedByDay);
+    const addedByDeck = new Map([...addedByDayByDeck].map(([id, m]) => [id, buildAdded(m)] as const));
+
     // Hardest cards: most-lapsed first, then lowest ease (min over both
     // directions). Only surface cards that have actually struggled.
     const hardest = cards
@@ -209,6 +227,8 @@ export function Stats() {
       byDeck,
       history,
       historyByDeck,
+      added,
+      addedByDeck,
       ret,
       answers,
       lapses30,
@@ -224,7 +244,7 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, history, historyByDeck, ret, answers, lapses30, hardest } = data;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, history, historyByDeck, added, addedByDeck, ret, answers, lapses30, hardest } = data;
 
   const answerTotal = answers.again + answers.good + answers.easy;
 
@@ -246,6 +266,11 @@ export function Stats() {
   const introBars = activeHistory.map((h) => ({ day: h.day, value: h.nw, cls: 'bar-new', title: `${fmtDay(h.day)}: ${h.nw} introduced` }));
   const reviewMax = Math.max(1, ...activeHistory.map((h) => h.rv));
   const reviewBars = activeHistory.map((h) => ({ day: h.day, value: h.rv, cls: 'bar-rev', title: `${fmtDay(h.day)}: ${h.rv} reviewed` }));
+
+  const activeAdded = scopeId === 'all' ? added : (addedByDeck.get(scopeId) ?? added.map((a) => ({ day: a.day, value: 0 })));
+  const addedMax = Math.max(1, ...activeAdded.map((a) => a.value));
+  const addedBars = activeAdded.map((a) => ({ day: a.day, value: a.value, cls: 'bar-add', title: `${fmtDay(a.day)}: ${a.value} added` }));
+  const addedSum = activeAdded.reduce((s, a) => s + a.value, 0);
 
   const showFilter = deckOptions.length > 1;
 
@@ -346,6 +371,15 @@ export function Stats() {
         <BarChart bars={introBars} max={introMax} />
         <div className="chart-title"><span className="dot bar-rev" /> Reviewed</div>
         <BarChart bars={reviewBars} max={reviewMax} />
+      </section>
+
+      <section className="panel">
+        <h2>Cards added</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
+        <p className="muted small">
+          New cards added per day (last {HISTORY_DAYS} days). <b>{addedSum}</b> added in this window.
+        </p>
+        <BarChart bars={addedBars} max={addedMax} />
       </section>
 
       <section className="panel">
