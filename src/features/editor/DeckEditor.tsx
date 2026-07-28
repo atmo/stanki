@@ -21,7 +21,7 @@ import {
   effectiveSettings,
   getSettings,
 } from '../../db/repo';
-import { type Card, type Deck, type ReviewDirection, cardSources, cardContexts } from '@shared/types';
+import { type Card, type CardContext, type Deck, type ReviewDirection, cardContexts } from '@shared/types';
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { ContextsField } from '../../components/ContextsField';
 import { SettingsFields } from '../../components/SettingsFields';
@@ -39,13 +39,11 @@ function CardMeta({ card }: { card: Card }) {
       : `${label}: new (not yet reviewed)`;
   return (
     <div className="card-meta muted small">
-      {cardSources(card).map((s, i) => (
+      {cardContexts(card).filter((c) => c.url).map((c, i) => (
         <div key={i}>
           Source:{' '}
-          <a href={s.url} target="_blank" rel="noreferrer">
-            {s.title || s.url}
-          </a>
-          {s.addedAt ? ` · added ${fmtDate(s.addedAt)}` : ''}
+          <a href={c.url} target="_blank" rel="noreferrer">{c.url}</a>
+          {c.addedAt ? ` · added ${fmtDate(c.addedAt)}` : ''}
         </div>
       ))}
       <div>{sched('Forward', card)}</div>
@@ -67,7 +65,7 @@ function CardRow({
   const [editing, setEditing] = useState(false);
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
-  const [contexts, setContexts] = useState<string[]>(cardContexts(card));
+  const [contexts, setContexts] = useState<CardContext[]>(cardContexts(card));
   const [explanation, setExplanation] = useState(card.explanation ?? '');
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
@@ -76,7 +74,7 @@ function CardRow({
       front,
       back,
       explanation: explanation || undefined,
-      contexts: contexts.map((c) => c.trim()).filter(Boolean),
+      contexts: contexts.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text),
     });
     setEditing(false);
   }
@@ -128,12 +126,10 @@ function CardRow({
         <span className="muted"> — {card.back || '(no answer)'}</span>
         {card.explanation && <p className="explanation small">{card.explanation}</p>}
         {cardContexts(card).map((c, i) => (
-          <p key={i} className="context small">{c}</p>
-        ))}
-        {cardSources(card).map((s, i) => (
-          <a key={i} className="source-link small" href={s.url} target="_blank" rel="noreferrer">
-            {s.title || s.url}
-          </a>
+          <p key={i} className="context small">
+            {c.text}
+            {c.url && <> <a className="ctx-src" href={c.url} target="_blank" rel="noreferrer" title={c.url}>↗</a></>}
+          </p>
         ))}
       </div>
       <div className="row">
@@ -156,7 +152,7 @@ export function DeckEditor() {
   const navigate = useNavigate();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
-  const [contexts, setContexts] = useState<string[]>([]);
+  const [contexts, setContexts] = useState<CardContext[]>([]);
   const [explanation, setExplanation] = useState('');
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
@@ -230,7 +226,7 @@ export function DeckEditor() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
-      contexts: contexts.map((c) => c.trim()).filter(Boolean),
+      contexts: contexts.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text),
     });
     setFront('');
     setBack('');
@@ -289,7 +285,7 @@ export function DeckEditor() {
   const q = search.trim().toLowerCase();
   const visibleCards = q
     ? data.cards.filter((c) =>
-        [c.front, c.back, c.explanation, ...cardContexts(c)].some((f) => f?.toLowerCase().includes(q)),
+        [c.front, c.back, c.explanation, ...cardContexts(c).map((x) => x.text)].some((f) => f?.toLowerCase().includes(q)),
       )
     : data.cards;
   const allSelected = visibleCards.length > 0 && visibleCards.every((c) => selected.has(c.id));

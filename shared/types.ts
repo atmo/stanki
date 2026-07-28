@@ -28,6 +28,15 @@ export interface SrSettings {
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
 }
 
+/** A captured usage sentence, optionally with the page URL it came from. A
+ * capture with no sentence stores a descriptive `text` (e.g. the page title). */
+export interface CardContext {
+  text: string;
+  url?: string;
+  addedAt?: number;
+}
+
+/** Legacy provenance shape (pre-fold); read only for migration/import. */
 export interface CardSource {
   url: string;
   title: string;
@@ -48,15 +57,16 @@ export interface Card extends CardSchedule {
   front: string;
   back: string; // definitions, with any dictionary examples inline
   explanation?: string; // dictionary explanation (e.g. ANW), filled via lookup
-  contexts?: string[]; // sentences captured from pages, one per capture (accumulate)
-  sources?: CardSource[]; // provenance URL, one per capture (accumulate)
-  // Legacy shapes, read via cardContexts()/cardSources() and migrated away locally.
+  contexts?: CardContext[]; // captured sentences (+ their URL), one per capture (accumulate)
+  // Legacy shapes, read via cardContexts() and migrated away locally: string[]
+  // contexts, the retired separate sources[], and the older single fields.
+  sources?: CardSource[];
   context?: string;
   examples?: string[];
   source?: CardSource;
-  // Monotonic authority for the arrays above: on merge, a higher `rev` *replaces*
-  // contexts/sources (rather than unioning), so an authoritative import/restore
-  // can drop entries. Equal `rev` still unions, so normal accumulation works.
+  // Monotonic authority for `contexts`: on merge, a higher `rev` *replaces* it
+  // (rather than unioning), so an authoritative import/restore can drop entries.
+  // Equal `rev` still unions, so normal accumulation works.
   rev?: number;
 
   // Inline CardSchedule fields above are the *forward* schedule (prompt = front).
@@ -67,19 +77,44 @@ export interface Card extends CardSchedule {
   deleted?: boolean; // tombstone
 }
 
-/** Provenance list, tolerating both the new `sources[]` and the old single `source`. */
-export function cardSources(card: Pick<Card, 'sources' | 'source'>): CardSource[] {
-  return card.sources ?? (card.source ? [card.source] : []);
+/**
+ * Captured contexts as {text, url?} objects, folding every legacy shape:
+ * already-migrated objects pass through; older `string[]` contexts pair with the
+ * retired `sources[]` by index (a leftover source with no sentence becomes a
+ * url-only context whose text is the source title); the oldest single
+ * `context`/`source` and retired `examples[]` fold in too. De-duped by text.
+ */
+export function cardContexts(
+  card: Pick<Card, 'contexts' | 'context' | 'examples' | 'sources' | 'source'>,
+): CardContext[] {
+  const raw = card.contexts as CardContext[] | string[] | undefined;
+  if (raw && raw.length && typeof raw[0] === 'object') {
+    return dedupeContexts(raw as CardContext[]);
+  }
+  const texts = [
+    ...((raw as string[] | undefined) ?? []),
+    ...(card.examples ?? []),
+    ...(card.context ? [card.context] : []),
+  ];
+  const srcs = card.sources ?? (card.source ? [card.source] : []);
+  const out: CardContext[] = [];
+  for (let i = 0; i < Math.max(texts.length, srcs.length); i++) {
+    const text = texts[i];
+    const s = srcs[i];
+    if (text != null) out.push({ text, ...(s ? { url: s.url, addedAt: s.addedAt } : {}) });
+    else if (s) out.push({ text: s.title || s.url, url: s.url, addedAt: s.addedAt });
+  }
+  return dedupeContexts(out);
 }
 
-/**
- * Captured context sentences, tolerating legacy shapes: the old single `context`
- * and the retired `examples[]` (which held page captures) both fold in here.
- */
-export function cardContexts(card: Pick<Card, 'contexts' | 'context' | 'examples'>): string[] {
-  if (card.contexts) return card.contexts;
-  const legacy = [...(card.examples ?? []), ...(card.context ? [card.context] : [])];
-  return [...new Set(legacy)];
+function dedupeContexts(list: CardContext[]): CardContext[] {
+  const seen = new Set<string>();
+  return list.filter((c) => {
+    const k = c.text.trim();
+    if (!k || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
 }
 
 export interface ReviewLog {

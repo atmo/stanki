@@ -1,14 +1,14 @@
 {
   "app": "stanki",
   "schemaVersion": 1,
-  "exportedAt": 1785247340790,
+  "exportedAt": 1785259028871,
   "decks": [
     {
       "id": "knm-ref",
       "name": "KNM - Kennis van de Nederlandse Maatschappij (v2, cleaned) — naslag",
       "reviewDirection": "forward",
-      "createdAt": 1785247340790,
-      "updatedAt": 1785247340790,
+      "createdAt": 1785259028871,
+      "updatedAt": 1785259028871,
       "description": "Regionaal, procedureel en eenmalig-te-lezen materiaal, buiten de review-wachtrij gehouden."
     }
   ],
@@ -17,11 +17,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Dutch manners and norms differ by social group, region, generation and class.",
       "back": "Eenmalig te lezen (eindterm 2.1.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 2.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 2.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -29,11 +29,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Many people in the Netherlands express themselves directly.",
       "back": "Eenmalig te lezen (eindterm 2.1.2).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 2.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 2.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -41,11 +41,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Unmarried cohabitation is common in the Netherlands.",
       "back": "Eenmalig te lezen (eindterm 2.1.4).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 2.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 2.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -53,11 +53,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Further training improves your chances on the labour market.",
       "back": "Eenmalig te lezen (eindterm 1.1.5).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 1.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 1.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -65,11 +65,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Your own network is a recognised route to finding work.",
       "back": "Eenmalig te lezen (eindterm 1.1.2).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 1.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 1.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -77,11 +77,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — A benefit recipient has duties as well as rights.",
       "back": "Eenmalig te lezen (eindterm 1.1.8).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 1.1.8 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 1.1.8 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -89,11 +89,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — The housing market differs considerably between municipalities.",
       "back": "Eenmalig te lezen (eindterm 3.1.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 3.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 3.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -101,11 +101,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Tenants have rights laid down in law.",
       "back": "Eenmalig te lezen (eindterm 3.1.2).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 3.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 3.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -113,11 +113,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Energy and water costs can fluctuate strongly.",
       "back": "Eenmalig te lezen (eindterm 3.2.2).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 3.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 3.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -125,11 +125,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Healthcare administration in NL is handled largely digitally.",
       "back": "Eenmalig te lezen (eindterm 4.4.3).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 4.4.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 4.4.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -137,11 +137,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Contact with Dutch government bodies happens largely digitally.",
       "back": "Eenmalig te lezen (eindterm 6.1.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 6.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 6.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -149,11 +149,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Several types of verblijfsvergunning exist.",
       "back": "Eenmalig te lezen (eindterm 6.2.3).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 6.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 6.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -161,11 +161,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Separating the three powers prevents any one of them concentrating power; each restrains the others.",
       "back": "Eenmalig te lezen (eindterm 7.1.3).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 7.1.3 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 7.1.3 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -173,11 +173,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Pupils pass through different school types from age 4 until at least 18.",
       "back": "Eenmalig te lezen (eindterm 8.1.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 8.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 8.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -185,11 +185,11 @@
       "deckId": "knm-ref",
       "front": "Lees één keer — Schemes exist for full or partial reimbursement of school and care costs.",
       "back": "Eenmalig te lezen (eindterm 8.3.2).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 8.3.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 8.3.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -197,11 +197,11 @@
       "deckId": "knm-ref",
       "front": "Regionaal (zelf opzoeken) — The main cities and areas of your own region.",
       "back": "Zoek dit op voor je eigen regio/gemeente (eindterm 5.2.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 5.2.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 5.2.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -209,11 +209,11 @@
       "deckId": "knm-ref",
       "front": "Regionaal (zelf opzoeken) — What your region offers for housing, work and education.",
       "back": "Zoek dit op voor je eigen regio/gemeente (eindterm 5.2.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 5.2.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 5.2.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -221,11 +221,11 @@
       "deckId": "knm-ref",
       "front": "Regionaal (zelf opzoeken) — How available housing is in your own region.",
       "back": "Zoek dit op voor je eigen regio/gemeente (eindterm 3.1.3).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 3.1.3",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 3.1.3",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -233,11 +233,11 @@
       "deckId": "knm-ref",
       "front": "Regionaal (zelf opzoeken) — Your gemeente's specific waste collection and separation rules.",
       "back": "Zoek dit op voor je eigen regio/gemeente (eindterm 3.3.1).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 3.3.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 3.3.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -245,11 +245,11 @@
       "deckId": "knm-ref",
       "front": "Regionaal (zelf opzoeken) — Which levies your own gemeente charges, and at what rate.",
       "back": "Zoek dit op voor je eigen regio/gemeente (eindterm 6.2.4).",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 6.2.4",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 6.2.4",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -257,11 +257,11 @@
       "deckId": "knm-ref",
       "front": "Procedure — eindterm 6.6.1",
       "back": "Taking out an insurance policy and submitting a damage claim: compare and take out cover online or via an intermediary; report damage promptly with photos, receipts, and a police report in case of theft; then follow the insurer's claim procedure.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 6.6.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 6.6.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -269,11 +269,11 @@
       "deckId": "knm-ref",
       "front": "Procedure — eindterm 5.2.2",
       "back": "Making a public-transport journey independently: plan the route (9292 or the NS app), load or buy a valid ticket, check in and out on every leg, change between train, bus, tram and metro, and read departure boards and disruption notices.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 5.2.2",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 5.2.2",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -281,11 +281,11 @@
       "deckId": "knm-ref",
       "front": "Procedure — eindterm 2.1.1",
       "back": "Learning the norms of a new social context: observe what people around you do, and ask directly - Dutch directness makes asking acceptable rather than rude.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 2.1.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 2.1.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -293,11 +293,11 @@
       "deckId": "knm-ref",
       "front": "Procedure — eindterm 4.4.2",
       "back": "Claiming healthcare costs: providers usually bill the insurer directly; if you paid yourself, submit the nota via the insurer's app or portal within the period your policy sets.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 4.4.2",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 4.4.2",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -305,11 +305,11 @@
       "deckId": "knm-ref",
       "front": "Procedure — eindterm 2.2.2",
       "back": "Customs at birthdays, births, exam results, weddings and deaths. The eindterm names the occasions but not the customs, so there is nothing fixed to memorise.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 2.2.2",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 2.2.2",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -317,11 +317,11 @@
       "deckId": "knm-ref",
       "front": "Controleer vóór het examen — Minister-President (eindterm 7.1.1)",
       "back": "Rob Jetten (D66), sworn in 23 February 2026 leading a D66/VVD/CDA minority coalition. Re-check before the exam - cabinets fall.",
-      "sources": [
+      "contexts": [
         {
+          "text": "eindterm 7.1.1",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "eindterm 7.1.1",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     }

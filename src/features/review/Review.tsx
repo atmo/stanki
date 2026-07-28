@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
-import { type Card, type Grade, cardSources, cardContexts } from '@shared/types';
+import { type Card, type CardContext, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
 import { LookupResults } from '../lookup/LookupResults';
@@ -22,7 +22,7 @@ type CardPatch = Pick<Card, 'front' | 'back' | 'explanation' | 'contexts'>;
 function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: CardPatch) => void; onCancel: () => void }) {
   const [front, setFront] = useState(card.front);
   const [back, setBack] = useState(card.back);
-  const [contexts, setContexts] = useState<string[]>(cardContexts(card));
+  const [contexts, setContexts] = useState<CardContext[]>(cardContexts(card));
   const [explanation, setExplanation] = useState(card.explanation ?? '');
   const { term: lookupTerm, lookups, lookup } = useLookup();
 
@@ -31,7 +31,7 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
-      contexts: contexts.map((c) => c.trim()).filter(Boolean),
+      contexts: contexts.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text),
     };
     await updateCard(card.id, patch);
     onSave(patch);
@@ -80,12 +80,18 @@ function fmt(days: number): string {
 
 /** Render `context` with the card's word highlighted — lemma-aware (inflections),
  * and separable-verb-aware. */
-function Context({ text, match }: { text: string; match: Matcher }) {
+function Context({ ctx, match }: { ctx: CardContext; match: Matcher }) {
   return (
     <p className="context">
-      {mapWord(text, match, (w, k) => (
+      {mapWord(ctx.text, match, (w, k) => (
         <mark key={k}>{w}</mark>
       ))}
+      {ctx.url && (
+        <>
+          {' '}
+          <a className="ctx-src" href={ctx.url} target="_blank" rel="noreferrer" title={ctx.url}>↗</a>
+        </>
+      )}
     </p>
   );
 }
@@ -322,7 +328,7 @@ export function Review() {
             {/* Contexts with the word covered — a usage hint that doesn't give the
                 answer away (tap the block to peek at the word itself). */}
             {cardContexts(card).map((c, i) => (
-              <p key={i} className="context">{maskText(c, matchWord, false)}</p>
+              <p key={i} className="context">{maskText(c.text, matchWord, false)}</p>
             ))}
           </div>
         )}
@@ -335,12 +341,7 @@ export function Review() {
             </div>
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {cardContexts(card).map((c, i) => (
-              <Context key={i} text={c} match={matchWord} />
-            ))}
-            {cardSources(card).map((s, i) => (
-              <a key={i} className="source-link" href={s.url} target="_blank" rel="noreferrer">
-                {s.title || s.url}
-              </a>
+              <Context key={i} ctx={c} match={matchWord} />
             ))}
           </>
         )}

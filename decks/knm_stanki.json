@@ -1,14 +1,14 @@
 {
   "app": "stanki",
   "schemaVersion": 1,
-  "exportedAt": 1785247340790,
+  "exportedAt": 1785259028871,
   "decks": [
     {
       "id": "knm",
       "name": "KNM - Kennis van de Nederlandse Maatschappij (v2, cleaned)",
       "reviewDirection": "forward",
-      "createdAt": 1785247340790,
-      "updatedAt": 1785247340790,
+      "createdAt": 1785259028871,
+      "updatedAt": 1785259028871,
       "description": "One fact per card, or a closed set of at most five with the count stated in the front.\n\nBron: Bijlage 2 bij artikel 3.2, Regeling inburgering 2021 (Stcrt. 2024, nr. 15802), van kracht sinds 2025-07-01.\n\nBouwregels:\n• One fact per card, or a closed set of at most five with the expected count stated in the front.\n• No yes/no fronts whose answer is guessable; inverted to which/what/who/how many.\n• No meta-fronts ('what must you know about X').\n• Every front answerable standalone, independent of neighbouring cards.\n• Regional, procedural and read-once material moved out of the drill deck to preserve eindterm coverage without polluting the review queue."
     }
   ],
@@ -18,11 +18,11 @@
       "front": "Which module prepares an inburgeraar for the labour market?",
       "back": "The Module Arbeidsmarkt en Participatie (MAP).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -31,11 +31,11 @@
       "front": "Who is expected to provide your income in the Netherlands?",
       "back": "You are - there is an obligation to make an effort to earn your own income.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -44,11 +44,11 @@
       "front": "Besides your own network, where are Dutch vacancies mainly advertised?",
       "back": "In online vacaturebanken.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -57,11 +57,11 @@
       "front": "What is an uitzendbureau?",
       "back": "A temp agency: you register with it and it places you in work.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -70,11 +70,11 @@
       "front": "Name the three documents used to apply for Dutch jobs.",
       "back": "An application form, a sollicitatiebrief, and a CV.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -83,11 +83,11 @@
       "front": "What do Dutch employers expect a candidate to do at interview?",
       "back": "Arrive prepared, and ask a few questions about the work and the terms.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -96,11 +96,11 @@
       "front": "Name all five factors that determine your Dutch labour-market chances.",
       "back": "Prior education, work experience, availability, motivation, command of Dutch.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -109,11 +109,11 @@
       "front": "Which service assesses the value of a foreign diploma?",
       "back": "IDW - Internationale Diplomawaardering, run by Nuffic for higher education and SBB for mbo.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.4 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.4 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -122,11 +122,11 @@
       "front": "Which two competences may an employer set requirements on?",
       "back": "Language and communication skills.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.6 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.6 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -135,11 +135,11 @@
       "front": "You lose a job you had worked in. Which body do you register with?",
       "back": "UWV.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -148,11 +148,11 @@
       "front": "You need income support and have no Dutch work history. Which body?",
       "back": "The gemeente.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -161,11 +161,11 @@
       "front": "Which benefit is the minimum-income safety net?",
       "back": "Bijstand.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -174,11 +174,11 @@
       "front": "Which benefit follows the loss of a job you had worked in?",
       "back": "WW.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -187,11 +187,11 @@
       "front": "Which benefit covers inability to work through illness or disability?",
       "back": "Arbeidsongeschiktheidsuitkering.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.7 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -200,11 +200,11 @@
       "front": "What obligation does a benefit recipient have towards offered work?",
       "back": "To accept it, in principle.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.8 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.8 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -213,11 +213,11 @@
       "front": "What must you report to the benefits body when circumstances change?",
       "back": "Any change in your income situation - it can affect the benefit.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.1.8 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.1.8 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -226,11 +226,11 @@
       "front": "What is a cao?",
       "back": "A collectieve arbeidsovereenkomst - a sector-wide collective agreement on employment terms.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -239,11 +239,11 @@
       "front": "If a cao covers your sector, what can you still do?",
       "back": "Negotiate your terms with the employer independently of it.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -252,11 +252,11 @@
       "front": "What is a beoordelingsgesprek?",
       "back": "A performance review of how you are functioning.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -265,11 +265,11 @@
       "front": "Name the three types of employment contract.",
       "back": "Permanent (vast), fixed-term (tijdelijk), and via an uitzendbureau.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -278,11 +278,11 @@
       "front": "Name five things an arbeidsovereenkomst regulates.",
       "back": "Any five of: hours, salary, autonomy, communication, working conditions, safety, environment, leave, sickness.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -291,11 +291,11 @@
       "front": "Which working pattern is unusually common in the Netherlands?",
       "back": "Part-time work (deeltijd).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -304,11 +304,11 @@
       "front": "What is the ondernemingsraad?",
       "back": "The works council - a statutory form of employee participation.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -317,11 +317,11 @@
       "front": "What is a personeelsvereniging?",
       "back": "A staff association.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -330,11 +330,11 @@
       "front": "Name the two functions of a vakbond.",
       "back": "Defending workers' rights and interests, and concluding cao's.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -343,11 +343,11 @@
       "front": "Who withholds your taxes and social premiums?",
       "back": "Your employer, from your salary.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -356,11 +356,11 @@
       "front": "Besides the employer, who is bound by the ban on workplace discrimination?",
       "back": "Colleagues.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -369,11 +369,11 @@
       "front": "Name three places to turn if you suspect discrimination at work.",
       "back": "A vertrouwenspersoon, a trade union, an equal-rights organisation.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -382,11 +382,11 @@
       "front": "What registration is compulsory to start a business?",
       "back": "Registration with the Kamer van Koophandel (KvK).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -395,11 +395,11 @@
       "front": "What happens to your benefit when you register with the KvK?",
       "back": "It lapses in principle - consult the benefits body or gemeente first.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -408,11 +408,11 @@
       "front": "Which two things must a self-employed person arrange themselves?",
       "back": "A supplementary pension, and disability insurance.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 1 (Werk en inkomen) — eindterm 1.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -421,11 +421,11 @@
       "front": "What is expected before visiting an office or service provider?",
       "back": "Making an appointment in advance.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -434,11 +434,11 @@
       "front": "Name the two things many Dutch people expect around appointments.",
       "back": "Punctuality, and cancelling in good time.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -447,11 +447,11 @@
       "front": "Which two partnership forms are regulated by Dutch law?",
       "back": "Marriage (huwelijk) and registered partnership (geregistreerd partnerschap).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -460,11 +460,11 @@
       "front": "Which partnership forms are open to same-sex couples in NL?",
       "back": "Both marriage and registered partnership.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -473,11 +473,11 @@
       "front": "What is commemorated on 4 May?",
       "back": "Nationale Dodenherdenking - the war dead.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -486,11 +486,11 @@
       "front": "What is celebrated on 5 May?",
       "back": "Bevrijdingsdag - the liberation of 1945.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -499,11 +499,11 @@
       "front": "Which national holiday celebrates the monarch?",
       "back": "Koningsdag.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -512,11 +512,11 @@
       "front": "Name the four festivals the eindtermen list as relevant in particular circles.",
       "back": "Sinterklaas, Carnival, Suikerfeest, Keti Koti.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -525,11 +525,11 @@
       "front": "How do the eindtermen say you build a social network?",
       "back": "Through volunteering, and active involvement in clubs and associations.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 2 (Omgangsvormen, waarden en normen) — eindterm 2.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -538,11 +538,11 @@
       "front": "What is a huurcontract?",
       "back": "A rental contract setting out the terms of the tenancy.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -551,11 +551,11 @@
       "front": "Which body rules on disputes over rent, service charges and maintenance?",
       "back": "The Huurcommissie.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -564,11 +564,11 @@
       "front": "Where can a tenant get free legal advice?",
       "back": "The Juridisch Loket.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -577,11 +577,11 @@
       "front": "Name the three routes to housing in the Netherlands.",
       "back": "Social rent, free-sector rent, and purchase.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -590,11 +590,11 @@
       "front": "Why does registering early as a housing-seeker matter?",
       "back": "Waiting time counts towards allocation in the social sector.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.3 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.3 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -603,11 +603,11 @@
       "front": "What determines eligibility for sociale huur?",
       "back": "An income limit, set annually.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.3 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.3 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -616,11 +616,11 @@
       "front": "Who can help you find a property to rent or buy?",
       "back": "A makelaar.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -629,11 +629,11 @@
       "front": "Who arranges energy, water and internet connections in your home?",
       "back": "You do.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -642,11 +642,11 @@
       "front": "What is a meterstand and what do you do with it?",
       "back": "A meter reading - you report it to the supplier when required.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -655,11 +655,11 @@
       "front": "Your electricity fails. Who do you report the storing to?",
       "back": "The energy supplier.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -668,11 +668,11 @@
       "front": "Name the two components of an energy or water bill.",
       "back": "Consumption (verbruik) and costs.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -681,11 +681,11 @@
       "front": "Give the two reasons the eindtermen offer for using energy sparingly.",
       "back": "It is better for the environment, and it lowers your bill.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -694,11 +694,11 @@
       "front": "How does a fixed energy contract differ from a variable one?",
       "back": "Fixed tariffs hold for a set term; variable tariffs can change.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -707,11 +707,11 @@
       "front": "Name four ways to save energy at home.",
       "back": "Any four of: lower the thermostat, draught strips, radiator foil, shorter showers, LED bulbs, avoid standby, lower wash temperature, insulation.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -720,11 +720,11 @@
       "front": "Who sets the rules for waste collection and separation?",
       "back": "Your gemeente.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -733,11 +733,11 @@
       "front": "Why does afvalscheiding matter?",
       "back": "Separated waste is recycled into new raw materials, saving energy and reducing incineration.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 3 (Wonen) — eindterm 3.3.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 3 (Wonen) — eindterm 3.3.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -746,11 +746,11 @@
       "front": "Who is the first point of contact for any health problem?",
       "back": "The huisarts, with the praktijkondersteuner.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -759,11 +759,11 @@
       "front": "How do you gain access to a GP in the Netherlands?",
       "back": "Choose a practice and register with it.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -772,11 +772,11 @@
       "front": "How do you see your GP?",
       "back": "By appointment.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -785,11 +785,11 @@
       "front": "What right do you have if you cannot follow your GP in Dutch?",
       "back": "The right to a tolk.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -798,11 +798,11 @@
       "front": "Where do you first go with psychological complaints?",
       "back": "The huisarts or the praktijkondersteuner.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -811,11 +811,11 @@
       "front": "What is the beroepsgeheim?",
       "back": "Medical confidentiality - your information is passed on only with your consent.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -824,11 +824,11 @@
       "front": "What do you need to collect prescription medicine at the apotheek?",
       "back": "A recept.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -837,11 +837,11 @@
       "front": "Where do you buy medicines that need no prescription?",
       "back": "At a drogist.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -850,11 +850,11 @@
       "front": "What does a mondhygienist do?",
       "back": "Dental hygiene care, alongside the tandarts.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -863,11 +863,11 @@
       "front": "How do you get a dentist in the Netherlands?",
       "back": "Choose your own tandarts and register.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -876,11 +876,11 @@
       "front": "What does kraamzorg provide?",
       "back": "Maternity care in the period after birth.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -889,11 +889,11 @@
       "front": "What does the consultatiebureau do?",
       "back": "Monitors the health and development of young children.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -902,11 +902,11 @@
       "front": "Who refers you to a specialist or to mental health care?",
       "back": "The huisarts.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -915,11 +915,11 @@
       "front": "Where do you go for GP care in the evening or at the weekend?",
       "back": "The huisartsenpost.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -928,11 +928,11 @@
       "front": "What must you do before going to the huisartsenpost?",
       "back": "Telephone first - you cannot walk in.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -941,11 +941,11 @@
       "front": "What number do you call in a life-threatening emergency?",
       "back": "112.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.3.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -954,11 +954,11 @@
       "front": "Which insurance is compulsory for every resident?",
       "back": "The zorgverzekering.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -967,11 +967,11 @@
       "front": "How often may you change health insurer?",
       "back": "Once a year.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -980,11 +980,11 @@
       "front": "Name five things covered by the basispakket.",
       "back": "GP care, district nursing, pregnancy and birth care, elderly care, mental health care.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -993,11 +993,11 @@
       "front": "Up to what age are dental care and physiotherapy covered by the basispakket?",
       "back": "18.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1006,11 +1006,11 @@
       "front": "What is the eigen risico?",
       "back": "The compulsory deductible you pay yourself before the insurer reimburses.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1019,11 +1019,11 @@
       "front": "Which common form of care is exempt from the eigen risico?",
       "back": "GP consultations.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1032,11 +1032,11 @@
       "front": "What payment flexibility exists for the eigen risico?",
       "back": "It may be paid in instalments.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1045,11 +1045,11 @@
       "front": "What does supplementary insurance cover?",
       "back": "Care outside the basispakket - adult dental care, extra physiotherapy, glasses, orthodontics.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1058,11 +1058,11 @@
       "front": "Which digital credential do you need to arrange most care provisions?",
       "back": "A DigiD.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1071,11 +1071,11 @@
       "front": "Where can you get help with DigiD and digital forms?",
       "back": "The Informatiepunt Digitale Overheid, in public libraries.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.4 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.4.4 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1084,11 +1084,11 @@
       "front": "Name five welzijn services every gemeente provides.",
       "back": "Help with debt and poverty, with social isolation, with participation, and home support for the elderly and for the chronically ill and disabled.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.5.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 4 (Gezondheid en gezondheidszorg) — eindterm 4.5.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1097,11 +1097,11 @@
       "front": "What drove Dutch prosperity in the seventeenth century?",
       "back": "Shipping and trade.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1110,11 +1110,11 @@
       "front": "Where is the seventeenth-century flowering still visible today?",
       "back": "In painting and architecture.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1123,11 +1123,11 @@
       "front": "What do the eindtermen require you to know about the colonial period?",
       "back": "The Netherlands founded colonies, enslaved and traded people, and put them to work on plantations.",
       "explanation": "sensitive — Distressing subject matter.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1136,11 +1136,11 @@
       "front": "Name the four features of the Dutch tradition of managing water.",
       "back": "Polders, windmills, dikes, the Deltawerken.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1149,11 +1149,11 @@
       "front": "What is the Dutch national anthem?",
       "back": "Het Wilhelmus.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1162,11 +1162,11 @@
       "front": "Describe the Dutch flag.",
       "back": "Three horizontal bands - red on top, then white, then blue.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1175,11 +1175,11 @@
       "front": "Which country occupied the Netherlands in the Second World War?",
       "back": "Germany.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1188,11 +1188,11 @@
       "front": "What was the holocaust?",
       "back": "The mass murder of Jews; many Dutch Jews were killed.",
       "explanation": "sensitive — Distressing subject matter.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1201,11 +1201,11 @@
       "front": "What is the legal status of antisemitism in the Netherlands?",
       "back": "Prohibited by law.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1214,11 +1214,11 @@
       "front": "In which year was the Netherlands liberated?",
       "back": "1945.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1227,11 +1227,11 @@
       "front": "Name the three groups that immigrated to NL after the war.",
       "back": "People from the former colonies, labour migrants, and refugees.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1240,11 +1240,11 @@
       "front": "Name the three international organisations NL joined after the war.",
       "back": "The EU, NATO, and the UN.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1253,11 +1253,11 @@
       "front": "Name the four values many Dutch have held since the 1960s.",
       "back": "Individual freedom, emancipation, tolerance, self-determination.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1266,11 +1266,11 @@
       "front": "Name the three rights the eindtermen list as legally established in NL.",
       "back": "Abortion, same-sex marriage, euthanasia.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1279,11 +1279,11 @@
       "front": "What is the capital of the Netherlands?",
       "back": "Amsterdam.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1292,11 +1292,11 @@
       "front": "Where does the Dutch government sit?",
       "back": "The Hague.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1305,11 +1305,11 @@
       "front": "How many provinces does the Netherlands have?",
       "back": "Twelve.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1318,11 +1318,11 @@
       "front": "Where in NL is Groningen?",
       "back": "The far north-east.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1331,11 +1331,11 @@
       "front": "Where in NL is Friesland?",
       "back": "The north-west, above the IJsselmeer.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1344,11 +1344,11 @@
       "front": "Where in NL is Drenthe?",
       "back": "The north-east, below Groningen.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1357,11 +1357,11 @@
       "front": "Where in NL is Overijssel?",
       "back": "The east, north of Gelderland.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1370,11 +1370,11 @@
       "front": "Where in NL is Flevoland?",
       "back": "The centre - land reclaimed from the former Zuiderzee.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1383,11 +1383,11 @@
       "front": "Where in NL is Gelderland?",
       "back": "The centre-east; it is the largest province by area.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1396,11 +1396,11 @@
       "front": "Where in NL is Utrecht?",
       "back": "The centre of the country.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1409,11 +1409,11 @@
       "front": "Where in NL is Noord-Holland?",
       "back": "The north-west coast; it contains Amsterdam.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1422,11 +1422,11 @@
       "front": "Where in NL is Zuid-Holland?",
       "back": "The west coast; it contains The Hague and Rotterdam.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1435,11 +1435,11 @@
       "front": "Where in NL is Zeeland?",
       "back": "The south-west - islands and peninsulas.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1448,11 +1448,11 @@
       "front": "Where in NL is Noord-Brabant?",
       "back": "The south, along the Belgian border.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1461,11 +1461,11 @@
       "front": "Where in NL is Limburg?",
       "back": "The south-east - a narrow strip between Belgium and Germany.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1474,11 +1474,11 @@
       "front": "Which two payment methods are used on Dutch public transport?",
       "back": "The OV-chipkaart, and OVpay with a contactless card or phone.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1487,11 +1487,11 @@
       "front": "What must you do at both ends of every public-transport journey?",
       "back": "Check in, and check out.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 5 (Geschiedenis en geografie) — eindterm 5.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1500,11 +1500,11 @@
       "front": "What is the BSN?",
       "back": "Burgerservicenummer - your personal number for dealings with government.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1513,11 +1513,11 @@
       "front": "What is DigiD used for?",
       "back": "Logging in securely to Dutch government services.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1526,11 +1526,11 @@
       "front": "What does Nibud do?",
       "back": "Provides budgeting and household-finance guidance.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1539,11 +1539,11 @@
       "front": "What is the Juridisch Loket?",
       "back": "A service providing free legal advice.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1552,11 +1552,11 @@
       "front": "What does the GGD do?",
       "back": "It is the municipal public health service.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1565,11 +1565,11 @@
       "front": "What is schuldhulpverlening?",
       "back": "Assistance for people in debt.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.1.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1578,11 +1578,11 @@
       "front": "Which register holds your personal details at the gemeente?",
       "back": "The Basisregistratie Personen (BRP).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1591,11 +1591,11 @@
       "front": "Name five life events you must report to the gemeente.",
       "back": "Any five of: birth, marriage, cohabitation, divorce, death, moving house, migration.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1604,11 +1604,11 @@
       "front": "What must an unmarried father do to establish legal fatherhood?",
       "back": "Register erkenning of the child.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1617,11 +1617,11 @@
       "front": "Why do changes in household composition matter beyond the register?",
       "back": "They can affect your benefits.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1630,11 +1630,11 @@
       "front": "Which body issues residence permits?",
       "back": "The IND.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1643,11 +1643,11 @@
       "front": "Which body issues your passport and ID card?",
       "back": "Your gemeente.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1656,11 +1656,11 @@
       "front": "Which body runs driving-licence examinations?",
       "back": "The CBR.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1669,11 +1669,11 @@
       "front": "Which body registers vehicles and driving licences?",
       "back": "The RDW.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1682,11 +1682,11 @@
       "front": "Where do you apply for naturalisation?",
       "back": "At your gemeente, which forwards the application to the IND.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.3 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.3 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1695,11 +1695,11 @@
       "front": "What must you normally do with your existing nationality when naturalising?",
       "back": "Give it up - dual nationality is in principle not permitted.",
       "explanation": "exam-convention — The exam's expected answer is simpler than the real legal position.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1708,11 +1708,11 @@
       "front": "Name four taxes or levies collected by the gemeente.",
       "back": "OZB, rioolheffing, afvalstoffenheffing, parkeerbelasting.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.2.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.2.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1721,11 +1721,11 @@
       "front": "What is a jaaropgave?",
       "back": "The annual statement of income from your employer.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1734,11 +1734,11 @@
       "front": "How does bruto differ from netto income?",
       "back": "Bruto is before tax and premiums; netto is what actually reaches you.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1747,11 +1747,11 @@
       "front": "How long must you keep your jaaropgave?",
       "back": "At least five years.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1760,11 +1760,11 @@
       "front": "Name five things Dutch tax money pays for.",
       "back": "Education, healthcare, roads, government, and the police and judiciary.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1773,11 +1773,11 @@
       "front": "Who can help you file a tax return on a low income?",
       "back": "The gemeente or maatschappelijk werk; unions help their members.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1786,11 +1786,11 @@
       "front": "Which body pays out toeslagen?",
       "back": "The Belastingdienst.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1799,11 +1799,11 @@
       "front": "Name the three toeslagen the eindtermen list.",
       "back": "Zorgtoeslag, huurtoeslag, kinderopvangtoeslag.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1812,11 +1812,11 @@
       "front": "How do you obtain a toeslag you are entitled to?",
       "back": "Apply for it - it is not granted automatically.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1825,11 +1825,11 @@
       "front": "Which body pays kinderbijslag?",
       "back": "The Sociale Verzekeringsbank (SVB).",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.3.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1838,11 +1838,11 @@
       "front": "Name the three roles of the Dutch police.",
       "back": "Protecting, supervising, and enforcing.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1851,11 +1851,11 @@
       "front": "Which crimes are you obliged to report to the police?",
       "back": "Serious crimes - murder, manslaughter, rape, abduction.",
       "explanation": "sensitive — Distressing subject matter.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1864,11 +1864,11 @@
       "front": "From what age must you show ID on request in public space?",
       "back": "14.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1877,11 +1877,11 @@
       "front": "From what age must you show ID on public transport?",
       "back": "12.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.4.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1890,11 +1890,11 @@
       "front": "Where do you complain about the conduct of a government body?",
       "back": "The municipal ombudsman, or the Nationale ombudsman.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.5.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.5.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1903,11 +1903,11 @@
       "front": "What is the status of corruption by government or police?",
       "back": "Prohibited and punishable.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.5.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.5.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1916,11 +1916,11 @@
       "front": "Name the two sources of legal help the eindtermen give.",
       "back": "An advocaat, and the Juridisch Loket.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.5.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.5.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1929,11 +1929,11 @@
       "front": "What do you pay for subsidised legal help?",
       "back": "An eigen bijdrage, scaled to your income.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.5.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.5.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1942,11 +1942,11 @@
       "front": "Which insurance is compulsory for motor vehicle owners?",
       "back": "WA - liability insurance.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1955,11 +1955,11 @@
       "front": "What is the status of WA insurance for people generally?",
       "back": "Not compulsory, but strongly advised.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1968,11 +1968,11 @@
       "front": "Which insurance must a homeowner hold?",
       "back": "An opstalverzekering.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1981,11 +1981,11 @@
       "front": "Which tax must a vehicle owner pay?",
       "back": "Motorrijtuigenbelasting.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 6 (Instanties) — eindterm 6.6.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -1994,11 +1994,11 @@
       "front": "What is the King's function in the Dutch state?",
       "back": "Chiefly ceremonial.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2007,11 +2007,11 @@
       "front": "Who is the King of the Netherlands?",
       "back": "Willem-Alexander.",
       "explanation": "volatile — Names a current officeholder; re-verify before the exam.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2020,11 +2020,11 @@
       "front": "Name the two chambers of the Dutch parliament.",
       "back": "The Tweede Kamer and the Eerste Kamer.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2033,11 +2033,11 @@
       "front": "Who makes Dutch law?",
       "back": "The two chambers of parliament together with the regering.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2046,11 +2046,11 @@
       "front": "What kind of party system does the Netherlands have?",
       "back": "A multi-party system, in which parties form coalition governments.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2059,11 +2059,11 @@
       "front": "Name the three levels of Dutch government.",
       "back": "Rijk, provincie, gemeente.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2072,11 +2072,11 @@
       "front": "Name three things EU membership gives citizens.",
       "back": "Free movement of people and goods, free establishment in member states, and voting in European elections.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2085,11 +2085,11 @@
       "front": "Name the three powers of the state.",
       "back": "Legislative, executive, judicial.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2098,11 +2098,11 @@
       "front": "What can you do if you disagree with a judge's ruling?",
       "back": "Lodge an appeal - hoger beroep - though the ruling must be accepted.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2111,11 +2111,11 @@
       "front": "How does actief kiesrecht differ from passief kiesrecht?",
       "back": "Actief is the right to vote; passief is the right to stand for election.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2124,11 +2124,11 @@
       "front": "In which elections may a non-Dutch resident vote?",
       "back": "Municipal elections.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2137,11 +2137,11 @@
       "front": "How long must a non-Dutch national have lived in NL to vote municipally?",
       "back": "More than five years.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2150,11 +2150,11 @@
       "front": "Name five kinds of Dutch election or vote.",
       "back": "Municipal, provincial, Tweede Kamer, European Parliament, waterschappen.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2163,11 +2163,11 @@
       "front": "What does equality of women and men entail, per the eindterm?",
       "back": "The same chances to develop as independent individuals, including through education and work.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2176,11 +2176,11 @@
       "front": "What limits freedom of expression in the Netherlands?",
       "back": "The law - you may not say or write what the law prohibits.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2189,11 +2189,11 @@
       "front": "What must you accept about Dutch public debate?",
       "back": "That some statements may be experienced as hurtful.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2202,11 +2202,11 @@
       "front": "What does freedom of religion cover in the Netherlands?",
       "back": "Freedom to choose your own religion, philosophy of life, or ideals.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2215,11 +2215,11 @@
       "front": "Which prevails - the law of the state, or of religion and tradition?",
       "back": "The law of the state.",
       "explanation": "exam-convention — The exam's expected answer is simpler than the real legal position.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2228,11 +2228,11 @@
       "front": "On what condition does government stay out of a religious community's internal affairs?",
       "back": "As long as the community obeys the law.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2241,11 +2241,11 @@
       "front": "What does Article 1 of the Grondwet establish?",
       "back": "Equal treatment in equal cases, and a prohibition on discrimination.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2254,11 +2254,11 @@
       "front": "Name four grounds of discrimination prohibited by Article 1.",
       "back": "Any four of: religion, belief, political opinion, race, sex, disability, sexual orientation.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2267,11 +2267,11 @@
       "front": "Where do you report discrimination?",
       "back": "At a meldpunt, and at the police.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2280,11 +2280,11 @@
       "front": "How much personal data should you give an institution?",
       "back": "Only what it needs for its task.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2293,11 +2293,11 @@
       "front": "Name the two rights you have over data you have shared.",
       "back": "To inspect it, and to correct it where necessary.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2306,11 +2306,11 @@
       "front": "What does the law say about bodily integrity?",
       "back": "It is protected; all unwanted intimacy and violence is punishable.",
       "explanation": "sensitive — Distressing subject matter.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.6 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.6 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2319,11 +2319,11 @@
       "front": "Name the four violations of bodily integrity the eindterm lists.",
       "back": "Domestic violence, honour killing, hitting children, female circumcision.",
       "explanation": "sensitive — Distressing subject matter.",
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.6 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.6 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2332,11 +2332,11 @@
       "front": "What is the default organ-donation position in the Netherlands?",
       "back": "You are a donor after death unless you register otherwise.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.7 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.7 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2345,11 +2345,11 @@
       "front": "How do you opt out of organ donation?",
       "back": "Register that you do not wish to participate, or only in part.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.7 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.7 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2358,11 +2358,11 @@
       "front": "What does zelfbeschikkingsrecht mean for women in NL?",
       "back": "A woman decides for herself about her own life and body - marriage, work, study, children, contraception, abortion.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.8 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 7 (Staatsinrichting en rechtsstaat) — eindterm 7.2.8 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2371,11 +2371,11 @@
       "front": "From what age do Dutch children attend primary school?",
       "back": "4.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2384,11 +2384,11 @@
       "front": "What provision exists for children with a special care requirement?",
       "back": "Speciaal onderwijs.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2397,11 +2397,11 @@
       "front": "What may restrict moving to the next level of education?",
       "back": "Toelatingseisen - admission requirements.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2410,11 +2410,11 @@
       "front": "What is vrijheid van onderwijs?",
       "back": "The freedom to found schools on your own religious or educational basis.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2423,11 +2423,11 @@
       "front": "How does openbaar onderwijs differ from bijzonder onderwijs?",
       "back": "Openbaar is public and non-denominational; bijzonder rests on a religious or educational vision.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2436,11 +2436,11 @@
       "front": "Between which ages does leerplicht run?",
       "back": "5 to 16.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2449,11 +2449,11 @@
       "front": "Between which ages does kwalificatieplicht run?",
       "back": "16 to 18.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2462,11 +2462,11 @@
       "front": "Who fixes the dates of school holidays?",
       "back": "The school - and its dates are binding on parents.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2475,11 +2475,11 @@
       "front": "What is vve?",
       "back": "Voorschoolse educatie - pre-school education for young children.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2488,11 +2488,11 @@
       "front": "What is bso?",
       "back": "Buitenschoolse opvang - out-of-school care.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2501,11 +2501,11 @@
       "front": "Which allowance helps parents pay for childcare?",
       "back": "Kinderopvangtoeslag.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.4 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2514,11 +2514,11 @@
       "front": "Which subject is compulsory in Dutch primary and secondary schools?",
       "back": "Sexuality and sexual diversity.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.5 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.1.5 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2527,11 +2527,11 @@
       "front": "Until what age are parents legally liable for their child's acts?",
       "back": "Until the child turns 16.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2540,11 +2540,11 @@
       "front": "What do Dutch schools expect of parents?",
       "back": "Involvement in their child's development at school.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2553,11 +2553,11 @@
       "front": "Name the two ways parents are involved at school.",
       "back": "Scheduled parent-teacher meetings, and voluntary help with school activities.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.2 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.2 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2566,11 +2566,11 @@
       "front": "Name four sources of help with upbringing problems.",
       "back": "The gemeente, jeugdzorg, the huisarts, and the school.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2579,11 +2579,11 @@
       "front": "When does the kinderbescherming take a case to a judge?",
       "back": "Only on serious signals.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.2.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2592,11 +2592,11 @@
       "front": "Name four costs associated with education in NL.",
       "back": "School fees, the parental contribution, learning materials, and travel costs.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2605,11 +2605,11 @@
       "front": "What is the status of the ouderbijdrage?",
       "back": "Voluntary.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.1 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.1 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2618,11 +2618,11 @@
       "front": "Where can you apply for reduction or waiver of school costs?",
       "back": "At the school itself, and through gemeente minimaregelingen.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.2 · authored",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.2 · authored",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     },
@@ -2631,11 +2631,11 @@
       "front": "Which body handles applications for study finance?",
       "back": "DUO.",
       "explanation": null,
-      "sources": [
+      "contexts": [
         {
+          "text": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.3 · regulation",
           "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html",
-          "title": "Thema 8 (Onderwijs en opvoeding) — eindterm 8.3.3 · regulation",
-          "addedAt": 1785247340790
+          "addedAt": 1785259028871
         }
       ]
     }

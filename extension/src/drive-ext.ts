@@ -3,8 +3,8 @@
 
 import { storageLocal } from './browserApi';
 import { DEFAULT_CLIENT_ID, DRIVE_SCOPE, OAUTH_REDIRECT } from './config';
-import type { Card, CardSource, Deck, DeckSnapshot } from '@shared/types';
-import { INBOX_DECK_ID, INBOX_DECK_NAME, cardSources, cardContexts } from '@shared/types';
+import type { Card, CardContext, Deck, DeckSnapshot } from '@shared/types';
+import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import { buildSnapshot, mergeCards } from '@shared/snapshot';
 import { dedupKey } from '@shared/dedup';
 import {
@@ -110,8 +110,7 @@ export interface WordEntry {
   front: string;
   back: string;
   explanation?: string;
-  contexts?: string[];
-  sources?: CardSource[];
+  contexts?: CardContext[];
   rev?: number; // array-merge authority, carried so an update keeps accumulating
 }
 
@@ -125,7 +124,6 @@ export function cardEntry(c: Card, deckId: string, deckName: string): WordEntry 
     back: c.back,
     explanation: c.explanation,
     contexts: cardContexts(c),
-    sources: cardSources(c),
     rev: c.rev,
   };
 }

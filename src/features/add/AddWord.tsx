@@ -6,6 +6,7 @@ import { createCard, ensureInboxDeck, getLastAddDeck, setLastAddDeck } from '../
 import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
 import { lemmatize } from '@shared/lemma';
 import { dedupKey } from '@shared/dedup';
+import type { CardContext } from '@shared/types';
 import { LookupResults } from '../lookup/LookupResults';
 import { ContextsField } from '../../components/ContextsField';
 
@@ -17,7 +18,7 @@ export function AddWord() {
   const [back, setBack] = useState('');
   const [explanation, setExplanation] = useState('');
   const initialContext = (params.get('context') ?? '').trim();
-  const [contexts, setContexts] = useState<string[]>(initialContext ? [initialContext] : []);
+  const [contexts, setContexts] = useState<CardContext[]>(initialContext ? [{ text: initialContext }] : []);
   const [deckId, setDeckId] = useState('');
   const [lookupTerm, setLookupTerm] = useState(sharedText);
   const [lookups, setLookups] = useState<Lookups | null>(lookupTerm ? null : { anw: null, free: null });
@@ -96,7 +97,7 @@ export function AddWord() {
       front: front.trim(),
       back: back.trim(),
       explanation: explanation.trim() || undefined,
-      contexts: contexts.map((c) => c.trim()).filter(Boolean),
+      contexts: contexts.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text),
     });
     await setLastAddDeck(deckId);
     setSaved(true);

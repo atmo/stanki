@@ -2,7 +2,8 @@
 """Convert decks/knm_deck_source.json (v2) into Stanki import bundles.
 
 Stanki has no tags/flags field, so flags and provenance are folded into the
-free-text fields the importer keeps (`explanation`, `sources`). The source file
+free-text fields the importer keeps (`explanation`, and a url-only `context`
+whose text is the eindterm reference). The source file
 deliberately moved read-once / regional / procedural material out of the drill
 deck, so we mirror that: two single-deck bundles (the importer imports only
 decks[0] per file) — a drill deck and a separate reference deck — preserving
@@ -40,16 +41,17 @@ def flags_expl(c):
     return " · ".join(f"{f} — {meaning.get(f, f)}" for f in c.get("flags", [])) or None
 
 
-def drill_source(c):
+def drill_context(c):
+    # Provenance folded into a url-only context (no sentence): text = eindterm ref.
     label = f"Thema {c['theme']} ({c['theme_name']}) — eindterm {c['source_ref']}"
     if c.get("back_source"):
         label += f" · {c['back_source']}"  # regulation vs authored provenance
-    return [{"url": source["url"], "title": label, "addedAt": now}]
+    return [{"text": label, "url": source["url"], "addedAt": now}]
 
 
-def ref_source(source_ref, extra=None):
+def ref_context(source_ref, extra=None):
     label = f"eindterm {source_ref}" + (f" · {extra}" if extra else "")
-    return [{"url": source["url"], "title": label, "addedAt": now}]
+    return [{"text": label, "url": source["url"], "addedAt": now}]
 
 
 def bundle(deck_id, name, cards, description=None):
@@ -79,7 +81,7 @@ for c in src["cards"]:
         "front": drill_front(c["front"]),
         "back": c["back"],
         "explanation": flags_expl(c),
-        "sources": drill_source(c),
+        "contexts": drill_context(c),
     })
 
 # --- Reference deck: the sections held out of the drill queue. ---
@@ -90,28 +92,28 @@ for it in src.get("read_once", []):
         "deckId": "knm-ref",
         "front": ref_front(f"Lees één keer — {it['fact']}"),
         "back": f"Eenmalig te lezen (eindterm {it['source_ref']}).",
-        "sources": ref_source(it["source_ref"], it.get("back_source")),
+        "contexts": ref_context(it["source_ref"], it.get("back_source")),
     })
 for it in src.get("local", []):
     ref_cards.append({
         "deckId": "knm-ref",
         "front": ref_front(f"Regionaal (zelf opzoeken) — {it['you_must_supply']}"),
         "back": f"Zoek dit op voor je eigen regio/gemeente (eindterm {it['source_ref']}).",
-        "sources": ref_source(it["source_ref"]),
+        "contexts": ref_context(it["source_ref"]),
     })
 for it in src.get("procedures", []):
     ref_cards.append({
         "deckId": "knm-ref",
         "front": ref_front(f"Procedure — eindterm {it['source_ref']}"),
         "back": it["checklist"],
-        "sources": ref_source(it["source_ref"]),
+        "contexts": ref_context(it["source_ref"]),
     })
 for it in src.get("verify_before_exam", []):
     ref_cards.append({
         "deckId": "knm-ref",
         "front": ref_front(f"Controleer vóór het examen — {it['item']} (eindterm {it['source_ref']})"),
         "back": it["current"],
-        "sources": ref_source(it["source_ref"]),
+        "contexts": ref_context(it["source_ref"]),
     })
 
 DRILL_OUT.write_text(json.dumps(bundle("knm", src["deck"]["name"], drill_cards, drill_description), ensure_ascii=False, indent=2), encoding="utf-8")

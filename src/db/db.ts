@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from 'dexie';
 import type { Card, CardSource, Deck, ReviewLog } from '@shared/types';
+import { cardContexts } from '@shared/types';
 
 // Key-value bag for app metadata (deviceId, settings, lastSync, ...).
 export interface Meta {
@@ -48,9 +49,29 @@ export class StankiDB extends Dexie {
           .toCollection()
           .modify((c: Card) => {
             const contexts = [...new Set([...(c.examples ?? []), ...(c.context ? [c.context] : [])])];
-            if (contexts.length) c.contexts = contexts;
+            if (contexts.length) c.contexts = contexts as unknown as Card['contexts'];
             delete c.examples;
             delete c.context;
+          }),
+      );
+    // v4: contexts and the separate `sources[]` fold into a single array of
+    // {text, url?} objects — each captured sentence carries its own URL, and a
+    // url-only capture (no sentence) becomes a context whose text is the source
+    // title (e.g. an imported eindterm reference).
+    this.version(4)
+      .stores(stores)
+      .upgrade((tx) =>
+        tx
+          .table('cards')
+          .toCollection()
+          .modify((c: Card) => {
+            const contexts = cardContexts(c);
+            if (contexts.length) c.contexts = contexts;
+            else delete c.contexts;
+            delete c.sources;
+            delete c.source;
+            delete c.context;
+            delete c.examples;
           }),
       );
   }

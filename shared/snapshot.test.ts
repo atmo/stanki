@@ -67,30 +67,35 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
     expect(mergeCards([reviewed], [del])[0].deleted).toBe(true);
   });
 
-  it('unions contexts and sources from both copies (no capture lost)', () => {
-    const s1 = { url: 'u1', title: 't1', addedAt: 1 };
-    const s2 = { url: 'u2', title: 't2', addedAt: 2 };
-    const a = card('a', 100, { contexts: ['c1'], sources: [s1] });
-    const b = card('a', 200, { contexts: ['c2'], sources: [s2] });
+  it('unions contexts (with their URLs) from both copies (no capture lost)', () => {
+    const a = card('a', 100, { contexts: [{ text: 'c1', url: 'u1' }] });
+    const b = card('a', 200, { contexts: [{ text: 'c2', url: 'u2' }] });
     const merged = mergeCards([a], [b])[0];
-    expect(merged.contexts).toEqual(['c1', 'c2']);
-    expect(merged.sources).toEqual([s1, s2]);
+    expect(merged.contexts).toEqual([{ text: 'c1', url: 'u1' }, { text: 'c2', url: 'u2' }]);
   });
 
-  it('folds legacy context/examples/source into the arrays and de-dupes', () => {
+  it('folds legacy context/examples/source into {text,url} contexts and de-dupes', () => {
     const s1 = { url: 'u1', title: 't1', addedAt: 1 };
     const a = card('a', 100, { examples: ['c1'], context: 'c2', source: s1 }); // legacy shapes
-    const b = card('a', 200, { contexts: ['c1'], sources: [s1] });
+    const b = card('a', 200, { contexts: [{ text: 'c1' }] });
     const merged = mergeCards([a], [b])[0];
-    expect(merged.contexts).toEqual(['c1', 'c2']);
-    expect(merged.sources).toEqual([s1]);
+    // legacy 'c1' pairs with the source URL by index; 'c2' has none; b's 'c1' de-dupes.
+    expect(merged.contexts).toEqual([{ text: 'c1', url: 'u1', addedAt: 1 }, { text: 'c2' }]);
+    expect(merged.sources).toBeUndefined();
     expect(merged.examples).toBeUndefined();
     expect(merged.context).toBeUndefined();
     expect(merged.source).toBeUndefined();
   });
 
-  it('a higher rev replaces the arrays instead of unioning (authoritative import)', () => {
-    const wrong = card('a', 100, { contexts: ['old'], rev: 0 });
+  it('folds a url-only legacy source into a context (text = title)', () => {
+    const a = card('a', 100, { sources: [{ url: 'u1', title: 'Page One', addedAt: 1 }] }); // no sentence
+    const b = card('a', 200); // same id both sides so the merge/fold runs
+    const merged = mergeCards([a], [b])[0];
+    expect(merged.contexts).toEqual([{ text: 'Page One', url: 'u1', addedAt: 1 }]);
+  });
+
+  it('a higher rev replaces contexts instead of unioning (authoritative import)', () => {
+    const wrong = card('a', 100, { contexts: [{ text: 'old' }], rev: 0 });
     const fixed = card('a', 200, { contexts: undefined, rev: 5 });
     for (const merged of [mergeCards([wrong], [fixed])[0], mergeCards([fixed], [wrong])[0]]) {
       expect(merged.contexts).toBeUndefined(); // not resurrected
@@ -99,10 +104,10 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
   });
 
   it('equal rev still unions, so later captures accumulate', () => {
-    const a = card('a', 100, { contexts: ['c1'], rev: 5 });
-    const b = card('a', 200, { contexts: ['c1', 'c2'], rev: 5 });
+    const a = card('a', 100, { contexts: [{ text: 'c1' }], rev: 5 });
+    const b = card('a', 200, { contexts: [{ text: 'c1' }, { text: 'c2' }], rev: 5 });
     const merged = mergeCards([a], [b])[0];
-    expect(merged.contexts).toEqual(['c1', 'c2']);
+    expect(merged.contexts).toEqual([{ text: 'c1' }, { text: 'c2' }]);
     expect(merged.rev).toBe(5);
   });
 });

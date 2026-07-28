@@ -203,6 +203,7 @@ body {
 .contexts-field { display: flex; flex-direction: column; gap: 6px; }
 .context-row { display: flex; gap: 6px; align-items: flex-start; }
 .context-row .input { flex: 1; min-width: 0; }
+.ctx-src { flex: none; align-self: center; color: #93c5fd; text-decoration: none; font-size: 0.85rem; }
 .ctx-x { flex: none; background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; padding: 4px 8px; }
 .ctx-x:hover { color: #ef4444; border-color: #ef4444; }
 .btn-add-ctx { align-self: flex-start; font-size: 0.85rem; }

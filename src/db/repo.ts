@@ -1,6 +1,6 @@
 import { db } from './db';
 import type { Card, CardDirection, Deck, Grade, ReviewDirection } from '@shared/types';
-import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts, cardSources } from '@shared/types';
+import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
 import {
   scheduleState,
@@ -201,8 +201,7 @@ export interface NewCardInput {
   front: string;
   back: string;
   explanation?: string;
-  contexts?: string[];
-  sources?: Card['sources'];
+  contexts?: Card['contexts'];
 }
 
 export async function createCard(input: NewCardInput): Promise<Card> {
@@ -215,7 +214,6 @@ export async function createCard(input: NewCardInput): Promise<Card> {
     back: input.back,
     explanation: input.explanation,
     contexts: input.contexts?.length ? input.contexts : undefined,
-    sources: input.sources?.length ? input.sources : undefined,
     createdAt: now,
     updatedAt: now,
     ...newCardState(now, settings),
@@ -226,7 +224,7 @@ export async function createCard(input: NewCardInput): Promise<Card> {
 
 export async function updateCard(
   id: string,
-  patch: Partial<Pick<Card, 'front' | 'back' | 'explanation' | 'contexts' | 'sources'>>,
+  patch: Partial<Pick<Card, 'front' | 'back' | 'explanation' | 'contexts'>>,
 ): Promise<void> {
   await db.cards.update(id, { ...patch, updatedAt: Date.now() });
 }
@@ -381,7 +379,6 @@ export async function importDeck(bundle: ExportBundle): Promise<ImportResult> {
       back: c.back,
       contexts: cardContexts(c).length ? cardContexts(c) : undefined,
       explanation: c.explanation,
-      sources: cardSources(c).length ? cardSources(c) : undefined,
       createdAt: now,
       updatedAt: now,
       ...newCardState(now), // new cards start unstudied

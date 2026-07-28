@@ -1,5 +1,5 @@
-import type { Card, CardSource, Deck, DeckSnapshot, ReviewLog } from './types';
-import { SCHEMA_VERSION, cardSources, cardContexts } from './types';
+import type { Card, Deck, DeckSnapshot, ReviewLog } from './types';
+import { SCHEMA_VERSION, cardContexts } from './types';
 
 function dedupe<T>(arr: T[], key: (x: T) => string): T[] {
   const seen = new Set<string>();
@@ -40,31 +40,25 @@ function pickCard(a: Card, b: Card): Card {
   const winner =
     !a.deleted && !b.deleted && aReviewed !== bReviewed ? (aReviewed ? a : b) : pickNewer(a, b);
 
-  // contexts and sources normally accumulate — union both copies so a capture on
-  // one device is never dropped by the other winning last-write-wins. But a
-  // higher `rev` (bumped by an authoritative import/restore) *replaces* them, so
-  // a correction that removes entries can propagate instead of being resurrected.
+  // contexts normally accumulate — union both copies so a capture on one device
+  // is never dropped by the other winning last-write-wins. But a higher `rev`
+  // (bumped by an authoritative import/restore) *replaces* them, so a correction
+  // that removes entries can propagate instead of being resurrected.
   const merged: Card = { ...winner };
   const ra = a.rev ?? 0;
   const rb = b.rev ?? 0;
-  let contexts: string[];
-  let sources: CardSource[];
-  if (ra === rb) {
-    // Contexts de-dupe by their (trimmed) text; sources may repeat a URL, so key
-    // them by url+addedAt — enough to collapse the *same* capture synced twice.
-    contexts = dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c.trim());
-    sources = dedupe([...cardSources(a), ...cardSources(b)], (s) => `${s.url}\n${s.addedAt}`);
-  } else {
-    const hi = ra > rb ? a : b;
-    contexts = cardContexts(hi);
-    sources = cardSources(hi);
-  }
+  // Contexts de-dupe by their (trimmed) text — enough to collapse the same
+  // capture synced twice; the first copy's URL wins.
+  const contexts =
+    ra === rb
+      ? dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c.text.trim())
+      : cardContexts(ra > rb ? a : b);
   merged.contexts = contexts.length ? contexts : undefined;
-  merged.sources = sources.length ? sources : undefined;
   merged.rev = Math.max(ra, rb) || undefined;
-  delete merged.context; // canonicalized into `contexts`
+  delete merged.context; // legacy shapes canonicalized into `contexts`
   delete merged.examples;
-  delete merged.source; // canonicalized into `sources`
+  delete merged.source;
+  delete merged.sources;
   return merged;
 }
 

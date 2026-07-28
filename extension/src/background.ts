@@ -14,7 +14,7 @@ import {
   type WordEntry,
 } from './drive-ext';
 import { lookupWord, joinSenses, anwExplanation, type Lookups, type Sense } from '@shared/lookup';
-import type { CardSource } from '@shared/types';
+import type { CardContext } from '@shared/types';
 import { lemmaCandidates, lemmaLabels } from '@shared/lemma';
 
 const LOOKUP_MENU_ID = 'stanki-lookup';
@@ -71,8 +71,7 @@ interface BubblePayload {
     deck: string;
     back: string;
     explanation?: string;
-    contexts?: string[];
-    sources?: CardSource[];
+    contexts?: CardContext[];
   };
 }
 
@@ -292,7 +291,7 @@ function renderBubble(payload: BubblePayload) {
     // Flag when this page's sentence is already one of the card's contexts (by
     // text, not URL). Informational — the URL is still worth adding.
     if (payload.updateId) {
-      const have = new Set((payload.existing?.contexts ?? []).map((c) => c.trim()));
+      const have = new Set((payload.existing?.contexts ?? []).map((c) => c.text.trim()));
       const flag = document.createElement('div');
       flag.style.cssText = 'color:#fde68a;font-size:11px;margin-top:2px;';
       const refreshFlag = () => {
@@ -370,8 +369,7 @@ function renderBubble(payload: BubblePayload) {
         box.appendChild(row);
       };
       addLine('Back', ex.back);
-      for (const c of ex.contexts ?? []) addLine('Context', c);
-      for (const s of ex.sources ?? []) addLine('URL', s.title || s.url);
+      for (const c of ex.contexts ?? []) addLine('Context', c.url ? `${c.text}  (${c.url})` : c.text);
       card.appendChild(box);
     }
 
@@ -491,7 +489,7 @@ function makeCard(
   word: string,
   back: string,
   explanation: string,
-  opts: { id?: string; contexts?: string[]; sources?: CardSource[]; rev?: number },
+  opts: { id?: string; contexts?: CardContext[]; rev?: number },
 ): Card {
   const now = Date.now();
   return {
@@ -501,7 +499,6 @@ function makeCard(
     back,
     explanation: explanation || undefined,
     contexts: opts.contexts?.length ? opts.contexts : undefined,
-    sources: opts.sources?.length ? opts.sources : undefined,
     rev: opts.rev, // keep the card's array-authority so this update unions, not replaces
     createdAt: now,
     updatedAt: now,
@@ -542,7 +539,6 @@ async function showLookup(tabId: number, base: LookupBase): Promise<void> {
     back: existing.back,
     explanation: existing.explanation,
     contexts: existing.contexts,
-    sources: existing.sources,
   };
   await scripting.executeScript({
     target: { tabId },
@@ -673,29 +669,28 @@ runtime.onMessage.addListener(
       const p = msg.payload;
       (async () => {
         const now = Date.now();
-        const newSource: CardSource = { url: p.url, title: p.title, addedAt: now };
-        const newContext = p.context ? [p.context] : []; // this page's sentence
+        // This capture as one context: the selected sentence if any, else a
+        // url-only context whose text is the page title (falling back to the URL).
+        const newContext: CardContext = { text: p.context || p.title || p.url, url: p.url, addedAt: now };
         if (p.updateId) {
           // "Add context": append this page's sentence + URL to the existing
           // card, leaving its other fields alone. Re-fetch to get its current
-          // arrays and deck; keep the same rev so the arrays union (not replace).
+          // contexts and deck; keep the same rev so they union (not replace).
           const existing = (await getWordMatches(p.word)).find((e) => e.id === p.updateId);
           const deckId = existing?.deckId ?? (await getTargetDeck()).id;
-          // Skip a context already on the card (by trimmed text); URLs may repeat.
-          const contexts = unionBy([...(existing?.contexts ?? []), ...newContext], (c) => c.trim());
-          const sources = unionBy([...(existing?.sources ?? []), newSource], (s) => `${s.url}\n${s.addedAt}`);
+          // Skip a context already on the card (by trimmed text).
+          const contexts = unionBy([...(existing?.contexts ?? []), newContext], (c) => c.text.trim());
           await addPending(
             makeCard(deckId, existing?.front ?? p.word, existing?.back ?? p.back, existing?.explanation ?? p.explanation, {
               id: p.updateId,
               contexts,
-              sources,
               rev: existing?.rev,
             }),
           );
         } else {
           const target = await getTargetDeck();
           await addPending(
-            makeCard(target.id, p.word, p.back, p.explanation, { contexts: newContext, sources: [newSource] }),
+            makeCard(target.id, p.word, p.back, p.explanation, { contexts: [newContext] }),
           );
         }
         await updateBadge();
