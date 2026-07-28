@@ -128,23 +128,46 @@ export function Stats() {
     const byDayByDeck = new Map<string, Map<number, { nw: number; rv: number }>>();
     // Recall: true retention counts only genuine recall of graduated cards
     // (prevInterval >= 1 day, i.e. not learning/relearning steps). Answer
-    // breakdown counts every button press in the last 30 days.
-    const ret = { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } };
-    const answers = { again: 0, good: 0, easy: 0 };
-    const lapsesByCard = new Map<string, number>();
-    let lapses30 = 0;
+    // breakdown counts every button press in the last 30 days. Accumulated
+    // overall and per deck so the panel can be scoped.
     const win7 = now - 7 * DAY;
     const win30 = now - 30 * DAY;
+    const emptyRecall = () => ({
+      ret: { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } },
+      answers: { again: 0, good: 0, easy: 0 },
+      lapses30: 0,
+    });
+    type Recall = ReturnType<typeof emptyRecall>;
+    const recall = emptyRecall();
+    const recallByDeck = new Map<string, Recall>();
+    const lapsesByCard = new Map<string, number>();
+
+    const foldRecall = (acc: Recall, r: (typeof reviews)[number], graduated: boolean, passed: boolean) => {
+      if (graduated) {
+        acc.ret.all.t++;
+        if (passed) acc.ret.all.p++;
+        if (r.ts >= win30) {
+          acc.ret.d30.t++;
+          if (passed) acc.ret.d30.p++;
+          else acc.lapses30++;
+        }
+        if (r.ts >= win7) {
+          acc.ret.d7.t++;
+          if (passed) acc.ret.d7.p++;
+        }
+      }
+      if (r.ts >= win30) acc.answers[r.grade]++;
+    };
 
     for (const r of reviews) {
       const day = startOfDay(r.ts);
       const isNew = r.prevInterval === 0;
+      const deckId = cardDeck.get(r.cardId);
+
       const e = byDay.get(day) ?? { nw: 0, rv: 0 };
       if (isNew) e.nw++;
       else e.rv++;
       byDay.set(day, e);
-
-      const deckId = cardDeck.get(r.cardId);
       if (deckId) {
         let bd = byDayByDeck.get(deckId);
         if (!bd) byDayByDeck.set(deckId, (bd = new Map()));
@@ -156,23 +179,14 @@ export function Stats() {
 
       const graduated = r.prevInterval >= 1; // a real recall test, not a learning step
       const passed = r.grade !== 'again';
-      if (graduated) {
-        ret.all.t++;
-        if (passed) ret.all.p++;
-        if (r.ts >= win30) {
-          ret.d30.t++;
-          if (passed) ret.d30.p++;
-        }
-        if (r.ts >= win7) {
-          ret.d7.t++;
-          if (passed) ret.d7.p++;
-        }
-        if (!passed) {
-          lapsesByCard.set(r.cardId, (lapsesByCard.get(r.cardId) ?? 0) + 1);
-          if (r.ts >= win30) lapses30++;
-        }
+      if (graduated && !passed) lapsesByCard.set(r.cardId, (lapsesByCard.get(r.cardId) ?? 0) + 1);
+
+      foldRecall(recall, r, graduated, passed);
+      if (deckId) {
+        let dr = recallByDeck.get(deckId);
+        if (!dr) recallByDeck.set(deckId, (dr = emptyRecall()));
+        foldRecall(dr, r, graduated, passed);
       }
-      if (r.ts >= win30) answers[r.grade]++;
     }
 
     const buildHistory = (bd: Map<number, { nw: number; rv: number }>) =>
@@ -229,9 +243,8 @@ export function Stats() {
       historyByDeck,
       added,
       addedByDeck,
-      ret,
-      answers,
-      lapses30,
+      recall,
+      recallByDeck,
       hardest,
     };
   }, []);
@@ -244,14 +257,18 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, history, historyByDeck, added, addedByDeck, ret, answers, lapses30, hardest } = data;
-
-  const answerTotal = answers.again + answers.good + answers.easy;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, history, historyByDeck, added, addedByDeck, recall, recallByDeck, hardest } = data;
 
   const deckOptions = byDeck.map((d) => ({ id: d.id, name: d.name })).sort((a, b) => a.name.localeCompare(b.name));
   // Fall back to "all" if the scoped deck no longer exists.
-  const scopeId = scope !== 'all' && forecastByDeck.has(scope) ? scope : 'all';
-  const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? forecast);
+  const scopeId = scope !== 'all' && byDeck.some((d) => d.id === scope) ? scope : 'all';
+
+  // Maturity and recall follow the same deck scope as the charts.
+  const activeMaturity = scopeId === 'all' ? { nw, young, mature } : (byDeck.find((d) => d.id === scopeId) ?? { nw: 0, young: 0, mature: 0 });
+  const rec = scopeId === 'all' ? recall : (recallByDeck.get(scopeId) ?? { ret: { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } }, answers: { again: 0, good: 0, easy: 0 }, lapses30: 0 });
+  const { ret, answers, lapses30 } = rec;
+  const answerTotal = answers.again + answers.good + answers.easy;
+  const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? new Array<number>(forecast.length).fill(0));
   const activeHistory = scopeId === 'all' ? history : (historyByDeck.get(scopeId) ?? history.map((h) => ({ day: h.day, nw: 0, rv: 0 })));
   const dueToday = activeForecast[0];
   const dueWeek = activeForecast.slice(0, 7).reduce((s, n) => s + n, 0);
@@ -296,6 +313,7 @@ export function Stats() {
 
       <section className="panel">
         <h2>Recall</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
         <div className="stat-summary">
           <div>
             <div className="stat-num">{pct(ret.d30.p, ret.d30.t)}</div>
@@ -335,15 +353,16 @@ export function Stats() {
 
       <section className="panel">
         <h2>Card maturity</h2>
-        <div className="stat-bar" role="img" aria-label={`${nw} new, ${young} young, ${mature} mature`}>
-          <div className="seg seg-new" style={{ flexGrow: nw }} title={`New: ${nw}`} />
-          <div className="seg seg-young" style={{ flexGrow: young }} title={`Young: ${young}`} />
-          <div className="seg seg-mature" style={{ flexGrow: mature }} title={`Mature: ${mature}`} />
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
+        <div className="stat-bar" role="img" aria-label={`${activeMaturity.nw} new, ${activeMaturity.young} young, ${activeMaturity.mature} mature`}>
+          <div className="seg seg-new" style={{ flexGrow: activeMaturity.nw }} title={`New: ${activeMaturity.nw}`} />
+          <div className="seg seg-young" style={{ flexGrow: activeMaturity.young }} title={`Young: ${activeMaturity.young}`} />
+          <div className="seg seg-mature" style={{ flexGrow: activeMaturity.mature }} title={`Mature: ${activeMaturity.mature}`} />
         </div>
         <ul className="stat-legend">
-          <li><span className="dot dot-new" /> New <b>{nw}</b></li>
-          <li><span className="dot dot-young" /> Young <b>{young}</b></li>
-          <li><span className="dot dot-mature" /> Mature <b>{mature}</b></li>
+          <li><span className="dot dot-new" /> New <b>{activeMaturity.nw}</b></li>
+          <li><span className="dot dot-young" /> Young <b>{activeMaturity.young}</b></li>
+          <li><span className="dot dot-mature" /> Mature <b>{activeMaturity.mature}</b></li>
         </ul>
         <p className="muted small">
           New = never reviewed · Young = interval &lt; {MATURE_DAYS}d · Mature = interval ≥ {MATURE_DAYS}d.
