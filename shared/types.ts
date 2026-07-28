@@ -13,6 +13,7 @@ export interface Deck {
   createdAt: number;
   updatedAt: number;
   reviewDirection?: ReviewDirection; // default 'forward'
+  description?: string; // optional free-text notes about the deck
   deleted?: boolean; // soft-delete tombstone for sync convergence
 }
 

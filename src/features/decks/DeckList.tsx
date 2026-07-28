@@ -122,6 +122,7 @@ export function DeckList() {
             <li key={deck.id} className="deck-item">
               <div className="deck-main">
                 <span className="deck-name">{deck.name}</span>
+                {deck.description && <span className="deck-desc">{deck.description}</span>}
                 <span className="deck-meta">
                   {stats.total} cards
                   {stats.newDue > 0 && (

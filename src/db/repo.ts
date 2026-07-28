@@ -73,6 +73,10 @@ export async function setReviewDirection(id: string, direction: ReviewDirection)
   await db.decks.update(id, { reviewDirection: direction, updatedAt: Date.now() });
 }
 
+export async function setDeckDescription(id: string, description: string): Promise<void> {
+  await db.decks.update(id, { description: description.trim() || undefined, updatedAt: Date.now() });
+}
+
 /** Soft-delete a deck and all its cards (tombstones, so the delete syncs). */
 export async function deleteDeck(id: string): Promise<void> {
   const now = Date.now();
@@ -332,6 +336,7 @@ export async function importDeck(bundle: ExportBundle): Promise<ImportResult> {
       id: uid(),
       name,
       reviewDirection: src.reviewDirection, // carry one-sided/both setting from the file
+      description: src.description,
       createdAt: now,
       updatedAt: now,
     };

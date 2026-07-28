@@ -16,6 +16,7 @@ import {
   moveCards,
   renameDeck,
   setReviewDirection,
+  setDeckDescription,
 } from '../../db/repo';
 import { type Card, type Deck, type ReviewDirection, cardSources, cardContexts } from '@shared/types';
 import { ContextsField } from '../../components/ContextsField';
@@ -312,6 +313,17 @@ export function DeckEditor() {
           <option value="reverse">Back → front</option>
           <option value="both">Both ways</option>
         </select>
+      </label>
+
+      <label className="field">
+        <span>Description</span>
+        <textarea
+          className="input"
+          rows={2}
+          placeholder="Optional notes about this deck"
+          defaultValue={data.deck.description ?? ''}
+          onBlur={(e) => void setDeckDescription(id, e.target.value)}
+        />
       </label>
 
       <form className="card-form" onSubmit={add}>
