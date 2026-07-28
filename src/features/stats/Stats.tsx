@@ -1,12 +1,8 @@
 import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
-import { itemsForCard } from '@shared/sm2';
 import { db } from '../../db/db';
-
-const DAY = 86_400_000;
-const MATURE_DAYS = 21; // Anki convention: interval >= 21d counts as "mature"
-const FORECAST_DAYS = 21;
+import { computeStats, rangeStartFor, startOfDay, fmtDay, monthShort, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
 
 const RANGE_PRESETS = [
   { key: 'week', label: 'Last week', days: 7 },
@@ -17,70 +13,11 @@ const RANGE_PRESETS = [
 ];
 const DEFAULT_RANGE_DAYS = 30;
 
-type Maturity = { nw: number; young: number; mature: number };
-
-function bucketInterval(interval: number, m: Maturity) {
-  if (interval === 0) m.nw++;
-  else if (interval < MATURE_DAYS) m.young++;
-  else m.mature++;
-}
-
-const startOfDay = (t: number) => {
-  const d = new Date(t);
-  d.setHours(0, 0, 0, 0);
-  return d.getTime();
-};
-/** Local start-of-day `days` days before today (today counts as day 1). */
-const rangeStartFor = (today: number, days: number) => today - (days - 1) * DAY;
-
 const pct = (pass: number, total: number) => (total ? `${Math.round((pass / total) * 100)}%` : '—');
-
-const fmtDay = (t: number) => new Date(t).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-const monthShort = (t: number) => new Date(t).toLocaleDateString(undefined, { month: 'short' });
 const toDateInput = (t: number) => {
   const d = new Date(t);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
-
-type Bucket = { label: string; sub: string; full: string };
-/** Split [start, today] into readable columns: daily for short spans, weekly for
- * medium, monthly for long — so a year is 12 bars, not 365. Returns the columns
- * plus a function mapping a timestamp to its column index (-1 if out of range). */
-function bucketize(start: number, today: number): { buckets: Bucket[]; granularity: string; indexOf: (ts: number) => number } {
-  const span = Math.round((today - start) / DAY) + 1;
-  const buckets: Bucket[] = [];
-
-  if (span <= 35) {
-    for (let d = start; d <= today; d += DAY) {
-      const showMonth = d === start || new Date(d).getMonth() !== new Date(d - DAY).getMonth();
-      buckets.push({ label: String(new Date(d).getDate()), sub: showMonth ? monthShort(d) : '', full: fmtDay(d) });
-    }
-    return { buckets, granularity: 'day', indexOf: (ts) => Math.floor((startOfDay(ts) - start) / DAY) };
-  }
-  if (span <= 190) {
-    const W = 7 * DAY;
-    for (let d = start; d <= today; d += W) {
-      const showMonth = d === start || new Date(d).getMonth() !== new Date(d - W).getMonth();
-      buckets.push({ label: String(new Date(d).getDate()), sub: showMonth ? monthShort(d) : '', full: `Week of ${fmtDay(d)}` });
-    }
-    return { buckets, granularity: 'week', indexOf: (ts) => Math.floor((startOfDay(ts) - start) / W) };
-  }
-  // monthly (calendar months)
-  const first = new Date(start);
-  first.setDate(1);
-  first.setHours(0, 0, 0, 0);
-  const startMK = first.getFullYear() * 12 + first.getMonth();
-  const endMK = new Date(today).getFullYear() * 12 + new Date(today).getMonth();
-  for (let cur = new Date(first); cur.getFullYear() * 12 + cur.getMonth() <= endMK; cur = new Date(cur.getFullYear(), cur.getMonth() + 1, 1)) {
-    const t = cur.getTime();
-    buckets.push({
-      label: monthShort(t),
-      sub: cur.getMonth() === 0 ? String(cur.getFullYear()) : '',
-      full: new Date(t).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
-    });
-  }
-  return { buckets, granularity: 'month', indexOf: (ts) => new Date(ts).getFullYear() * 12 + new Date(ts).getMonth() - startMK };
-}
 
 /** Deck-scope chips for the per-panel charts. */
 function DeckFilter({ options, value, onChange }: { options: { id: string; name: string }[]; value: string; onChange: (v: string) => void }) {
@@ -160,162 +97,7 @@ export function Stats() {
       db.decks.filter((d) => !d.deleted).toArray(),
       db.reviews.toArray(),
     ]);
-
-    const now = Date.now();
-    const today = startOfDay(now);
-    const dirOf = new Map(decks.map((d) => [d.id, d.reviewDirection ?? 'forward'] as const));
-    const deckName = new Map(decks.map((d) => [d.id, d.name] as const));
-    const cardDeck = new Map(cards.map((c) => [c.id, c.deckId] as const));
-
-    // Review *units* = one per active direction of each card (a two-sided deck
-    // yields a forward and a reverse unit). Reusing itemsForCard keeps maturity,
-    // due counts and the forecast in step with what the reviewer actually queues,
-    // so the reverse side of two-sided decks is no longer invisible.
-    const units = cards.flatMap((c) => itemsForCard(c, dirOf.get(c.deckId) ?? 'forward'));
-
-    const maturity: Maturity = { nw: 0, young: 0, mature: 0 };
-    let dueNow = 0;
-    const forecast = new Array<number>(FORECAST_DAYS).fill(0);
-    const forecastByDeck = new Map<string, number[]>();
-    const perDeck = new Map<string, Maturity & { total: number }>();
-
-    for (const { card, schedule } of units) {
-      const { interval, dueDate } = schedule;
-      bucketInterval(interval, maturity);
-      if (dueDate <= now) dueNow++;
-
-      let dm = perDeck.get(card.deckId);
-      if (!dm) perDeck.set(card.deckId, (dm = { nw: 0, young: 0, mature: 0, total: 0 }));
-      bucketInterval(interval, dm);
-      dm.total++;
-
-      if (interval > 0) {
-        const offset = Math.round((dueDate - today) / DAY); // negative = overdue
-        if (offset < FORECAST_DAYS) {
-          const idx = Math.max(0, offset); // overdue folds into today
-          forecast[idx]++;
-          let fd = forecastByDeck.get(card.deckId);
-          if (!fd) forecastByDeck.set(card.deckId, (fd = new Array<number>(FORECAST_DAYS).fill(0)));
-          fd[idx]++;
-        }
-      }
-    }
-
-    const byDeck = [...perDeck.entries()]
-      .map(([id, m]) => ({ id, name: deckName.get(id) ?? '(deck)', dir: dirOf.get(id) ?? 'forward', ...m }))
-      .sort((a, b) => b.total - a.total);
-
-    // --- Everything below is scoped to the selected date range [rangeStart, today]. ---
-    const { buckets, granularity, indexOf } = bucketize(rangeStart, today);
-    const nb = buckets.length;
-    const mkHist = () => Array.from({ length: nb }, () => ({ nw: 0, rv: 0 }));
-
-    // Study history (introductions vs repeats) per bucket, overall and per deck.
-    const history = mkHist();
-    const historyByDeck = new Map<string, { nw: number; rv: number }[]>();
-
-    // Recall over the range. True retention counts only genuine recall of graduated
-    // cards (prevInterval >= 1d, not learning steps); young/mature split it by the
-    // card's interval at review time; answers count every button press.
-    const emptyRecall = () => ({
-      ret: { p: 0, t: 0 },
-      young: { p: 0, t: 0 }, // prevInterval in [1, MATURE_DAYS)
-      mature: { p: 0, t: 0 }, // prevInterval >= MATURE_DAYS
-      answers: { again: 0, good: 0, easy: 0 },
-      lapses: 0,
-    });
-    type Recall = ReturnType<typeof emptyRecall>;
-    const recall = emptyRecall();
-    const recallByDeck = new Map<string, Recall>();
-    const lapsesByCard = new Map<string, number>();
-
-    const foldRecall = (acc: Recall, r: (typeof reviews)[number], graduated: boolean, passed: boolean) => {
-      if (graduated) {
-        acc.ret.t++;
-        if (passed) acc.ret.p++;
-        else acc.lapses++;
-        const bucket = r.prevInterval >= MATURE_DAYS ? acc.mature : acc.young;
-        bucket.t++;
-        if (passed) bucket.p++;
-      }
-      acc.answers[r.grade]++;
-    };
-
-    for (const r of reviews) {
-      if (r.ts < rangeStart) continue;
-      const idx = indexOf(r.ts);
-      const isNew = r.prevInterval === 0;
-      const deckId = cardDeck.get(r.cardId);
-
-      if (idx >= 0 && idx < nb) {
-        if (isNew) history[idx].nw++;
-        else history[idx].rv++;
-        if (deckId) {
-          let bd = historyByDeck.get(deckId);
-          if (!bd) historyByDeck.set(deckId, (bd = mkHist()));
-          if (isNew) bd[idx].nw++;
-          else bd[idx].rv++;
-        }
-      }
-
-      const graduated = r.prevInterval >= 1;
-      const passed = r.grade !== 'again';
-      if (graduated && !passed) lapsesByCard.set(r.cardId, (lapsesByCard.get(r.cardId) ?? 0) + 1);
-
-      foldRecall(recall, r, graduated, passed);
-      if (deckId) {
-        let dr = recallByDeck.get(deckId);
-        if (!dr) recallByDeck.set(deckId, (dr = emptyRecall()));
-        foldRecall(dr, r, graduated, passed);
-      }
-    }
-
-    // Cards added per bucket, from each card's createdAt — overall and per deck.
-    const added = new Array<number>(nb).fill(0);
-    const addedByDeck = new Map<string, number[]>();
-    for (const c of cards) {
-      if (c.createdAt < rangeStart) continue;
-      const idx = indexOf(c.createdAt);
-      if (idx < 0 || idx >= nb) continue;
-      added[idx]++;
-      let ad = addedByDeck.get(c.deckId);
-      if (!ad) addedByDeck.set(c.deckId, (ad = new Array<number>(nb).fill(0)));
-      ad[idx]++;
-    }
-
-    // Hardest cards: most-lapsed (within the range) first, then lowest ease.
-    const hardest = cards
-      .map((c) => ({
-        id: c.id,
-        deckId: c.deckId,
-        front: c.front,
-        deck: deckName.get(c.deckId) ?? '',
-        ease: Math.min(c.easeFactor, c.reverse?.easeFactor ?? c.easeFactor),
-        lapses: lapsesByCard.get(c.id) ?? 0,
-      }))
-      .filter((c) => c.lapses > 0 || c.ease < 2.5)
-      .sort((a, b) => b.lapses - a.lapses || a.ease - b.ease)
-      .slice(0, 8);
-
-    return {
-      cards: cards.length,
-      decks: byDeck.length,
-      ...maturity,
-      dueNow,
-      today,
-      forecast,
-      forecastByDeck,
-      byDeck,
-      buckets,
-      granularity,
-      history,
-      historyByDeck,
-      added,
-      addedByDeck,
-      recall,
-      recallByDeck,
-      hardest,
-    };
+    return computeStats(cards, decks, reviews, rangeStart, Date.now());
   }, [rangeStart]);
 
   if (!data) return <p className="muted">Loading…</p>;
