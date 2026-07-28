@@ -151,7 +151,9 @@ body {
 }
 .deck-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .deck-name { font-weight: 600; }
-.deck-desc { color: var(--muted); font-size: 0.82rem; white-space: pre-wrap; }
+.deck-desc { display: block; color: var(--muted); font-size: 0.82rem; white-space: pre-wrap; }
+.deck-desc.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.deck-more { background: none; border: none; padding: 0; cursor: pointer; color: var(--primary); font-size: 0.8rem; }
 .checkline { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .deck-settings { border-left: 2px solid var(--border); padding-left: 12px; margin-top: 8px; }
 .deck-meta { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; }

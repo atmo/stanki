@@ -1,10 +1,34 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createDeck, getSettings, importDeck, effectiveSettings, type ExportBundle } from '../../db/repo';
 import { selectDue, itemsForCard, startOfDay, endOfLocalDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
+
+/** Deck description clamped to two lines, with a more/less toggle shown only
+ * when the text actually overflows. */
+function DeckDescription({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current; // measured while clamped (collapsed)
+    if (el) setOverflows(el.scrollHeight > el.clientHeight + 1);
+  }, [text]);
+
+  return (
+    <span className="deck-desc-wrap">
+      <span ref={ref} className={`deck-desc${expanded ? '' : ' clamp'}`}>{text}</span>
+      {(overflows || expanded) && (
+        <button type="button" className="deck-more" onClick={() => setExpanded((v) => !v)}>
+          {expanded ? 'less' : 'more'}
+        </button>
+      )}
+    </span>
+  );
+}
 
 export function DeckList() {
   const [name, setName] = useState('');
@@ -123,7 +147,7 @@ export function DeckList() {
             <li key={deck.id} className="deck-item">
               <div className="deck-main">
                 <span className="deck-name">{deck.name}</span>
-                {deck.description && <span className="deck-desc">{deck.description}</span>}
+                {deck.description && <DeckDescription text={deck.description} />}
                 <span className="deck-meta">
                   {stats.total} cards
                   {stats.newDue > 0 && (
