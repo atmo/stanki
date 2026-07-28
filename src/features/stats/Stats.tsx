@@ -24,32 +24,30 @@ const startOfDay = (t: number) => {
 
 const pct = (pass: number, total: number) => (total ? `${Math.round((pass / total) * 100)}%` : '—');
 
-const dayLabel = (t: number) => new Date(t).getDate();
+const fmtDay = (t: number) => new Date(t).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const monthShort = (t: number) => new Date(t).toLocaleDateString(undefined, { month: 'short' });
 
-/** A stacked vertical-bar chart; forecast and history share it so they read as a pair.
- * Each column's segments are heights relative to `max`; labels show only every 3rd
- * column to stay legible, with the full breakdown on hover. */
-function BarChart({
-  bars,
-  max,
-}: {
-  bars: { label: string; title: string; segs: { cls: string; value: number }[] }[];
-  max: number;
-}) {
+/** A single-series vertical-bar chart; forecast and both history charts share it
+ * so they read as one system. Every column shows its day-of-month; the month name
+ * is printed at the first column and wherever the month rolls over. Exact values on
+ * hover. */
+function BarChart({ bars, max }: { bars: { day: number; value: number; cls: string; title: string }[]; max: number }) {
   return (
     <div className="bar-chart">
-      {bars.map((b, i) => (
-        <div className="bar-col" key={i} title={b.title}>
-          <div className="bar-stack">
-            {b.segs.map((s, j) =>
-              s.value > 0 ? (
-                <div key={j} className={`bar-seg ${s.cls}`} style={{ height: `${(s.value / max) * 100}%` }} />
-              ) : null,
-            )}
+      {bars.map((b, i) => {
+        const showMonth = i === 0 || new Date(b.day).getMonth() !== new Date(bars[i - 1].day).getMonth();
+        return (
+          <div className="bar-col" key={b.day} title={b.title}>
+            <div className="bar-stack">
+              {b.value > 0 ? (
+                <div className={`bar-seg ${b.cls}`} style={{ height: `${(b.value / max) * 100}%` }} />
+              ) : null}
+            </div>
+            <span className="bar-day">{new Date(b.day).getDate()}</span>
+            <span className="bar-month">{showMonth ? monthShort(b.day) : ''}</span>
           </div>
-          <span className="bar-label">{i % 3 === 0 ? b.label : ''}</span>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -95,7 +93,7 @@ export function Stats() {
     }
 
     const byDeck = [...perDeck.entries()]
-      .map(([id, m]) => ({ id, name: deckName.get(id) ?? '(deck)', ...m }))
+      .map(([id, m]) => ({ id, name: deckName.get(id) ?? '(deck)', dir: dirOf.get(id) ?? 'forward', ...m }))
       .sort((a, b) => b.total - a.total);
 
     // Per-day study history (introductions vs repeats), from the review log.
@@ -166,6 +164,7 @@ export function Stats() {
       decks: byDeck.length,
       ...maturity,
       dueNow,
+      today,
       forecast,
       dueToday,
       dueWeek,
@@ -183,29 +182,20 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, forecast, dueToday, dueWeek, byDeck, history, ret, answers, lapses30, hardest } = data;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, dueToday, dueWeek, byDeck, history, ret, answers, lapses30, hardest } = data;
 
   const answerTotal = answers.again + answers.good + answers.easy;
 
   const forecastMax = Math.max(1, ...forecast);
   const forecastBars = forecast.map((n, i) => {
-    const day = startOfDay(Date.now()) + i * DAY;
-    return {
-      label: String(dayLabel(day)),
-      title: `${new Date(day).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}${i === 0 ? ' (incl. overdue)' : ''}: ${n} due`,
-      segs: [{ cls: 'bar-due', value: n }],
-    };
+    const day = today + i * DAY;
+    return { day, value: n, cls: 'bar-due', title: `${fmtDay(day)}${i === 0 ? ' (incl. overdue)' : ''}: ${n} due` };
   });
 
-  const historyMax = Math.max(1, ...history.map((h) => h.nw + h.rv));
-  const historyBars = history.map((h) => ({
-    label: String(dayLabel(h.day)),
-    title: `${new Date(h.day).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}: ${h.nw} introduced, ${h.rv} review`,
-    segs: [
-      { cls: 'bar-rev', value: h.rv },
-      { cls: 'bar-new', value: h.nw },
-    ],
-  }));
+  const introMax = Math.max(1, ...history.map((h) => h.nw));
+  const introBars = history.map((h) => ({ day: h.day, value: h.nw, cls: 'bar-new', title: `${fmtDay(h.day)}: ${h.nw} introduced` }));
+  const reviewMax = Math.max(1, ...history.map((h) => h.rv));
+  const reviewBars = history.map((h) => ({ day: h.day, value: h.rv, cls: 'bar-rev', title: `${fmtDay(h.day)}: ${h.rv} reviewed` }));
 
   return (
     <div className="settings">
@@ -295,14 +285,13 @@ export function Stats() {
       <section className="panel">
         <h2>Study history</h2>
         <p className="muted small">
-          Cards introduced vs. reviewed per day (last {HISTORY_DAYS} days). A two-sided deck
-          introduces each card twice — once per direction.
+          Per day, last {HISTORY_DAYS} days. A two-sided deck introduces each card twice —
+          once per direction.
         </p>
-        <BarChart bars={historyBars} max={historyMax} />
-        <ul className="stat-legend">
-          <li><span className="dot bar-new" /> Introduced</li>
-          <li><span className="dot bar-rev" /> Review</li>
-        </ul>
+        <div className="chart-title"><span className="dot bar-new" /> Introduced</div>
+        <BarChart bars={introBars} max={introMax} />
+        <div className="chart-title"><span className="dot bar-rev" /> Reviewed</div>
+        <BarChart bars={reviewBars} max={reviewMax} />
       </section>
 
       <section className="panel">
@@ -314,7 +303,11 @@ export function Stats() {
           </div>
           {byDeck.map((d) => (
             <div className="deck-stat" key={d.id}>
-              <span className="deck-stat-name">{d.name}</span>
+              <span className="ds-deck">
+                <span className="deck-stat-name">{d.name}</span>
+                {d.dir === 'both' && <span className="tag-2s" title="Two-sided — both directions counted">↔</span>}
+                {d.dir === 'reverse' && <span className="tag-2s" title="Reverse only">←</span>}
+              </span>
               <span className="ds-cols">
                 <span className="ds-new">{d.nw}</span>
                 <span className="ds-young">{d.young}</span>

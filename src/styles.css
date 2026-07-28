@@ -116,11 +116,15 @@ body {
 .bar-new { background: #2563eb; }
 .bar-rev { background: #2dd4bf; }
 .bar-due { background: var(--primary); }
-.bar-label { height: 1em; margin-top: 3px; font-size: 0.62rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar-day { height: 1em; margin-top: 3px; font-size: 0.6rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
+.bar-month { align-self: flex-start; height: 1em; font-size: 0.6rem; line-height: 1; color: var(--muted); white-space: nowrap; overflow: visible; }
+.chart-title { display: flex; align-items: center; gap: 6px; margin: 12px 0 2px; font-size: 0.82rem; color: var(--muted); }
 .deck-stats { display: flex; flex-direction: column; }
 .deck-stat { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--border); font-size: 0.9rem; }
 .deck-stat-head { color: var(--muted); font-size: 0.78rem; border-top: none; }
-.deck-stat-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.deck-stat-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ds-deck { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; overflow: hidden; }
+.tag-2s { flex-shrink: 0; font-size: 0.72rem; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 5px; line-height: 1.5; }
 .ds-cols { display: grid; grid-template-columns: repeat(4, 40px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .ds-cols2 { display: grid; grid-template-columns: repeat(2, 52px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .ds-new { color: #93c5fd; }
