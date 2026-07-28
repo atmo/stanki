@@ -134,6 +134,9 @@ export function Stats() {
     const win30 = now - 30 * DAY;
     const emptyRecall = () => ({
       ret: { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } },
+      // 30-day retention split by the card's maturity *at review time* (prevInterval).
+      young: { p: 0, t: 0 }, // prevInterval in [1, MATURE_DAYS)
+      mature: { p: 0, t: 0 }, // prevInterval >= MATURE_DAYS
       answers: { again: 0, good: 0, easy: 0 },
       lapses30: 0,
     });
@@ -150,6 +153,9 @@ export function Stats() {
           acc.ret.d30.t++;
           if (passed) acc.ret.d30.p++;
           else acc.lapses30++;
+          const bucket = r.prevInterval >= MATURE_DAYS ? acc.mature : acc.young;
+          bucket.t++;
+          if (passed) bucket.p++;
         }
         if (r.ts >= win7) {
           acc.ret.d7.t++;
@@ -265,8 +271,10 @@ export function Stats() {
 
   // Maturity and recall follow the same deck scope as the charts.
   const activeMaturity = scopeId === 'all' ? { nw, young, mature } : (byDeck.find((d) => d.id === scopeId) ?? { nw: 0, young: 0, mature: 0 });
-  const rec = scopeId === 'all' ? recall : (recallByDeck.get(scopeId) ?? { ret: { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } }, answers: { again: 0, good: 0, easy: 0 }, lapses30: 0 });
+  const rec = scopeId === 'all' ? recall : (recallByDeck.get(scopeId) ?? { ret: { d7: { p: 0, t: 0 }, d30: { p: 0, t: 0 }, all: { p: 0, t: 0 } }, young: { p: 0, t: 0 }, mature: { p: 0, t: 0 }, answers: { again: 0, good: 0, easy: 0 }, lapses30: 0 });
   const { ret, answers, lapses30 } = rec;
+  const youngRet = rec.young;
+  const matureRet = rec.mature;
   const answerTotal = answers.again + answers.good + answers.easy;
   const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? new Array<number>(forecast.length).fill(0));
   const activeHistory = scopeId === 'all' ? history : (historyByDeck.get(scopeId) ?? history.map((h) => ({ day: h.day, nw: 0, rv: 0 })));
@@ -332,6 +340,24 @@ export function Stats() {
           True retention = share of reviews of graduated cards (interval ≥ 1d) answered without “Again”.
           {ret.d30.t > 0 ? ` ${ret.d30.t} such reviews in 30d, ${lapses30} lapse${lapses30 === 1 ? '' : 's'}.` : ' No qualifying reviews yet.'}
         </p>
+        {youngRet.t + matureRet.t > 0 && (
+          <>
+            <div className="stat-summary">
+              <div>
+                <div className="stat-num">{pct(youngRet.p, youngRet.t)}</div>
+                <div className="stat-label">young · 30d ({youngRet.t})</div>
+              </div>
+              <div>
+                <div className="stat-num">{pct(matureRet.p, matureRet.t)}</div>
+                <div className="stat-label">mature · 30d ({matureRet.t})</div>
+              </div>
+            </div>
+            <p className="muted small">
+              Retention by the card’s maturity when reviewed — young (interval &lt; {MATURE_DAYS}d) vs
+              mature (≥ {MATURE_DAYS}d). Low young points at weak encoding; low mature at intervals that are too long.
+            </p>
+          </>
+        )}
         {answerTotal > 0 ? (
           <>
             <div className="stat-bar" role="img" aria-label={`${answers.again} again, ${answers.good} good, ${answers.easy} easy`}>
