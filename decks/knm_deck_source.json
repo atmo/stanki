@@ -1,0 +1,3421 @@
+{
+  "schema_version": "2.0",
+  "schema_note": "Field names are mine; no Stanki schema was found. back_source is 'regulation' (the eindtermen say it) or 'authored' (I wrote it).",
+  "deck": {
+    "name": "KNM - Kennis van de Nederlandse Maatschappij (v2, cleaned)",
+    "description": "One fact per card, or a closed set of at most five with the count stated in the front.",
+    "language": {
+      "prompts": "en",
+      "key_terms": "nl"
+    },
+    "source": {
+      "instrument": "Bijlage 2 bij artikel 3.2, Regeling inburgering 2021",
+      "amended_by": "Stcrt. 2024, nr. 15802",
+      "in_force_since": "2025-07-01",
+      "url": "https://zoek.officielebekendmakingen.nl/stcrt-2024-15802.html"
+    },
+    "generated": "2026-07-26",
+    "card_count": 202,
+    "authored_backs": 44,
+    "cards_per_theme": {
+      "1": 31,
+      "2": 9,
+      "3": 16,
+      "4": 27,
+      "5": 31,
+      "6": 38,
+      "7": 29,
+      "8": 21
+    }
+  },
+  "build_rules": [
+    "One fact per card, or a closed set of at most five with the expected count stated in the front.",
+    "No yes/no fronts whose answer is guessable; inverted to which/what/who/how many.",
+    "No meta-fronts ('what must you know about X').",
+    "Every front answerable standalone, independent of neighbouring cards.",
+    "Regional, procedural and read-once material moved out of the drill deck to preserve eindterm coverage without polluting the review queue."
+  ],
+  "flag_meanings": {
+    "volatile": "Names a current officeholder; re-verify before the exam.",
+    "exam-convention": "The exam's expected answer is simpler than the real legal position.",
+    "sensitive": "Distressing subject matter."
+  },
+  "cards": [
+    {
+      "id": "knm-1.1.1-1",
+      "front": "Which module prepares an inburgeraar for the labour market?",
+      "back": "The Module Arbeidsmarkt en Participatie (MAP).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.1"
+      ],
+      "source_ref": "1.1.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.1-2",
+      "front": "Who is expected to provide your income in the Netherlands?",
+      "back": "You are - there is an obligation to make an effort to earn your own income.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.1"
+      ],
+      "source_ref": "1.1.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.2-1",
+      "front": "Besides your own network, where are Dutch vacancies mainly advertised?",
+      "back": "In online vacaturebanken.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.2"
+      ],
+      "source_ref": "1.1.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.2-2",
+      "front": "What is an uitzendbureau?",
+      "back": "A temp agency: you register with it and it places you in work.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.2"
+      ],
+      "source_ref": "1.1.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.2-3",
+      "front": "Name the three documents used to apply for Dutch jobs.",
+      "back": "An application form, a sollicitatiebrief, and a CV.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.2"
+      ],
+      "source_ref": "1.1.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.2-4",
+      "front": "What do Dutch employers expect a candidate to do at interview?",
+      "back": "Arrive prepared, and ask a few questions about the work and the terms.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.2"
+      ],
+      "source_ref": "1.1.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.3-1",
+      "front": "Name all five factors that determine your Dutch labour-market chances.",
+      "back": "Prior education, work experience, availability, motivation, command of Dutch.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.3"
+      ],
+      "source_ref": "1.1.3",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.4-1",
+      "front": "Which service assesses the value of a foreign diploma?",
+      "back": "IDW - Internationale Diplomawaardering, run by Nuffic for higher education and SBB for mbo.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.4"
+      ],
+      "source_ref": "1.1.4",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.6-1",
+      "front": "Which two competences may an employer set requirements on?",
+      "back": "Language and communication skills.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.6"
+      ],
+      "source_ref": "1.1.6",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.7-1",
+      "front": "You lose a job you had worked in. Which body do you register with?",
+      "back": "UWV.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.7"
+      ],
+      "source_ref": "1.1.7",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.7-2",
+      "front": "You need income support and have no Dutch work history. Which body?",
+      "back": "The gemeente.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.7"
+      ],
+      "source_ref": "1.1.7",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.7-3",
+      "front": "Which benefit is the minimum-income safety net?",
+      "back": "Bijstand.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.7"
+      ],
+      "source_ref": "1.1.7",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.7-4",
+      "front": "Which benefit follows the loss of a job you had worked in?",
+      "back": "WW.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.7"
+      ],
+      "source_ref": "1.1.7",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.7-5",
+      "front": "Which benefit covers inability to work through illness or disability?",
+      "back": "Arbeidsongeschiktheidsuitkering.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.7"
+      ],
+      "source_ref": "1.1.7",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.8-1",
+      "front": "What obligation does a benefit recipient have towards offered work?",
+      "back": "To accept it, in principle.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.8"
+      ],
+      "source_ref": "1.1.8",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.1.8-2",
+      "front": "What must you report to the benefits body when circumstances change?",
+      "back": "Any change in your income situation - it can affect the benefit.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.1.8"
+      ],
+      "source_ref": "1.1.8",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-1",
+      "front": "What is a cao?",
+      "back": "A collectieve arbeidsovereenkomst - a sector-wide collective agreement on employment terms.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-2",
+      "front": "If a cao covers your sector, what can you still do?",
+      "back": "Negotiate your terms with the employer independently of it.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-3",
+      "front": "What is a beoordelingsgesprek?",
+      "back": "A performance review of how you are functioning.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-4",
+      "front": "Name the three types of employment contract.",
+      "back": "Permanent (vast), fixed-term (tijdelijk), and via an uitzendbureau.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-5",
+      "front": "Name five things an arbeidsovereenkomst regulates.",
+      "back": "Any five of: hours, salary, autonomy, communication, working conditions, safety, environment, leave, sickness.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.1-6",
+      "front": "Which working pattern is unusually common in the Netherlands?",
+      "back": "Part-time work (deeltijd).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.1"
+      ],
+      "source_ref": "1.2.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.2-1",
+      "front": "What is the ondernemingsraad?",
+      "back": "The works council - a statutory form of employee participation.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.2"
+      ],
+      "source_ref": "1.2.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.2-2",
+      "front": "What is a personeelsvereniging?",
+      "back": "A staff association.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.2"
+      ],
+      "source_ref": "1.2.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.2-3",
+      "front": "Name the two functions of a vakbond.",
+      "back": "Defending workers' rights and interests, and concluding cao's.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.2"
+      ],
+      "source_ref": "1.2.2",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.2.3-1",
+      "front": "Who withholds your taxes and social premiums?",
+      "back": "Your employer, from your salary.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.2.3"
+      ],
+      "source_ref": "1.2.3",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.3.1-1",
+      "front": "Besides the employer, who is bound by the ban on workplace discrimination?",
+      "back": "Colleagues.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.3.1"
+      ],
+      "source_ref": "1.3.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.3.1-2",
+      "front": "Name three places to turn if you suspect discrimination at work.",
+      "back": "A vertrouwenspersoon, a trade union, an equal-rights organisation.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.3.1"
+      ],
+      "source_ref": "1.3.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.4.1-1",
+      "front": "What registration is compulsory to start a business?",
+      "back": "Registration with the Kamer van Koophandel (KvK).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.4.1"
+      ],
+      "source_ref": "1.4.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.4.1-2",
+      "front": "What happens to your benefit when you register with the KvK?",
+      "back": "It lapses in principle - consult the benefits body or gemeente first.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.4.1"
+      ],
+      "source_ref": "1.4.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-1.4.1-3",
+      "front": "Which two things must a self-employed person arrange themselves?",
+      "back": "A supplementary pension, and disability insurance.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-1",
+        "werk-en-inkomen",
+        "eindterm-1.4.1"
+      ],
+      "source_ref": "1.4.1",
+      "theme": 1,
+      "theme_name": "Werk en inkomen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.3-1",
+      "front": "What is expected before visiting an office or service provider?",
+      "back": "Making an appointment in advance.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.3"
+      ],
+      "source_ref": "2.1.3",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.3-2",
+      "front": "Name the two things many Dutch people expect around appointments.",
+      "back": "Punctuality, and cancelling in good time.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.3"
+      ],
+      "source_ref": "2.1.3",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.4-1",
+      "front": "Which two partnership forms are regulated by Dutch law?",
+      "back": "Marriage (huwelijk) and registered partnership (geregistreerd partnerschap).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.4"
+      ],
+      "source_ref": "2.1.4",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.4-2",
+      "front": "Which partnership forms are open to same-sex couples in NL?",
+      "back": "Both marriage and registered partnership.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.4"
+      ],
+      "source_ref": "2.1.4",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.5-1",
+      "front": "What is commemorated on 4 May?",
+      "back": "Nationale Dodenherdenking - the war dead.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.5"
+      ],
+      "source_ref": "2.1.5",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.5-2",
+      "front": "What is celebrated on 5 May?",
+      "back": "Bevrijdingsdag - the liberation of 1945.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.5"
+      ],
+      "source_ref": "2.1.5",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.5-3",
+      "front": "Which national holiday celebrates the monarch?",
+      "back": "Koningsdag.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.5"
+      ],
+      "source_ref": "2.1.5",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.1.5-4",
+      "front": "Name the four festivals the eindtermen list as relevant in particular circles.",
+      "back": "Sinterklaas, Carnival, Suikerfeest, Keti Koti.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.1.5"
+      ],
+      "source_ref": "2.1.5",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-2.2.1-1",
+      "front": "How do the eindtermen say you build a social network?",
+      "back": "Through volunteering, and active involvement in clubs and associations.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-2",
+        "omgangsvormen",
+        "eindterm-2.2.1"
+      ],
+      "source_ref": "2.2.1",
+      "theme": 2,
+      "theme_name": "Omgangsvormen, waarden en normen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.1-1",
+      "front": "What is a huurcontract?",
+      "back": "A rental contract setting out the terms of the tenancy.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.1"
+      ],
+      "source_ref": "3.1.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.2-1",
+      "front": "Which body rules on disputes over rent, service charges and maintenance?",
+      "back": "The Huurcommissie.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.2"
+      ],
+      "source_ref": "3.1.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.2-2",
+      "front": "Where can a tenant get free legal advice?",
+      "back": "The Juridisch Loket.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.2"
+      ],
+      "source_ref": "3.1.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.3-1",
+      "front": "Name the three routes to housing in the Netherlands.",
+      "back": "Social rent, free-sector rent, and purchase.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.3"
+      ],
+      "source_ref": "3.1.3",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.3-2",
+      "front": "Why does registering early as a housing-seeker matter?",
+      "back": "Waiting time counts towards allocation in the social sector.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.3"
+      ],
+      "source_ref": "3.1.3",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.3-3",
+      "front": "What determines eligibility for sociale huur?",
+      "back": "An income limit, set annually.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.3"
+      ],
+      "source_ref": "3.1.3",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.1.3-4",
+      "front": "Who can help you find a property to rent or buy?",
+      "back": "A makelaar.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.1.3"
+      ],
+      "source_ref": "3.1.3",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.1-1",
+      "front": "Who arranges energy, water and internet connections in your home?",
+      "back": "You do.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.1"
+      ],
+      "source_ref": "3.2.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.1-2",
+      "front": "What is a meterstand and what do you do with it?",
+      "back": "A meter reading - you report it to the supplier when required.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.1"
+      ],
+      "source_ref": "3.2.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.1-3",
+      "front": "Your electricity fails. Who do you report the storing to?",
+      "back": "The energy supplier.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.1"
+      ],
+      "source_ref": "3.2.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.2-1",
+      "front": "Name the two components of an energy or water bill.",
+      "back": "Consumption (verbruik) and costs.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.2"
+      ],
+      "source_ref": "3.2.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.2-2",
+      "front": "Give the two reasons the eindtermen offer for using energy sparingly.",
+      "back": "It is better for the environment, and it lowers your bill.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.2"
+      ],
+      "source_ref": "3.2.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.2-3",
+      "front": "How does a fixed energy contract differ from a variable one?",
+      "back": "Fixed tariffs hold for a set term; variable tariffs can change.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.2"
+      ],
+      "source_ref": "3.2.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.2.2-4",
+      "front": "Name four ways to save energy at home.",
+      "back": "Any four of: lower the thermostat, draught strips, radiator foil, shorter showers, LED bulbs, avoid standby, lower wash temperature, insulation.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.2.2"
+      ],
+      "source_ref": "3.2.2",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.3.1-1",
+      "front": "Who sets the rules for waste collection and separation?",
+      "back": "Your gemeente.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.3.1"
+      ],
+      "source_ref": "3.3.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-3.3.1-2",
+      "front": "Why does afvalscheiding matter?",
+      "back": "Separated waste is recycled into new raw materials, saving energy and reducing incineration.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-3",
+        "wonen",
+        "eindterm-3.3.1"
+      ],
+      "source_ref": "3.3.1",
+      "theme": 3,
+      "theme_name": "Wonen",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-1",
+      "front": "Who is the first point of contact for any health problem?",
+      "back": "The huisarts, with the praktijkondersteuner.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-2",
+      "front": "How do you gain access to a GP in the Netherlands?",
+      "back": "Choose a practice and register with it.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-3",
+      "front": "How do you see your GP?",
+      "back": "By appointment.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-4",
+      "front": "What right do you have if you cannot follow your GP in Dutch?",
+      "back": "The right to a tolk.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-5",
+      "front": "Where do you first go with psychological complaints?",
+      "back": "The huisarts or the praktijkondersteuner.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.1-6",
+      "front": "What is the beroepsgeheim?",
+      "back": "Medical confidentiality - your information is passed on only with your consent.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.1"
+      ],
+      "source_ref": "4.1.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.2-1",
+      "front": "What do you need to collect prescription medicine at the apotheek?",
+      "back": "A recept.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.2"
+      ],
+      "source_ref": "4.1.2",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.2-2",
+      "front": "Where do you buy medicines that need no prescription?",
+      "back": "At a drogist.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.2"
+      ],
+      "source_ref": "4.1.2",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.3-1",
+      "front": "What does a mondhygienist do?",
+      "back": "Dental hygiene care, alongside the tandarts.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.3"
+      ],
+      "source_ref": "4.1.3",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.3-2",
+      "front": "How do you get a dentist in the Netherlands?",
+      "back": "Choose your own tandarts and register.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.3"
+      ],
+      "source_ref": "4.1.3",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.4-1",
+      "front": "What does kraamzorg provide?",
+      "back": "Maternity care in the period after birth.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.4"
+      ],
+      "source_ref": "4.1.4",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.1.4-2",
+      "front": "What does the consultatiebureau do?",
+      "back": "Monitors the health and development of young children.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.1.4"
+      ],
+      "source_ref": "4.1.4",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.2.1-1",
+      "front": "Who refers you to a specialist or to mental health care?",
+      "back": "The huisarts.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.2.1"
+      ],
+      "source_ref": "4.2.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.3.1-1",
+      "front": "Where do you go for GP care in the evening or at the weekend?",
+      "back": "The huisartsenpost.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.3.1"
+      ],
+      "source_ref": "4.3.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.3.1-2",
+      "front": "What must you do before going to the huisartsenpost?",
+      "back": "Telephone first - you cannot walk in.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.3.1"
+      ],
+      "source_ref": "4.3.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.3.2-1",
+      "front": "What number do you call in a life-threatening emergency?",
+      "back": "112.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.3.2"
+      ],
+      "source_ref": "4.3.2",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-1",
+      "front": "Which insurance is compulsory for every resident?",
+      "back": "The zorgverzekering.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-2",
+      "front": "How often may you change health insurer?",
+      "back": "Once a year.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-3",
+      "front": "Name five things covered by the basispakket.",
+      "back": "GP care, district nursing, pregnancy and birth care, elderly care, mental health care.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-4",
+      "front": "Up to what age are dental care and physiotherapy covered by the basispakket?",
+      "back": "18.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-5",
+      "front": "What is the eigen risico?",
+      "back": "The compulsory deductible you pay yourself before the insurer reimburses.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-6",
+      "front": "Which common form of care is exempt from the eigen risico?",
+      "back": "GP consultations.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-7",
+      "front": "What payment flexibility exists for the eigen risico?",
+      "back": "It may be paid in instalments.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.1-8",
+      "front": "What does supplementary insurance cover?",
+      "back": "Care outside the basispakket - adult dental care, extra physiotherapy, glasses, orthodontics.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.1"
+      ],
+      "source_ref": "4.4.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.4-1",
+      "front": "Which digital credential do you need to arrange most care provisions?",
+      "back": "A DigiD.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.4"
+      ],
+      "source_ref": "4.4.4",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.4.4-2",
+      "front": "Where can you get help with DigiD and digital forms?",
+      "back": "The Informatiepunt Digitale Overheid, in public libraries.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.4.4"
+      ],
+      "source_ref": "4.4.4",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-4.5.1-1",
+      "front": "Name five welzijn services every gemeente provides.",
+      "back": "Help with debt and poverty, with social isolation, with participation, and home support for the elderly and for the chronically ill and disabled.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-4",
+        "gezondheid",
+        "eindterm-4.5.1"
+      ],
+      "source_ref": "4.5.1",
+      "theme": 4,
+      "theme_name": "Gezondheid en gezondheidszorg",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.1-1",
+      "front": "What drove Dutch prosperity in the seventeenth century?",
+      "back": "Shipping and trade.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.1-2",
+      "front": "Where is the seventeenth-century flowering still visible today?",
+      "back": "In painting and architecture.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.1-3",
+      "front": "What do the eindtermen require you to know about the colonial period?",
+      "back": "The Netherlands founded colonies, enslaved and traded people, and put them to work on plantations.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": [
+        "sensitive"
+      ]
+    },
+    {
+      "id": "knm-5.1.1-4",
+      "front": "Name the four features of the Dutch tradition of managing water.",
+      "back": "Polders, windmills, dikes, the Deltawerken.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.1-5",
+      "front": "What is the Dutch national anthem?",
+      "back": "Het Wilhelmus.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.1-6",
+      "front": "Describe the Dutch flag.",
+      "back": "Three horizontal bands - red on top, then white, then blue.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.1"
+      ],
+      "source_ref": "5.1.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-1",
+      "front": "Which country occupied the Netherlands in the Second World War?",
+      "back": "Germany.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-2",
+      "front": "What was the holocaust?",
+      "back": "The mass murder of Jews; many Dutch Jews were killed.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": [
+        "sensitive"
+      ]
+    },
+    {
+      "id": "knm-5.1.2-3",
+      "front": "What is the legal status of antisemitism in the Netherlands?",
+      "back": "Prohibited by law.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-4",
+      "front": "In which year was the Netherlands liberated?",
+      "back": "1945.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-5",
+      "front": "Name the three groups that immigrated to NL after the war.",
+      "back": "People from the former colonies, labour migrants, and refugees.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-6",
+      "front": "Name the three international organisations NL joined after the war.",
+      "back": "The EU, NATO, and the UN.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-7",
+      "front": "Name the four values many Dutch have held since the 1960s.",
+      "back": "Individual freedom, emancipation, tolerance, self-determination.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.1.2-8",
+      "front": "Name the three rights the eindtermen list as legally established in NL.",
+      "back": "Abortion, same-sex marriage, euthanasia.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.1.2"
+      ],
+      "source_ref": "5.1.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-1",
+      "front": "What is the capital of the Netherlands?",
+      "back": "Amsterdam.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-2",
+      "front": "Where does the Dutch government sit?",
+      "back": "The Hague.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-3",
+      "front": "How many provinces does the Netherlands have?",
+      "back": "Twelve.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-4",
+      "front": "Where in NL is Groningen?",
+      "back": "The far north-east.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-5",
+      "front": "Where in NL is Friesland?",
+      "back": "The north-west, above the IJsselmeer.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-6",
+      "front": "Where in NL is Drenthe?",
+      "back": "The north-east, below Groningen.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-7",
+      "front": "Where in NL is Overijssel?",
+      "back": "The east, north of Gelderland.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-8",
+      "front": "Where in NL is Flevoland?",
+      "back": "The centre - land reclaimed from the former Zuiderzee.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-9",
+      "front": "Where in NL is Gelderland?",
+      "back": "The centre-east; it is the largest province by area.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-10",
+      "front": "Where in NL is Utrecht?",
+      "back": "The centre of the country.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-11",
+      "front": "Where in NL is Noord-Holland?",
+      "back": "The north-west coast; it contains Amsterdam.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-12",
+      "front": "Where in NL is Zuid-Holland?",
+      "back": "The west coast; it contains The Hague and Rotterdam.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-13",
+      "front": "Where in NL is Zeeland?",
+      "back": "The south-west - islands and peninsulas.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-14",
+      "front": "Where in NL is Noord-Brabant?",
+      "back": "The south, along the Belgian border.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.1-15",
+      "front": "Where in NL is Limburg?",
+      "back": "The south-east - a narrow strip between Belgium and Germany.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.1"
+      ],
+      "source_ref": "5.2.1",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.2-1",
+      "front": "Which two payment methods are used on Dutch public transport?",
+      "back": "The OV-chipkaart, and OVpay with a contactless card or phone.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.2"
+      ],
+      "source_ref": "5.2.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-5.2.2-2",
+      "front": "What must you do at both ends of every public-transport journey?",
+      "back": "Check in, and check out.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-5",
+        "geschiedenis-geografie",
+        "eindterm-5.2.2"
+      ],
+      "source_ref": "5.2.2",
+      "theme": 5,
+      "theme_name": "Geschiedenis en geografie",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.1-1",
+      "front": "What is the BSN?",
+      "back": "Burgerservicenummer - your personal number for dealings with government.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.1"
+      ],
+      "source_ref": "6.1.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.1-2",
+      "front": "What is DigiD used for?",
+      "back": "Logging in securely to Dutch government services.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.1"
+      ],
+      "source_ref": "6.1.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.2-1",
+      "front": "What does Nibud do?",
+      "back": "Provides budgeting and household-finance guidance.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.2"
+      ],
+      "source_ref": "6.1.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.2-2",
+      "front": "What is the Juridisch Loket?",
+      "back": "A service providing free legal advice.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.2"
+      ],
+      "source_ref": "6.1.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.2-3",
+      "front": "What does the GGD do?",
+      "back": "It is the municipal public health service.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.2"
+      ],
+      "source_ref": "6.1.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.1.2-4",
+      "front": "What is schuldhulpverlening?",
+      "back": "Assistance for people in debt.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.1.2"
+      ],
+      "source_ref": "6.1.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.1-1",
+      "front": "Which register holds your personal details at the gemeente?",
+      "back": "The Basisregistratie Personen (BRP).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.1"
+      ],
+      "source_ref": "6.2.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.1-2",
+      "front": "Name five life events you must report to the gemeente.",
+      "back": "Any five of: birth, marriage, cohabitation, divorce, death, moving house, migration.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.1"
+      ],
+      "source_ref": "6.2.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.1-3",
+      "front": "What must an unmarried father do to establish legal fatherhood?",
+      "back": "Register erkenning of the child.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.1"
+      ],
+      "source_ref": "6.2.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.1-4",
+      "front": "Why do changes in household composition matter beyond the register?",
+      "back": "They can affect your benefits.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.1"
+      ],
+      "source_ref": "6.2.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.2-1",
+      "front": "Which body issues residence permits?",
+      "back": "The IND.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.2"
+      ],
+      "source_ref": "6.2.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.2-2",
+      "front": "Which body issues your passport and ID card?",
+      "back": "Your gemeente.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.2"
+      ],
+      "source_ref": "6.2.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.2-3",
+      "front": "Which body runs driving-licence examinations?",
+      "back": "The CBR.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.2"
+      ],
+      "source_ref": "6.2.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.2-4",
+      "front": "Which body registers vehicles and driving licences?",
+      "back": "The RDW.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.2"
+      ],
+      "source_ref": "6.2.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.3-1",
+      "front": "Where do you apply for naturalisation?",
+      "back": "At your gemeente, which forwards the application to the IND.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.3"
+      ],
+      "source_ref": "6.2.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.2.3-2",
+      "front": "What must you normally do with your existing nationality when naturalising?",
+      "back": "Give it up - dual nationality is in principle not permitted.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.3"
+      ],
+      "source_ref": "6.2.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": [
+        "exam-convention"
+      ]
+    },
+    {
+      "id": "knm-6.2.4-1",
+      "front": "Name four taxes or levies collected by the gemeente.",
+      "back": "OZB, rioolheffing, afvalstoffenheffing, parkeerbelasting.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.2.4"
+      ],
+      "source_ref": "6.2.4",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.1-1",
+      "front": "What is a jaaropgave?",
+      "back": "The annual statement of income from your employer.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.1"
+      ],
+      "source_ref": "6.3.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.1-2",
+      "front": "How does bruto differ from netto income?",
+      "back": "Bruto is before tax and premiums; netto is what actually reaches you.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.1"
+      ],
+      "source_ref": "6.3.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.1-3",
+      "front": "How long must you keep your jaaropgave?",
+      "back": "At least five years.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.1"
+      ],
+      "source_ref": "6.3.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.2-1",
+      "front": "Name five things Dutch tax money pays for.",
+      "back": "Education, healthcare, roads, government, and the police and judiciary.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.2"
+      ],
+      "source_ref": "6.3.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.2-2",
+      "front": "Who can help you file a tax return on a low income?",
+      "back": "The gemeente or maatschappelijk werk; unions help their members.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.2"
+      ],
+      "source_ref": "6.3.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.3-1",
+      "front": "Which body pays out toeslagen?",
+      "back": "The Belastingdienst.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.3"
+      ],
+      "source_ref": "6.3.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.3-2",
+      "front": "Name the three toeslagen the eindtermen list.",
+      "back": "Zorgtoeslag, huurtoeslag, kinderopvangtoeslag.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.3"
+      ],
+      "source_ref": "6.3.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.3-3",
+      "front": "How do you obtain a toeslag you are entitled to?",
+      "back": "Apply for it - it is not granted automatically.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.3"
+      ],
+      "source_ref": "6.3.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.3.3-4",
+      "front": "Which body pays kinderbijslag?",
+      "back": "The Sociale Verzekeringsbank (SVB).",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.3.3"
+      ],
+      "source_ref": "6.3.3",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.4.1-1",
+      "front": "Name the three roles of the Dutch police.",
+      "back": "Protecting, supervising, and enforcing.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.4.1"
+      ],
+      "source_ref": "6.4.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.4.1-2",
+      "front": "Which crimes are you obliged to report to the police?",
+      "back": "Serious crimes - murder, manslaughter, rape, abduction.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.4.1"
+      ],
+      "source_ref": "6.4.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": [
+        "sensitive"
+      ]
+    },
+    {
+      "id": "knm-6.4.1-3",
+      "front": "From what age must you show ID on request in public space?",
+      "back": "14.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.4.1"
+      ],
+      "source_ref": "6.4.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.4.1-4",
+      "front": "From what age must you show ID on public transport?",
+      "back": "12.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.4.1"
+      ],
+      "source_ref": "6.4.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.5.1-1",
+      "front": "Where do you complain about the conduct of a government body?",
+      "back": "The municipal ombudsman, or the Nationale ombudsman.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.5.1"
+      ],
+      "source_ref": "6.5.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.5.1-2",
+      "front": "What is the status of corruption by government or police?",
+      "back": "Prohibited and punishable.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.5.1"
+      ],
+      "source_ref": "6.5.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.5.2-1",
+      "front": "Name the two sources of legal help the eindtermen give.",
+      "back": "An advocaat, and the Juridisch Loket.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.5.2"
+      ],
+      "source_ref": "6.5.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.5.2-2",
+      "front": "What do you pay for subsidised legal help?",
+      "back": "An eigen bijdrage, scaled to your income.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.5.2"
+      ],
+      "source_ref": "6.5.2",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.6.1-1",
+      "front": "Which insurance is compulsory for motor vehicle owners?",
+      "back": "WA - liability insurance.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.6.1"
+      ],
+      "source_ref": "6.6.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.6.1-2",
+      "front": "What is the status of WA insurance for people generally?",
+      "back": "Not compulsory, but strongly advised.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.6.1"
+      ],
+      "source_ref": "6.6.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.6.1-3",
+      "front": "Which insurance must a homeowner hold?",
+      "back": "An opstalverzekering.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.6.1"
+      ],
+      "source_ref": "6.6.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-6.6.1-4",
+      "front": "Which tax must a vehicle owner pay?",
+      "back": "Motorrijtuigenbelasting.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-6",
+        "instanties",
+        "eindterm-6.6.1"
+      ],
+      "source_ref": "6.6.1",
+      "theme": 6,
+      "theme_name": "Instanties",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.1-1",
+      "front": "What is the King's function in the Dutch state?",
+      "back": "Chiefly ceremonial.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.1-2",
+      "front": "Who is the King of the Netherlands?",
+      "back": "Willem-Alexander.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": [
+        "volatile"
+      ]
+    },
+    {
+      "id": "knm-7.1.1-3",
+      "front": "Name the two chambers of the Dutch parliament.",
+      "back": "The Tweede Kamer and the Eerste Kamer.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.1-4",
+      "front": "Who makes Dutch law?",
+      "back": "The two chambers of parliament together with the regering.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.1-5",
+      "front": "What kind of party system does the Netherlands have?",
+      "back": "A multi-party system, in which parties form coalition governments.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.1-6",
+      "front": "Name the three levels of Dutch government.",
+      "back": "Rijk, provincie, gemeente.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.1"
+      ],
+      "source_ref": "7.1.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.2-1",
+      "front": "Name three things EU membership gives citizens.",
+      "back": "Free movement of people and goods, free establishment in member states, and voting in European elections.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.2"
+      ],
+      "source_ref": "7.1.2",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.3-1",
+      "front": "Name the three powers of the state.",
+      "back": "Legislative, executive, judicial.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.3"
+      ],
+      "source_ref": "7.1.3",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.3-2",
+      "front": "What can you do if you disagree with a judge's ruling?",
+      "back": "Lodge an appeal - hoger beroep - though the ruling must be accepted.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.3"
+      ],
+      "source_ref": "7.1.3",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.4-1",
+      "front": "How does actief kiesrecht differ from passief kiesrecht?",
+      "back": "Actief is the right to vote; passief is the right to stand for election.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.4"
+      ],
+      "source_ref": "7.1.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.4-2",
+      "front": "In which elections may a non-Dutch resident vote?",
+      "back": "Municipal elections.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.4"
+      ],
+      "source_ref": "7.1.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.4-3",
+      "front": "How long must a non-Dutch national have lived in NL to vote municipally?",
+      "back": "More than five years.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.4"
+      ],
+      "source_ref": "7.1.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.1.4-4",
+      "front": "Name five kinds of Dutch election or vote.",
+      "back": "Municipal, provincial, Tweede Kamer, European Parliament, waterschappen.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.1.4"
+      ],
+      "source_ref": "7.1.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.1-1",
+      "front": "What does equality of women and men entail, per the eindterm?",
+      "back": "The same chances to develop as independent individuals, including through education and work.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.1"
+      ],
+      "source_ref": "7.2.1",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.2-1",
+      "front": "What limits freedom of expression in the Netherlands?",
+      "back": "The law - you may not say or write what the law prohibits.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.2"
+      ],
+      "source_ref": "7.2.2",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.2-2",
+      "front": "What must you accept about Dutch public debate?",
+      "back": "That some statements may be experienced as hurtful.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.2"
+      ],
+      "source_ref": "7.2.2",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.3-1",
+      "front": "What does freedom of religion cover in the Netherlands?",
+      "back": "Freedom to choose your own religion, philosophy of life, or ideals.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.3"
+      ],
+      "source_ref": "7.2.3",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.3-2",
+      "front": "Which prevails - the law of the state, or of religion and tradition?",
+      "back": "The law of the state.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.3"
+      ],
+      "source_ref": "7.2.3",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": [
+        "exam-convention"
+      ]
+    },
+    {
+      "id": "knm-7.2.3-3",
+      "front": "On what condition does government stay out of a religious community's internal affairs?",
+      "back": "As long as the community obeys the law.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.3"
+      ],
+      "source_ref": "7.2.3",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.4-1",
+      "front": "What does Article 1 of the Grondwet establish?",
+      "back": "Equal treatment in equal cases, and a prohibition on discrimination.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.4"
+      ],
+      "source_ref": "7.2.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.4-2",
+      "front": "Name four grounds of discrimination prohibited by Article 1.",
+      "back": "Any four of: religion, belief, political opinion, race, sex, disability, sexual orientation.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.4"
+      ],
+      "source_ref": "7.2.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.4-3",
+      "front": "Where do you report discrimination?",
+      "back": "At a meldpunt, and at the police.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.4"
+      ],
+      "source_ref": "7.2.4",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.5-1",
+      "front": "How much personal data should you give an institution?",
+      "back": "Only what it needs for its task.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.5"
+      ],
+      "source_ref": "7.2.5",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.5-2",
+      "front": "Name the two rights you have over data you have shared.",
+      "back": "To inspect it, and to correct it where necessary.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.5"
+      ],
+      "source_ref": "7.2.5",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.6-1",
+      "front": "What does the law say about bodily integrity?",
+      "back": "It is protected; all unwanted intimacy and violence is punishable.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.6"
+      ],
+      "source_ref": "7.2.6",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": [
+        "sensitive"
+      ]
+    },
+    {
+      "id": "knm-7.2.6-2",
+      "front": "Name the four violations of bodily integrity the eindterm lists.",
+      "back": "Domestic violence, honour killing, hitting children, female circumcision.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.6"
+      ],
+      "source_ref": "7.2.6",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": [
+        "sensitive"
+      ]
+    },
+    {
+      "id": "knm-7.2.7-1",
+      "front": "What is the default organ-donation position in the Netherlands?",
+      "back": "You are a donor after death unless you register otherwise.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.7"
+      ],
+      "source_ref": "7.2.7",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.7-2",
+      "front": "How do you opt out of organ donation?",
+      "back": "Register that you do not wish to participate, or only in part.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.7"
+      ],
+      "source_ref": "7.2.7",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-7.2.8-1",
+      "front": "What does zelfbeschikkingsrecht mean for women in NL?",
+      "back": "A woman decides for herself about her own life and body - marriage, work, study, children, contraception, abortion.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-7",
+        "staatsinrichting",
+        "eindterm-7.2.8"
+      ],
+      "source_ref": "7.2.8",
+      "theme": 7,
+      "theme_name": "Staatsinrichting en rechtsstaat",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.1-1",
+      "front": "From what age do Dutch children attend primary school?",
+      "back": "4.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.1"
+      ],
+      "source_ref": "8.1.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.1-2",
+      "front": "What provision exists for children with a special care requirement?",
+      "back": "Speciaal onderwijs.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.1"
+      ],
+      "source_ref": "8.1.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.1-3",
+      "front": "What may restrict moving to the next level of education?",
+      "back": "Toelatingseisen - admission requirements.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.1"
+      ],
+      "source_ref": "8.1.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.2-1",
+      "front": "What is vrijheid van onderwijs?",
+      "back": "The freedom to found schools on your own religious or educational basis.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.2"
+      ],
+      "source_ref": "8.1.2",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.2-2",
+      "front": "How does openbaar onderwijs differ from bijzonder onderwijs?",
+      "back": "Openbaar is public and non-denominational; bijzonder rests on a religious or educational vision.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.2"
+      ],
+      "source_ref": "8.1.2",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.3-1",
+      "front": "Between which ages does leerplicht run?",
+      "back": "5 to 16.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.3"
+      ],
+      "source_ref": "8.1.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.3-2",
+      "front": "Between which ages does kwalificatieplicht run?",
+      "back": "16 to 18.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.3"
+      ],
+      "source_ref": "8.1.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.3-3",
+      "front": "Who fixes the dates of school holidays?",
+      "back": "The school - and its dates are binding on parents.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.3"
+      ],
+      "source_ref": "8.1.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.4-1",
+      "front": "What is vve?",
+      "back": "Voorschoolse educatie - pre-school education for young children.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.4"
+      ],
+      "source_ref": "8.1.4",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.4-2",
+      "front": "What is bso?",
+      "back": "Buitenschoolse opvang - out-of-school care.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.4"
+      ],
+      "source_ref": "8.1.4",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.4-3",
+      "front": "Which allowance helps parents pay for childcare?",
+      "back": "Kinderopvangtoeslag.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.4"
+      ],
+      "source_ref": "8.1.4",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.1.5-1",
+      "front": "Which subject is compulsory in Dutch primary and secondary schools?",
+      "back": "Sexuality and sexual diversity.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.1.5"
+      ],
+      "source_ref": "8.1.5",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.2.1-1",
+      "front": "Until what age are parents legally liable for their child's acts?",
+      "back": "Until the child turns 16.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.2.1"
+      ],
+      "source_ref": "8.2.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.2.2-1",
+      "front": "What do Dutch schools expect of parents?",
+      "back": "Involvement in their child's development at school.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.2.2"
+      ],
+      "source_ref": "8.2.2",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.2.2-2",
+      "front": "Name the two ways parents are involved at school.",
+      "back": "Scheduled parent-teacher meetings, and voluntary help with school activities.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.2.2"
+      ],
+      "source_ref": "8.2.2",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.2.3-1",
+      "front": "Name four sources of help with upbringing problems.",
+      "back": "The gemeente, jeugdzorg, the huisarts, and the school.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.2.3"
+      ],
+      "source_ref": "8.2.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.2.3-2",
+      "front": "When does the kinderbescherming take a case to a judge?",
+      "back": "Only on serious signals.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.2.3"
+      ],
+      "source_ref": "8.2.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.3.1-1",
+      "front": "Name four costs associated with education in NL.",
+      "back": "School fees, the parental contribution, learning materials, and travel costs.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.3.1"
+      ],
+      "source_ref": "8.3.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.3.1-2",
+      "front": "What is the status of the ouderbijdrage?",
+      "back": "Voluntary.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.3.1"
+      ],
+      "source_ref": "8.3.1",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.3.2-1",
+      "front": "Where can you apply for reduction or waiver of school costs?",
+      "back": "At the school itself, and through gemeente minimaregelingen.",
+      "back_source": "authored",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.3.2"
+      ],
+      "source_ref": "8.3.2",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    },
+    {
+      "id": "knm-8.3.3-1",
+      "front": "Which body handles applications for study finance?",
+      "back": "DUO.",
+      "back_source": "regulation",
+      "tags": [
+        "knm",
+        "theme-8",
+        "onderwijs-opvoeding",
+        "eindterm-8.3.3"
+      ],
+      "source_ref": "8.3.3",
+      "theme": 8,
+      "theme_name": "Onderwijs en opvoeding",
+      "flags": []
+    }
+  ],
+  "read_once": [
+    {
+      "source_ref": "2.1.1",
+      "fact": "Dutch manners and norms differ by social group, region, generation and class.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "2.1.2",
+      "fact": "Many people in the Netherlands express themselves directly.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "2.1.4",
+      "fact": "Unmarried cohabitation is common in the Netherlands.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "1.1.5",
+      "fact": "Further training improves your chances on the labour market.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "1.1.2",
+      "fact": "Your own network is a recognised route to finding work.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "1.1.8",
+      "fact": "A benefit recipient has duties as well as rights.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "3.1.1",
+      "fact": "The housing market differs considerably between municipalities.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "3.1.2",
+      "fact": "Tenants have rights laid down in law.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "3.2.2",
+      "fact": "Energy and water costs can fluctuate strongly.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "4.4.3",
+      "fact": "Healthcare administration in NL is handled largely digitally.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "6.1.1",
+      "fact": "Contact with Dutch government bodies happens largely digitally.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "6.2.3",
+      "fact": "Several types of verblijfsvergunning exist.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "7.1.3",
+      "fact": "Separating the three powers prevents any one of them concentrating power; each restrains the others.",
+      "back_source": "authored"
+    },
+    {
+      "source_ref": "8.1.1",
+      "fact": "Pupils pass through different school types from age 4 until at least 18.",
+      "back_source": "regulation"
+    },
+    {
+      "source_ref": "8.3.2",
+      "fact": "Schemes exist for full or partial reimbursement of school and care costs.",
+      "back_source": "regulation"
+    }
+  ],
+  "local": [
+    {
+      "source_ref": "5.2.1",
+      "you_must_supply": "The main cities and areas of your own region."
+    },
+    {
+      "source_ref": "5.2.1",
+      "you_must_supply": "What your region offers for housing, work and education."
+    },
+    {
+      "source_ref": "3.1.3",
+      "you_must_supply": "How available housing is in your own region."
+    },
+    {
+      "source_ref": "3.3.1",
+      "you_must_supply": "Your gemeente's specific waste collection and separation rules."
+    },
+    {
+      "source_ref": "6.2.4",
+      "you_must_supply": "Which levies your own gemeente charges, and at what rate."
+    }
+  ],
+  "procedures": [
+    {
+      "source_ref": "6.6.1",
+      "checklist": "Taking out an insurance policy and submitting a damage claim: compare and take out cover online or via an intermediary; report damage promptly with photos, receipts, and a police report in case of theft; then follow the insurer's claim procedure."
+    },
+    {
+      "source_ref": "5.2.2",
+      "checklist": "Making a public-transport journey independently: plan the route (9292 or the NS app), load or buy a valid ticket, check in and out on every leg, change between train, bus, tram and metro, and read departure boards and disruption notices."
+    },
+    {
+      "source_ref": "2.1.1",
+      "checklist": "Learning the norms of a new social context: observe what people around you do, and ask directly - Dutch directness makes asking acceptable rather than rude."
+    },
+    {
+      "source_ref": "4.4.2",
+      "checklist": "Claiming healthcare costs: providers usually bill the insurer directly; if you paid yourself, submit the nota via the insurer's app or portal within the period your policy sets."
+    },
+    {
+      "source_ref": "2.2.2",
+      "checklist": "Customs at birthdays, births, exam results, weddings and deaths. The eindterm names the occasions but not the customs, so there is nothing fixed to memorise."
+    }
+  ],
+  "verify_before_exam": [
+    {
+      "source_ref": "7.1.1",
+      "item": "Minister-President",
+      "current": "Rob Jetten (D66), sworn in 23 February 2026 leading a D66/VVD/CDA minority coalition. Re-check before the exam - cabinets fall."
+    }
+  ]
+}
