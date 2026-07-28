@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { itemsForCard } from '@shared/sm2';
@@ -23,6 +24,20 @@ const startOfDay = (t: number) => {
 };
 
 const pct = (pass: number, total: number) => (total ? `${Math.round((pass / total) * 100)}%` : '—');
+
+/** Deck-scope chips for the forecast / study-history charts. */
+function DeckFilter({ options, value, onChange }: { options: { id: string; name: string }[]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="deck-filter">
+      <button type="button" className={`chip${value === 'all' ? ' chip-on' : ''}`} onClick={() => onChange('all')}>All decks</button>
+      {options.map((o) => (
+        <button type="button" key={o.id} className={`chip${value === o.id ? ' chip-on' : ''}`} onClick={() => onChange(o.id)}>
+          {o.name}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 const fmtDay = (t: number) => new Date(t).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
 const monthShort = (t: number) => new Date(t).toLocaleDateString(undefined, { month: 'short' });
@@ -67,6 +82,7 @@ export function Stats() {
     const today = startOfDay(now);
     const dirOf = new Map(decks.map((d) => [d.id, d.reviewDirection ?? 'forward'] as const));
     const deckName = new Map(decks.map((d) => [d.id, d.name] as const));
+    const cardDeck = new Map(cards.map((c) => [c.id, c.deckId] as const));
 
     // Review *units* = one per active direction of each card (a two-sided deck
     // yields a forward and a reverse unit). Reusing itemsForCard keeps maturity,
@@ -77,6 +93,7 @@ export function Stats() {
     const maturity: Maturity = { nw: 0, young: 0, mature: 0 };
     let dueNow = 0;
     const forecast = new Array<number>(FORECAST_DAYS).fill(0);
+    const forecastByDeck = new Map<string, number[]>();
     const perDeck = new Map<string, Maturity & { total: number }>();
 
     for (const { card, schedule } of units) {
@@ -91,7 +108,13 @@ export function Stats() {
 
       if (interval > 0) {
         const offset = Math.round((dueDate - today) / DAY); // negative = overdue
-        if (offset < FORECAST_DAYS) forecast[Math.max(0, offset)]++; // overdue folds into today
+        if (offset < FORECAST_DAYS) {
+          const idx = Math.max(0, offset); // overdue folds into today
+          forecast[idx]++;
+          let fd = forecastByDeck.get(card.deckId);
+          if (!fd) forecastByDeck.set(card.deckId, (fd = new Array<number>(FORECAST_DAYS).fill(0)));
+          fd[idx]++;
+        }
       }
     }
 
@@ -99,8 +122,10 @@ export function Stats() {
       .map(([id, m]) => ({ id, name: deckName.get(id) ?? '(deck)', dir: dirOf.get(id) ?? 'forward', ...m }))
       .sort((a, b) => b.total - a.total);
 
-    // Per-day study history (introductions vs repeats), from the review log.
+    // Per-day study history (introductions vs repeats), from the review log —
+    // both overall and per deck (so the chart can be scoped to one deck).
     const byDay = new Map<number, { nw: number; rv: number }>();
+    const byDayByDeck = new Map<string, Map<number, { nw: number; rv: number }>>();
     // Recall: true retention counts only genuine recall of graduated cards
     // (prevInterval >= 1 day, i.e. not learning/relearning steps). Answer
     // breakdown counts every button press in the last 30 days.
@@ -113,10 +138,21 @@ export function Stats() {
 
     for (const r of reviews) {
       const day = startOfDay(r.ts);
+      const isNew = r.prevInterval === 0;
       const e = byDay.get(day) ?? { nw: 0, rv: 0 };
-      if (r.prevInterval === 0) e.nw++;
+      if (isNew) e.nw++;
       else e.rv++;
       byDay.set(day, e);
+
+      const deckId = cardDeck.get(r.cardId);
+      if (deckId) {
+        let bd = byDayByDeck.get(deckId);
+        if (!bd) byDayByDeck.set(deckId, (bd = new Map()));
+        const de = bd.get(day) ?? { nw: 0, rv: 0 };
+        if (isNew) de.nw++;
+        else de.rv++;
+        bd.set(day, de);
+      }
 
       const graduated = r.prevInterval >= 1; // a real recall test, not a learning step
       const passed = r.grade !== 'again';
@@ -139,10 +175,13 @@ export function Stats() {
       if (r.ts >= win30) answers[r.grade]++;
     }
 
-    const history = Array.from({ length: HISTORY_DAYS }, (_, i) => {
-      const day = today - (HISTORY_DAYS - 1 - i) * DAY;
-      return { day, ...(byDay.get(day) ?? { nw: 0, rv: 0 }) };
-    });
+    const buildHistory = (bd: Map<number, { nw: number; rv: number }>) =>
+      Array.from({ length: HISTORY_DAYS }, (_, i) => {
+        const day = today - (HISTORY_DAYS - 1 - i) * DAY;
+        return { day, ...(bd.get(day) ?? { nw: 0, rv: 0 }) };
+      });
+    const history = buildHistory(byDay);
+    const historyByDeck = new Map([...byDayByDeck].map(([id, bd]) => [id, buildHistory(bd)] as const));
 
     // Hardest cards: most-lapsed first, then lowest ease (min over both
     // directions). Only surface cards that have actually struggled.
@@ -159,9 +198,6 @@ export function Stats() {
       .sort((a, b) => b.lapses - a.lapses || a.ease - b.ease)
       .slice(0, 8);
 
-    const dueToday = forecast[0];
-    const dueWeek = forecast.slice(0, 7).reduce((s, n) => s + n, 0);
-
     return {
       cards: cards.length,
       decks: byDeck.length,
@@ -169,10 +205,10 @@ export function Stats() {
       dueNow,
       today,
       forecast,
-      dueToday,
-      dueWeek,
+      forecastByDeck,
       byDeck,
       history,
+      historyByDeck,
       ret,
       answers,
       lapses30,
@@ -180,25 +216,38 @@ export function Stats() {
     };
   }, []);
 
+  // Deck scope for the forecast + study-history charts; "all" == aggregate (default).
+  const [scope, setScope] = useState('all');
+
   if (!data) return <p className="muted">Loading…</p>;
   if (data.cards === 0) {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, today, forecast, dueToday, dueWeek, byDeck, history, ret, answers, lapses30, hardest } = data;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, history, historyByDeck, ret, answers, lapses30, hardest } = data;
 
   const answerTotal = answers.again + answers.good + answers.easy;
 
-  const forecastMax = Math.max(1, ...forecast);
-  const forecastBars = forecast.map((n, i) => {
+  const deckOptions = byDeck.map((d) => ({ id: d.id, name: d.name })).sort((a, b) => a.name.localeCompare(b.name));
+  // Fall back to "all" if the scoped deck no longer exists.
+  const scopeId = scope !== 'all' && forecastByDeck.has(scope) ? scope : 'all';
+  const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? forecast);
+  const activeHistory = scopeId === 'all' ? history : (historyByDeck.get(scopeId) ?? history.map((h) => ({ day: h.day, nw: 0, rv: 0 })));
+  const dueToday = activeForecast[0];
+  const dueWeek = activeForecast.slice(0, 7).reduce((s, n) => s + n, 0);
+
+  const forecastMax = Math.max(1, ...activeForecast);
+  const forecastBars = activeForecast.map((n, i) => {
     const day = today + i * DAY;
     return { day, value: n, cls: 'bar-due', title: `${fmtDay(day)}${i === 0 ? ' (incl. overdue)' : ''}: ${n} due` };
   });
 
-  const introMax = Math.max(1, ...history.map((h) => h.nw));
-  const introBars = history.map((h) => ({ day: h.day, value: h.nw, cls: 'bar-new', title: `${fmtDay(h.day)}: ${h.nw} introduced` }));
-  const reviewMax = Math.max(1, ...history.map((h) => h.rv));
-  const reviewBars = history.map((h) => ({ day: h.day, value: h.rv, cls: 'bar-rev', title: `${fmtDay(h.day)}: ${h.rv} reviewed` }));
+  const introMax = Math.max(1, ...activeHistory.map((h) => h.nw));
+  const introBars = activeHistory.map((h) => ({ day: h.day, value: h.nw, cls: 'bar-new', title: `${fmtDay(h.day)}: ${h.nw} introduced` }));
+  const reviewMax = Math.max(1, ...activeHistory.map((h) => h.rv));
+  const reviewBars = activeHistory.map((h) => ({ day: h.day, value: h.rv, cls: 'bar-rev', title: `${fmtDay(h.day)}: ${h.rv} reviewed` }));
+
+  const showFilter = deckOptions.length > 1;
 
   return (
     <div className="settings">
@@ -279,6 +328,7 @@ export function Stats() {
 
       <section className="panel">
         <h2>Forecast</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
         <p className="muted small">
           Reviews coming due per day (next {FORECAST_DAYS} days). <b>{dueToday}</b> due today · <b>{dueWeek}</b> in the next 7 days.
         </p>
@@ -287,6 +337,7 @@ export function Stats() {
 
       <section className="panel">
         <h2>Study history</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
         <p className="muted small">
           Per day, last {HISTORY_DAYS} days. A two-sided deck introduces each card twice —
           once per direction.
