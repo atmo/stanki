@@ -58,7 +58,7 @@ export function DeckList() {
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
-    return { decks, byDeck };
+    return { decks, byDeck, reviewCap: settings.maxReviewsPerDay };
   }, []);
 
   async function onCreate(e: React.FormEvent) {
@@ -113,6 +113,8 @@ export function DeckList() {
       <ul className="deck-list">
         {data.decks.map((deck) => {
           const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0, dueReviews: 0 };
+          // Reviews due today beyond today's cap — studyable over the limit.
+          const extraReviews = Math.max(0, stats.dueReviews - stats.reviewDue);
           // Enable Review if anything's in today's session, or extra reviews are
           // due beyond the cap (studyable over the limit from the done screen).
           const canReview = stats.newDue + stats.reviewDue > 0 || stats.dueReviews > 0;
@@ -127,6 +129,11 @@ export function DeckList() {
                   )}
                   {stats.reviewDue > 0 && (
                     <span className="badge badge-due" title="Cards to revisit">{stats.reviewDue} review</span>
+                  )}
+                  {extraReviews > 0 && (
+                    <span className="badge badge-extra" title={`${extraReviews} more due today, beyond the ${data.reviewCap}/day review cap`}>
+                      +{extraReviews} more
+                    </span>
                   )}
                 </span>
               </div>

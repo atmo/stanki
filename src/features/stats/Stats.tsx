@@ -40,7 +40,10 @@ function BarChart({ bars, max }: { bars: { day: number; value: number; cls: stri
           <div className="bar-col" key={b.day} title={b.title}>
             <div className="bar-stack">
               {b.value > 0 ? (
-                <div className={`bar-seg ${b.cls}`} style={{ height: `${(b.value / max) * 100}%` }} />
+                <>
+                  <span className="bar-value">{b.value}</span>
+                  <div className={`bar-seg ${b.cls}`} style={{ height: `${(b.value / max) * 85}%` }} />
+                </>
               ) : null}
             </div>
             <span className="bar-day">{new Date(b.day).getDate()}</span>

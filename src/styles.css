@@ -82,6 +82,7 @@ body {
 .badge-muted { background: var(--panel-2); color: var(--muted); }
 .badge-due { background: rgba(37, 99, 235, 0.25); color: #93c5fd; margin-left: 8px; }
 .badge-new { background: rgba(22, 163, 74, 0.2); color: #86efac; margin-left: 8px; }
+.badge-extra { background: transparent; color: var(--muted); border: 1px solid var(--border); margin-left: 8px; }
 
 .about-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 12px 0; }
 .about-list dt { color: var(--muted); }
@@ -112,7 +113,8 @@ body {
 .bar-chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; margin: 8px 0 4px; }
 .bar-col { flex: 1 1 0; min-width: 0; height: 100%; display: flex; flex-direction: column; align-items: center; }
 .bar-stack { flex: 1; width: 100%; display: flex; flex-direction: column; justify-content: flex-end; background: var(--panel-2); border-radius: 4px 4px 0 0; overflow: hidden; }
-.bar-seg { width: 100%; }
+.bar-seg { width: 100%; border-radius: 3px 3px 0 0; }
+.bar-value { font-size: 0.56rem; line-height: 1.2; text-align: center; color: var(--text); font-variant-numeric: tabular-nums; }
 .bar-new { background: #2563eb; }
 .bar-rev { background: #2dd4bf; }
 .bar-due { background: var(--primary); }
