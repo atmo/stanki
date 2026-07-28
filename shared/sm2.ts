@@ -163,7 +163,7 @@ export function scheduleState(
     // card (otherwise the easy bonus rounds 1d back to 1d).
     interval = grade === 'easy' ? settings.easyFirstInterval : 1;
   } else {
-    interval = repetitions === 2 ? 6 : Math.round(interval * easeFactor);
+    interval = repetitions === 2 ? 4 : Math.round(interval * easeFactor);
     if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
   }
 

@@ -36,14 +36,14 @@ describe('schedule', () => {
     expect([due.getHours(), due.getMinutes(), due.getSeconds()]).toEqual([0, 0, 0]);
   });
 
-  it('second Good -> 6 days', () => {
-    expect(run(['good', 'good']).interval).toBe(6);
+  it('second Good -> 4 days', () => {
+    expect(run(['good', 'good']).interval).toBe(4);
   });
 
-  it('third Good -> interval * ease (15 days)', () => {
+  it('third Good -> interval * ease (10 days)', () => {
     const c = run(['good', 'good', 'good']);
     expect(c.easeFactor).toBeCloseTo(2.5, 5); // q=4 leaves ease unchanged
-    expect(c.interval).toBe(15);
+    expect(c.interval).toBe(10); // 4 * 2.5
   });
 
   it('Again resets reps, drops ease, schedules minutes out', () => {
@@ -79,7 +79,7 @@ describe('schedule', () => {
   });
 
   it('a mature lapse lowers ease but never below 1.3', () => {
-    const c = run(['good', 'good', 'again']); // interval 6 before the lapse
+    const c = run(['good', 'good', 'again']); // interval 4 before the lapse
     expect(c.easeFactor).toBeLessThan(DEFAULT_SETTINGS.startingEase);
     expect(c.easeFactor).toBeGreaterThanOrEqual(1.3);
   });
@@ -179,10 +179,10 @@ describe('itemsForCard (review directions)', () => {
 
 describe('previewIntervals', () => {
   it('returns an interval for every grade', () => {
-    const c = run(['good', 'good']); // interval 6, reps 2
+    const c = run(['good', 'good']); // interval 4, reps 2
     const p = previewIntervals(c);
     expect(p.again).toBeCloseTo(DEFAULT_SETTINGS.againInterval / 1440, 9); // 1 minute, in days
-    expect(p.good).toBe(15); // round(6 * 2.5)
+    expect(p.good).toBe(10); // round(4 * 2.5)
     expect(p.easy).toBeGreaterThanOrEqual(p.good);
   });
 });
