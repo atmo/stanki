@@ -55,6 +55,7 @@ async function maybeBackup(
   files: DriveFile[],
   decks: Deck[],
   cards: Card[],
+  reviews: ReviewLog[],
 ): Promise<void> {
   if (cards.length === 0) return; // never back up (and rotate out) an empty state
   const hash = await contentHash(decks, cards);
@@ -68,7 +69,10 @@ async function maybeBackup(
     return;
   }
 
-  const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards };
+  // The full local review history rides along — reviews sync only within a
+  // 14-day window, so a backup is the only durable copy of older study history.
+  // Not part of `hash`: any new review also mutates its card, so the hash moves.
+  const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards, reviews };
   await createFile(
     getToken,
     `backup-${new Date().toISOString()}.json`,
@@ -105,14 +109,18 @@ export async function fetchBackup(getToken: TokenProvider, fileId: string): Prom
  * the next sync and propagates to other devices. Caller should sync afterwards.
  */
 export async function restoreBackup(getToken: TokenProvider, fileId: string): Promise<void> {
-  const bundle = await downloadJson<{ decks: Deck[]; cards: Card[] }>(getToken, fileId);
+  const bundle = await downloadJson<{ decks: Deck[]; cards: Card[]; reviews?: ReviewLog[] }>(getToken, fileId);
   const now = Date.now();
   const decks = (bundle.decks ?? []).map((d) => ({ ...d, updatedAt: now }));
   // Authoritative: bump rev so the snapshot's arrays replace (not union) on sync.
   const cards = (bundle.cards ?? []).map((c) => ({ ...c, updatedAt: now, rev: now }));
-  await db.transaction('rw', db.decks, db.cards, async () => {
+  // Reviews are immutable and id-keyed, so this restores lost history without
+  // discarding study done since the backup was taken.
+  const reviews = bundle.reviews ?? [];
+  await db.transaction('rw', db.decks, db.cards, db.reviews, async () => {
     await db.decks.bulkPut(decks);
     await db.cards.bulkPut(cards);
+    if (reviews.length) await db.reviews.bulkPut(reviews);
   });
 }
 
@@ -237,7 +245,9 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
 
   // --- push the shared review log (trimmed to the rolling window) -------
   const now = Date.now();
-  const recentReviews = gcReviews(mergeReviews(localReviews, remoteReviews), now);
+  // Keep the untrimmed union for the backup; only the pushed copy is windowed.
+  const allReviews = mergeReviews(localReviews, remoteReviews);
+  const recentReviews = gcReviews(allReviews, now);
   const canonical = reviewsFiles[0];
   if (canonical) {
     // Re-union with the canonical file's current reviews so a concurrently
@@ -262,7 +272,7 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
 
   // Best-effort rolling backup of the merged data (never fails the sync).
   try {
-    await maybeBackup(getToken, files, [...mergedDecks.values()], mergedCards);
+    await maybeBackup(getToken, files, [...mergedDecks.values()], mergedCards, allReviews);
   } catch (e) {
     console.warn('[Stanki] backup failed', e);
   }

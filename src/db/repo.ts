@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { Card, CardDirection, Deck, Grade, ReviewDirection } from '@shared/types';
+import type { Card, CardDirection, Deck, Grade, ReviewDirection, ReviewLog } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
 import {
@@ -294,11 +294,19 @@ export interface ExportBundle {
   exportedAt: number;
   decks: Deck[];
   cards: Card[];
+  // Study history. Optional: files written before reviews were exported have
+  // none, and a single-deck share (exportDeck) omits them because importDeck
+  // regenerates card ids, which would orphan every log entry.
+  reviews?: ReviewLog[];
 }
 
 export async function exportAll(): Promise<ExportBundle> {
-  const [decks, cards] = await Promise.all([db.decks.toArray(), db.cards.toArray()]);
-  return { app: 'stanki', schemaVersion: 1, exportedAt: Date.now(), decks, cards };
+  const [decks, cards, reviews] = await Promise.all([
+    db.decks.toArray(),
+    db.cards.toArray(),
+    db.reviews.toArray(),
+  ]);
+  return { app: 'stanki', schemaVersion: 1, exportedAt: Date.now(), decks, cards, reviews };
 }
 
 export async function importBundle(bundle: ExportBundle): Promise<void> {
@@ -308,9 +316,13 @@ export async function importBundle(bundle: ExportBundle): Promise<void> {
   const now = Date.now();
   const decks = bundle.decks.map((d) => ({ ...d, updatedAt: now }));
   const cards = bundle.cards.map((c) => ({ ...c, updatedAt: now, rev: now }));
-  await db.transaction('rw', db.decks, db.cards, async () => {
+  // Reviews are immutable and keyed by id, so restoring them *adds* history
+  // rather than replacing it — study done since the file was written is kept.
+  const reviews = bundle.reviews ?? [];
+  await db.transaction('rw', db.decks, db.cards, db.reviews, async () => {
     await db.decks.bulkPut(decks);
     await db.cards.bulkPut(cards);
+    if (reviews.length) await db.reviews.bulkPut(reviews);
   });
 }
 
