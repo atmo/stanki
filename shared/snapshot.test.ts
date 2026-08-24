@@ -61,6 +61,20 @@ describe('mergeCards (last-write-wins + tombstones)', () => {
     expect(mergeCards([fresh], [reviewed])[0].interval).toBe(6); // order-independent
   });
 
+  it('keeps a card studied only in reverse over a rebuilt "new" copy', () => {
+    // What the extension ships when appending a context: fresh newCardState and
+    // no `reverse` at all. Forward is 0 on both sides, so only a direction-aware
+    // "is reviewed" test stops this from wiping the reverse schedule.
+    const reverseOnly = card('a', 100, {
+      interval: 0,
+      reverse: { interval: 21, easeFactor: 2.4, repetitions: 5, dueDate: 999 },
+    });
+    const rebuilt = card('a', 200, { interval: 0, repetitions: 0 }); // newer, no reverse
+    for (const merged of [mergeCards([reverseOnly], [rebuilt])[0], mergeCards([rebuilt], [reverseOnly])[0]]) {
+      expect(merged.reverse?.interval).toBe(21);
+    }
+  });
+
   it('a delete still wins over a reviewed card', () => {
     const reviewed = card('a', 100, { interval: 6 });
     const del = card('a', 200, { deleted: true });

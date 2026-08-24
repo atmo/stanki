@@ -34,9 +34,16 @@ function pickNewer<T extends { updatedAt: number; deleted?: boolean }>(a: T, b: 
  * silently loses study progress. Deletions and same-progress conflicts still use
  * last-write-wins. (A reviewed card always has interval > 0, even a fresh lapse.)
  */
+/** Has this card been studied in *either* direction? The extension rebuilds a
+ * card from scratch (fresh newCardState, no `reverse`) when it appends a
+ * context, so a copy that has progress must beat one that has none — testing
+ * only the forward interval would let that rebuild win and drop a card whose
+ * reverse side alone had been studied. */
+const isReviewed = (c: Card): boolean => c.interval > 0 || (c.reverse?.interval ?? 0) > 0;
+
 function pickCard(a: Card, b: Card): Card {
-  const aReviewed = a.interval > 0;
-  const bReviewed = b.interval > 0;
+  const aReviewed = isReviewed(a);
+  const bReviewed = isReviewed(b);
   const winner =
     !a.deleted && !b.deleted && aReviewed !== bReviewed ? (aReviewed ? a : b) : pickNewer(a, b);
 
