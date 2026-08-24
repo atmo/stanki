@@ -250,11 +250,24 @@ export interface GradeResult {
   reviewId: string; // id of the logged review (for undo)
 }
 
+/** Answer timing measured by the review UI. */
+export interface ReviewTiming {
+  thinkMs?: number; // shown -> revealed
+  durationMs?: number; // shown -> graded
+}
+
+// A card left on screen (tab in the background, interrupted session) would log
+// a meaningless duration, so clamp before storing rather than skew time stats.
+const MAX_ANSWER_MS = 120_000;
+const capMs = (ms: number | undefined): number | undefined =>
+  ms == null || !Number.isFinite(ms) || ms < 0 ? undefined : Math.min(Math.round(ms), MAX_ANSWER_MS);
+
 /** Apply a review grade to one direction of a card: reschedule, persist, log it. */
 export async function gradeCard(
   card: Card,
   direction: CardDirection,
   grade: Grade,
+  timing?: ReviewTiming,
 ): Promise<GradeResult> {
   const settings = await getDeckSettings(card.deckId);
   const now = Date.now();
@@ -273,6 +286,15 @@ export async function gradeCard(
       prevInterval: prev.interval,
       newInterval: next.interval,
       direction,
+      // Snapshot the pre-review state: it can't be reconstructed later once the
+      // card moves on, and it's what retention-by-interval/ease and lateness
+      // analysis need.
+      deckId: card.deckId,
+      prevDue: prev.dueDate,
+      prevEase: prev.easeFactor,
+      reps: prev.repetitions,
+      thinkMs: capMs(timing?.thinkMs),
+      durationMs: capMs(timing?.durationMs),
     });
   });
   return { card: { ...card, ...patch }, reviewId };

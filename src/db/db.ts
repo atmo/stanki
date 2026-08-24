@@ -74,6 +74,22 @@ export class StankiDB extends Dexie {
             delete c.examples;
           }),
       );
+    // v5: reviews carry a denormalized deckId (so a review still counts towards
+    // its deck once the card is deleted). Backfill from the cards still on hand;
+    // reviews whose card is long gone simply keep no deckId.
+    this.version(5)
+      .stores(stores)
+      .upgrade(async (tx) => {
+        const cards = (await tx.table('cards').toArray()) as Card[];
+        const deckOf = new Map(cards.map((c) => [c.id, c.deckId]));
+        await tx
+          .table('reviews')
+          .toCollection()
+          .modify((r: ReviewLog) => {
+            const deckId = deckOf.get(r.cardId);
+            if (deckId) r.deckId = deckId;
+          });
+      });
   }
 }
 

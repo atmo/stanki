@@ -125,6 +125,15 @@ export interface ReviewLog {
   prevInterval: number;
   newInterval: number;
   direction?: CardDirection; // omitted on old logs == forward
+  // All added after the fact, hence optional: mergeReviews never rewrites an
+  // existing entry, so logs written earlier keep their original shape forever
+  // and every reader must tolerate these being absent.
+  deckId?: string; // denormalized — survives the card being moved or deleted
+  prevDue?: number; // scheduled due date, so lateness = ts - prevDue
+  prevEase?: number; // ease factor before this review
+  reps?: number; // consecutive successes before this review
+  thinkMs?: number; // shown -> answer revealed (recall latency)
+  durationMs?: number; // shown -> graded
 }
 
 export const SCHEMA_VERSION = 1 as const;

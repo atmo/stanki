@@ -170,7 +170,9 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
     if (r.ts < rangeStart) continue;
     const idx = indexOf(r.ts);
     const isNew = r.prevInterval === 0;
-    const deckId = cardDeck.get(r.cardId);
+    // Prefer the review's own deckId: it still attributes the review once the
+    // card is deleted (the card map only holds live cards). Older logs lack it.
+    const deckId = r.deckId ?? cardDeck.get(r.cardId);
 
     if (idx >= 0 && idx < nb) {
       if (isNew) history[idx].nw++;

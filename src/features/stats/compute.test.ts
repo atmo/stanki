@@ -155,6 +155,14 @@ describe('computeStats — added & deck scope', () => {
     expect(s.added.reduce((a, b) => a + b, 0)).toBe(1); // 'old' excluded
   });
 
+  it("attributes a deleted card's review via the log's own deckId", () => {
+    // The card is gone from the collection, so the cardId -> deck map can't help.
+    const reviews = [{ ...review('x', 'gone', TODAY, 5, 'good'), deckId: 'd1' }];
+    const s = run([card('a', 'd1')], [deck('d1')], reviews);
+    expect(s.recallByDeck.get('d1')!.ret).toEqual({ p: 1, t: 1 });
+    expect(s.historyByDeck.get('d1')!.at(-1)).toEqual({ nw: 0, rv: 1 });
+  });
+
   it('keeps per-deck history and recall separate', () => {
     const cards = [card('a', 'd1'), card('b', 'd2')];
     const decks = [deck('d1'), deck('d2')];

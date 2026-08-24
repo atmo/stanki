@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
@@ -214,9 +214,26 @@ export function Review() {
   // Hide the clue again whenever we move to a new card / direction.
   useEffect(() => setClue(false), [card?.id, direction]);
 
+  // Answer timing, in refs so ticking the clock never re-renders the card.
+  const shownAt = useRef(Date.now());
+  const revealedAt = useRef<number | null>(null);
+  useEffect(() => {
+    shownAt.current = Date.now();
+    revealedAt.current = null;
+  }, [card?.id, direction]);
+
+  function reveal() {
+    revealedAt.current = Date.now();
+    setRevealed(true);
+  }
+
   async function grade(g: Grade) {
     if (!item || !card || !queue) return;
-    const { card: updated, reviewId } = await gradeCard(card, direction, g);
+    const timing = {
+      thinkMs: revealedAt.current ? revealedAt.current - shownAt.current : undefined,
+      durationMs: Date.now() - shownAt.current,
+    };
+    const { card: updated, reviewId } = await gradeCard(card, direction, g, timing);
     setUndoSnap({ prior: card, reviewId, queue, done });
     setRevealed(false);
     setEditing(false);
@@ -232,6 +249,10 @@ export function Review() {
       setDone((n) => n + 1);
       setQueue((q) => (q ? q.slice(1) : q));
     }
+    // Restart the clock explicitly: with a single-card queue, "Again" re-queues
+    // the same card, so the card-change effect above wouldn't fire.
+    shownAt.current = Date.now();
+    revealedAt.current = null;
   }
 
   async function undoReview() {
@@ -354,7 +375,7 @@ export function Review() {
               {clue ? 'Hide clue' : '💡 Show clue'}
             </button>
           )}
-          <button className="btn btn-primary btn-block" onClick={() => setRevealed(true)}>
+          <button className="btn btn-primary btn-block" onClick={reveal}>
             Show answer
           </button>
         </>
