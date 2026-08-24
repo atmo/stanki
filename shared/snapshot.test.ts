@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { mergeCards, mergeDeck, gcTombstones, mergeReviews, gcReviews, REVIEW_SYNC_TTL_MS } from './snapshot';
+import { mergeCards, mergeDeck, gcTombstones, mergeReviews } from './snapshot';
 import type { Card, Deck, ReviewLog } from './types';
 
 function card(id: string, updatedAt: number, extra: Partial<Card> = {}): Card {
@@ -155,7 +155,7 @@ describe('gcTombstones', () => {
   });
 });
 
-describe('mergeReviews / gcReviews', () => {
+describe('mergeReviews', () => {
   const log = (id: string, ts: number): ReviewLog => ({
     id, cardId: 'c1', ts, grade: 'good', prevInterval: 0, newInterval: 1,
   });
@@ -173,10 +173,9 @@ describe('mergeReviews / gcReviews', () => {
     expect(merged[0].ts).toBe(100);
   });
 
-  it('gcReviews drops entries older than the sync window', () => {
-    const now = 1_000 * 86_400_000;
-    const fresh = log('fresh', now - 1000);
-    const old = log('old', now - REVIEW_SYNC_TTL_MS - 1000);
-    expect(gcReviews([fresh, old], now).map((r) => r.id)).toEqual(['fresh']);
+  it('keeps arbitrarily old entries — the log syncs in full', () => {
+    const ancient = log('ancient', 1);
+    const fresh = log('fresh', 1_000 * 86_400_000);
+    expect(mergeReviews([ancient], [fresh]).map((r) => r.id).sort()).toEqual(['ancient', 'fresh']);
   });
 });

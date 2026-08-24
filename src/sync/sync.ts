@@ -14,7 +14,6 @@ import {
   mergeDeck,
   gcTombstones,
   mergeReviews,
-  gcReviews,
 } from '@shared/snapshot';
 import {
   listAppFiles,
@@ -69,8 +68,7 @@ async function maybeBackup(
     return;
   }
 
-  // The full local review history rides along — reviews sync only within a
-  // 14-day window, so a backup is the only durable copy of older study history.
+  // The review history rides along so a backup can restore study history too.
   // Not part of `hash`: any new review also mutates its card, so the hash moves.
   const bundle = { app: 'stanki', schemaVersion: SCHEMA_VERSION, exportedAt: Date.now(), decks, cards, reviews };
   await createFile(
@@ -243,25 +241,28 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     }
   }
 
-  // --- push the shared review log (trimmed to the rolling window) -------
+  // --- push the shared review log (full history) -------------------------
   const now = Date.now();
-  // Keep the untrimmed union for the backup; only the pushed copy is windowed.
   const allReviews = mergeReviews(localReviews, remoteReviews);
-  const recentReviews = gcReviews(allReviews, now);
   const canonical = reviewsFiles[0];
-  if (canonical) {
+  // The log only grows, so if the union is no bigger than what's already remote
+  // we have nothing to contribute — skip rewriting a file that gets large.
+  // Duplicate files still force a write: the canonical one may hold only part of
+  // the union, and we delete the others below.
+  const needsWrite = allReviews.length > remoteReviews.length || reviewsFiles.length > 1;
+  if (canonical && needsWrite) {
     // Re-union with the canonical file's current reviews so a concurrently
     // pushed review isn't dropped by our overwrite.
     await mergeJsonFile<ReviewSnapshot>(getToken, canonical.id, (current) => ({
       schemaVersion: SCHEMA_VERSION,
-      reviews: gcReviews(mergeReviews(recentReviews, current.reviews ?? []), now),
+      reviews: mergeReviews(allReviews, current.reviews ?? []),
       exportedAt: now,
       deviceId,
     }));
-  } else {
+  } else if (!canonical) {
     const reviewSnapshot: ReviewSnapshot = {
       schemaVersion: SCHEMA_VERSION,
-      reviews: recentReviews,
+      reviews: allReviews,
       exportedAt: now,
       deviceId,
     };

@@ -7,7 +7,6 @@ function dedupe<T>(arr: T[], key: (x: T) => string): T[] {
 }
 
 const TOMBSTONE_TTL_MS = 60 * 86_400_000; // GC deleted records after ~60 days
-export const REVIEW_SYNC_TTL_MS = 14 * 86_400_000; // only sync the last ~2 weeks of reviews
 
 export function buildSnapshot(deck: Deck, cards: Card[], deviceId: string): DeckSnapshot {
   return {
@@ -101,11 +100,6 @@ export function mergeReviews(local: ReviewLog[] = [], remote: ReviewLog[] = []):
   for (const r of local) byId.set(r.id, r);
   for (const r of remote) if (!byId.has(r.id)) byId.set(r.id, r);
   return [...byId.values()];
-}
-
-/** Keep only reviews within the rolling sync window (bounds the shared file size). */
-export function gcReviews(reviews: ReviewLog[], now = Date.now()): ReviewLog[] {
-  return reviews.filter((r) => now - r.ts <= REVIEW_SYNC_TTL_MS);
 }
 
 export interface MergeResult {
