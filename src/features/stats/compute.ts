@@ -84,8 +84,27 @@ export function bucketize(start: number, today: number): { buckets: Bucket[]; gr
   return { buckets, granularity: 'month', indexOf: (ts) => new Date(ts).getFullYear() * 12 + new Date(ts).getMonth() - startMK };
 }
 
+/** Interval buckets for the forgetting curve, by the card's interval *at review
+ * time*. Roughly doubling, so the whole range fits in a handful of columns. */
+export const RETENTION_BUCKETS = [
+  { label: '1–2d', min: 1 },
+  { label: '2–4d', min: 2 },
+  { label: '4–8d', min: 4 },
+  { label: '8–16d', min: 8 },
+  { label: '16–32d', min: 16 },
+  { label: '32–64d', min: 32 },
+  { label: '64d+', min: 64 },
+];
+
+export function retentionBucket(prevInterval: number): number {
+  let i = 0;
+  while (i + 1 < RETENTION_BUCKETS.length && prevInterval >= RETENTION_BUCKETS[i + 1].min) i++;
+  return i;
+}
+
 export type Recall = {
   ret: { p: number; t: number };
+  curve: { p: number; t: number }[]; // pass/total per RETENTION_BUCKETS entry
   young: { p: number; t: number };
   mature: { p: number; t: number };
   answers: { again: number; good: number; easy: number };
@@ -93,6 +112,7 @@ export type Recall = {
 };
 export const emptyRecall = (): Recall => ({
   ret: { p: 0, t: 0 },
+  curve: RETENTION_BUCKETS.map(() => ({ p: 0, t: 0 })),
   young: { p: 0, t: 0 },
   mature: { p: 0, t: 0 },
   answers: { again: 0, good: 0, easy: 0 },
@@ -162,6 +182,9 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
       const bucket = r.prevInterval >= MATURE_DAYS ? acc.mature : acc.young;
       bucket.t++;
       if (passed) bucket.p++;
+      const cb = acc.curve[retentionBucket(r.prevInterval)];
+      cb.t++;
+      if (passed) cb.p++;
     }
     acc.answers[r.grade]++;
   };

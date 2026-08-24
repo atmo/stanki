@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStats, bucketize, rangeStartFor, startOfDay, DAY, MATURE_DAYS } from './compute';
+import { computeStats, bucketize, rangeStartFor, startOfDay, retentionBucket, RETENTION_BUCKETS, DAY, MATURE_DAYS } from './compute';
 import type { Card, Deck, Grade, ReviewLog } from '@shared/types';
 
 // Midday of a local date, so day-boundary math never lands on a DST edge.
@@ -123,6 +123,31 @@ describe('computeStats — recall', () => {
     const s = run(cards, decks, reviews);
     const last = s.history[s.history.length - 1]; // "today"
     expect(last).toEqual({ nw: 1, rv: 2 }); // r3 is new; r1,r2 are reviews
+  });
+});
+
+describe('retentionBucket / forgetting curve', () => {
+  it('maps an interval to its bucket, with the last one open-ended', () => {
+    expect(RETENTION_BUCKETS.map((b) => b.label)).toEqual(['1–2d', '2–4d', '4–8d', '8–16d', '16–32d', '32–64d', '64d+']);
+    expect(retentionBucket(1)).toBe(0);
+    expect(retentionBucket(1.9)).toBe(0);
+    expect(retentionBucket(2)).toBe(1); // lower edge is inclusive
+    expect(retentionBucket(15)).toBe(3);
+    expect(retentionBucket(64)).toBe(6);
+    expect(retentionBucket(9999)).toBe(6); // open-ended top bucket
+  });
+
+  it('tallies pass/total per bucket and excludes learning steps', () => {
+    const cards = [card('a', 'd'), card('b', 'd'), card('c', 'd')];
+    const s = run(cards, [deck('d')], [
+      review('r1', 'a', TODAY, 1, 'good'), // bucket 0, pass
+      review('r2', 'b', TODAY, 1.5, 'again'), // bucket 0, fail
+      review('r3', 'c', TODAY, 30, 'good'), // bucket 4, pass
+      review('r4', 'a', TODAY, 0, 'again'), // learning step — not on the curve
+    ]);
+    expect(s.recall.curve[0]).toEqual({ p: 1, t: 2 });
+    expect(s.recall.curve[4]).toEqual({ p: 1, t: 1 });
+    expect(s.recall.curve.reduce((n, b) => n + b.t, 0)).toBe(3); // r4 excluded
   });
 });
 

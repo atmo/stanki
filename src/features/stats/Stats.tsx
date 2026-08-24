@@ -2,7 +2,12 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { db } from '../../db/db';
-import { computeStats, rangeStartFor, startOfDay, fmtDay, monthShort, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
+import { computeStats, emptyRecall, rangeStartFor, startOfDay, fmtDay, monthShort, RETENTION_BUCKETS, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
+
+// Anki's conventional target; bars are coloured against it so the curve reads at
+// a glance. A bucket with few reviews is dimmed rather than trusted.
+const TARGET_RETENTION = 90;
+const THIN_SAMPLE = 10;
 
 const RANGE_PRESETS = [
   { key: 'week', label: 'Last week', days: 7 },
@@ -66,15 +71,15 @@ function RangeFilter({ start, today, onChange }: { start: number; today: number;
 /** A single-series vertical-bar chart; every panel's chart shares it. Columns
  * carry their own label/sub so day, week and month axes all render the same way.
  * Value on top of each bar; exact detail on hover. */
-function BarChart({ bars, max }: { bars: { value: number; cls: string; title: string; label: string; sub: string }[]; max: number }) {
+function BarChart({ bars, max, className = '' }: { bars: { value: number; cls: string; title: string; label: string; sub: string; text?: string }[]; max: number; className?: string }) {
   return (
-    <div className="bar-chart">
+    <div className={`bar-chart ${className}`}>
       {bars.map((b, i) => (
         <div className="bar-col" key={i} title={b.title}>
           <div className="bar-stack">
             {b.value > 0 ? (
               <>
-                <span className="bar-value">{b.value}</span>
+                <span className="bar-value">{b.text ?? b.value}</span>
                 <div className={`bar-seg ${b.cls}`} style={{ height: `${(b.value / max) * 85}%` }} />
               </>
             ) : null}
@@ -112,11 +117,28 @@ export function Stats() {
   const scopeId = scope !== 'all' && byDeck.some((d) => d.id === scope) ? scope : 'all';
 
   const activeMaturity = scopeId === 'all' ? { nw, young, mature } : (byDeck.find((d) => d.id === scopeId) ?? { nw: 0, young: 0, mature: 0 });
-  const rec = scopeId === 'all' ? recall : (recallByDeck.get(scopeId) ?? { ret: { p: 0, t: 0 }, young: { p: 0, t: 0 }, mature: { p: 0, t: 0 }, answers: { again: 0, good: 0, easy: 0 }, lapses: 0 });
+  const rec = scopeId === 'all' ? recall : (recallByDeck.get(scopeId) ?? emptyRecall());
   const { ret, answers, lapses } = rec;
   const youngRet = rec.young;
   const matureRet = rec.mature;
   const answerTotal = answers.again + answers.good + answers.easy;
+
+  // Forgetting curve: retention per interval bucket, on a fixed 0–100 scale.
+  const curveTotal = rec.curve.reduce((s, b) => s + b.t, 0);
+  const curveBars = rec.curve.map((b, i) => {
+    const value = b.t ? Math.round((b.p / b.t) * 100) : 0;
+    const tone = value >= TARGET_RETENTION ? 'bar-ret-ok' : value >= 80 ? 'bar-ret-mid' : 'bar-ret-low';
+    return {
+      value,
+      cls: `${tone}${b.t > 0 && b.t < THIN_SAMPLE ? ' bar-thin' : ''}`,
+      text: `${value}%`,
+      title: b.t
+        ? `Interval ${RETENTION_BUCKETS[i].label}: ${value}% of ${b.t} review${b.t === 1 ? '' : 's'} passed`
+        : `Interval ${RETENTION_BUCKETS[i].label}: no reviews`,
+      label: RETENTION_BUCKETS[i].label,
+      sub: b.t ? String(b.t) : '',
+    };
+  });
 
   const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? new Array<number>(forecast.length).fill(0));
   const dueToday = activeForecast[0];
@@ -205,6 +227,25 @@ export function Stats() {
           </>
         ) : (
           <p className="muted">No reviews in the selected range.</p>
+        )}
+      </section>
+
+      <section className="panel">
+        <h2>Retention by interval</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
+        {curveTotal === 0 ? (
+          <p className="muted">No graduated reviews in the selected range.</p>
+        ) : (
+          <>
+            <BarChart bars={curveBars} max={100} className="bar-chart-ret" />
+            <p className="muted small">
+              Your forgetting curve: how often you recalled a card, grouped by the interval it had
+              waited. Below each bar is how many reviews it rests on; faded bars have fewer than{' '}
+              {THIN_SAMPLE} and are noise. Green ≥ {TARGET_RETENTION}%, amber ≥ 80%, red below.
+              Where the bars fall away is where the schedule outruns your memory — widen the date
+              range for a steadier curve.
+            </p>
+          </>
         )}
       </section>
 

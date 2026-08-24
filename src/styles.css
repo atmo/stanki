@@ -119,6 +119,13 @@ body {
 .bar-rev { background: #2dd4bf; }
 .bar-due { background: var(--primary); }
 .bar-add { background: #a78bfa; }
+.bar-ret-ok { background: var(--good); }
+.bar-ret-mid { background: #d97706; }
+.bar-ret-low { background: var(--again); }
+.bar-thin { opacity: 0.45; }
+/* Retention chart: the sub-label is a sample count, not a month marker, so it
+   sits centred under its column rather than flush to the left edge. */
+.bar-chart-ret .bar-month { align-self: center; }
 .bar-day { height: 1em; margin-top: 3px; font-size: 0.6rem; line-height: 1; color: var(--muted); font-variant-numeric: tabular-nums; }
 .bar-month { align-self: flex-start; height: 1em; font-size: 0.6rem; line-height: 1; color: var(--muted); white-space: nowrap; overflow: visible; }
 .chart-title { display: flex; align-items: center; gap: 6px; margin: 12px 0 2px; font-size: 0.82rem; color: var(--muted); }
