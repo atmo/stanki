@@ -172,6 +172,35 @@ export function scheduleState(
   return { interval, easeFactor, repetitions, dueDate: startOfLocalDay(now + interval * DAY_MS) };
 }
 
+// Random spread applied to a day-scale interval, and the interval below which
+// there is no room to spread (a 1-day interval can only stay 1 day).
+const FUZZ = 0.15;
+const MIN_FUZZ_INTERVAL = 2;
+
+/**
+ * Nudge a scheduled interval by up to ±15% (at least a day) so that cards
+ * introduced together stop coming due together. Without it intervals are exactly
+ * deterministic, so a batch learned on one day stays a batch forever — review
+ * avalanches and a spiky forecast, worst on a deck crammed in a few sittings.
+ *
+ * Deliberately *not* part of `scheduleState`: that stays pure and deterministic,
+ * so the grade buttons keep previewing the interval you'd actually reason about
+ * rather than a different random draw each render. Applied once here, at the
+ * point the schedule is persisted, and stored — so it syncs like any other value
+ * and the logged `newInterval` matches what the next review will see as
+ * `prevInterval` (which the review-chain integrity check relies on).
+ */
+export function fuzzSchedule(
+  s: CardSchedule,
+  now = Date.now(),
+  rand: () => number = Math.random,
+): CardSchedule {
+  if (s.interval < MIN_FUZZ_INTERVAL) return s; // learning steps and 1-day intervals
+  const spread = Math.max(1, Math.round(s.interval * FUZZ));
+  const interval = Math.max(1, s.interval + Math.round((rand() * 2 - 1) * spread));
+  return { ...s, interval, dueDate: startOfLocalDay(now + interval * DAY_MS) };
+}
+
 /** Apply a grade to a card's forward schedule (kept for tests/back-compat). */
 export function schedule(
   card: Card,

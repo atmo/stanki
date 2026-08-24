@@ -4,6 +4,7 @@ import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
 import {
   scheduleState,
+  fuzzSchedule,
   newCardState,
   selectDue,
   directionSchedule,
@@ -272,7 +273,9 @@ export async function gradeCard(
   const settings = await getDeckSettings(card.deckId);
   const now = Date.now();
   const prev = directionSchedule(card, direction, settings);
-  const next = scheduleState(prev, grade, now, settings);
+  // Fuzz at the persistence boundary, so the stored interval (and the logged
+  // newInterval) is the fuzzed one, while grade previews stay deterministic.
+  const next = fuzzSchedule(scheduleState(prev, grade, now, settings), now);
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
   const reviewId = uid();

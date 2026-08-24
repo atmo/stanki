@@ -29,7 +29,7 @@ buckets by *scheduled* interval while the real wait was longer. Bucketing that c
 |---|---|---|
 | 1 | **Interval modifier** (global `×N` on every interval) | The one *retroactive* lever — hits all cards, new and existing, on their next review. `startingEase` only affects new cards. **S** |
 | 2 | **Hard grade** (q=3, `×~1.2`, ease −0.15) | The missing pressure valve: today a barely-recalled card still gets the full `×ease` jump, and Good never lowers ease. UI + `scheduleState`. **M** |
-| 3 | **Interval fuzz** (±~15%, applied once at grade time) | Intervals are deterministic, so a cohort introduced together comes due together forever. Kills avalanches, smooths the forecast; biggest win for cram decks. **S** |
+| ~~3~~ | ~~**Interval fuzz**~~ — **done** | Shipped as `fuzzSchedule`: ±15% (at least a day), none below a 2-day interval. Applied in `gradeCard` rather than `scheduleState`, so grade previews stay deterministic and the logged `newInterval` still matches the next `prevInterval`. |
 | 4 | **Reschedule tool** | 1–3 only shorten *future* intervals, so the existing over-scheduled backlog keeps failing for weeks. This recovers it now. **M** |
 | 5 | **Learning / relearning steps** | A new card graduates on one Good, and a lapse resets straight to 1 day — no 10-minute consolidation. Attacks young-card (encoding) failures. Needs a learning-state field, since `interval` currently doubles as learning-step storage. **L** |
 | 6 | **Leech auto-suspend · max-interval cap · configurable graduating/second interval** | Lapsing cards bottom out at `MIN_EASE` and get stuck with nothing flagging them; intervals grow unbounded; the graduating `1` and second `4` are hardcoded. **S** each |
@@ -48,3 +48,4 @@ buckets by *scheduled* interval while the real wait was longer. Bucketing that c
 - Retention-by-interval chart (the forgetting curve), plus the young/mature split.
 - Reviews now record `deckId`, `prevDue`, `prevEase`, `reps`, `thinkMs`, `durationMs`.
 - Review log included in exports/backups and synced in full (no 14-day window).
+- Interval fuzz (#3), so cohorts stop coming due in lockstep.

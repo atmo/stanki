@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import { schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
 import type { Card, Grade } from './types';
 
 const NOW = 1_700_000_000_000;
@@ -184,5 +184,51 @@ describe('previewIntervals', () => {
     expect(p.again).toBeCloseTo(DEFAULT_SETTINGS.againInterval / 1440, 9); // 1 minute, in days
     expect(p.good).toBe(10); // round(4 * 2.5)
     expect(p.easy).toBeGreaterThanOrEqual(p.good);
+  });
+});
+
+describe('fuzzSchedule', () => {
+  const sched = (interval: number) => ({ interval, easeFactor: 2.5, repetitions: 3, dueDate: 0 });
+  // rand() in [0,1) maps to a spread of [-1,+1]: 0 = shortest, 0.5 = unchanged, ~1 = longest.
+  const LOW = () => 0;
+  const MID = () => 0.5;
+  const HIGH = () => 0.999;
+
+  it('leaves learning steps and 1-day intervals alone (no room to spread)', () => {
+    expect(fuzzSchedule(sched(1 / 1440), NOW, LOW)).toEqual(sched(1 / 1440)); // "Again"
+    expect(fuzzSchedule(sched(1), NOW, HIGH).interval).toBe(1);
+  });
+
+  it('spreads a long interval by at most ±15%', () => {
+    expect(fuzzSchedule(sched(100), NOW, LOW).interval).toBe(85);
+    expect(fuzzSchedule(sched(100), NOW, MID).interval).toBe(100); // midpoint = unchanged
+    expect(fuzzSchedule(sched(100), NOW, HIGH).interval).toBe(115);
+  });
+
+  it('still moves short intervals, where 15% would round to nothing', () => {
+    expect(fuzzSchedule(sched(4), NOW, LOW).interval).toBe(3); // at least a day either way
+    expect(fuzzSchedule(sched(4), NOW, HIGH).interval).toBe(5);
+  });
+
+  it('never schedules below a day, however unlucky the draw', () => {
+    expect(fuzzSchedule(sched(2), NOW, LOW).interval).toBe(1);
+  });
+
+  it('moves dueDate to match the fuzzed interval, at local midnight', () => {
+    const f = fuzzSchedule(sched(100), NOW, HIGH);
+    expect(f.dueDate).toBe(startOfLocalDay(NOW + 115 * DAY));
+  });
+
+  it('leaves the rest of the schedule untouched', () => {
+    const f = fuzzSchedule(sched(50), NOW, HIGH);
+    expect([f.easeFactor, f.repetitions]).toEqual([2.5, 3]);
+  });
+
+  it('stays within bounds across many random draws', () => {
+    for (let i = 0; i < 500; i++) {
+      const { interval } = fuzzSchedule(sched(20), NOW); // real Math.random
+      expect(interval).toBeGreaterThanOrEqual(17);
+      expect(interval).toBeLessThanOrEqual(23);
+    }
   });
 });
