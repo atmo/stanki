@@ -189,7 +189,10 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
   for (const r of reviews) {
     if (!ids.has(r.cardId)) continue;
     if (r.prevInterval === 0) newToday++;
-    else reviewsToday++;
+    else if (r.prevInterval >= 1) reviewsToday++;
+    // A sub-day interval is an in-session relearning step, not a card falling
+    // due. Counting those against the review cap let a bad day eat the budget
+    // that due cards needed, which delayed them and caused more lapses still.
   }
   return { newToday, reviewsToday };
 }

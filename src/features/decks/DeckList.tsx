@@ -50,8 +50,10 @@ export function DeckList() {
       const deckId = cardDeck.get(r.cardId);
       if (!deckId) continue;
       const d = daily.get(deckId) ?? { newToday: 0, reviewsToday: 0 };
+      // Mirrors dailyCounts(): sub-day intervals are relearning steps and don't
+      // count against the review cap.
       if (r.prevInterval === 0) d.newToday++;
-      else d.reviewsToday++;
+      else if (r.prevInterval >= 1) d.reviewsToday++;
       daily.set(deckId, d);
     }
 
