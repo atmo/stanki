@@ -174,6 +174,17 @@ export function scheduleState(
 
 // Random spread applied to a day-scale interval, and the interval below which
 // there is no room to spread (a 1-day interval can only stay 1 day).
+/**
+ * Which set of scheduling rules produced a review. Stamped on every log entry so
+ * a later analysis can segment instead of silently averaging across regimes —
+ * without it, a retention figure blends rules that no longer exist.
+ *
+ * Bump this whenever a change alters the intervals the scheduler produces.
+ *   1 — original SM-2: second interval 6d, no fuzz
+ *   2 — second interval 4d; intervals fuzzed +/-15%
+ */
+export const SCHEDULER_VERSION = 2;
+
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;
 

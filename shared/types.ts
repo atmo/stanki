@@ -146,6 +146,7 @@ export interface ReviewLog {
   reps?: number; // consecutive successes before this review
   thinkMs?: number; // shown -> answer revealed (recall latency)
   durationMs?: number; // shown -> graded
+  schedVer?: number; // SCHEDULER_VERSION that produced this schedule
 }
 
 export const SCHEMA_VERSION = 1 as const;

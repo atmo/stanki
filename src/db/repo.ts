@@ -13,6 +13,7 @@ import {
   startOfDay,
   endOfLocalDay,
   DEFAULT_SETTINGS,
+  SCHEDULER_VERSION,
   type ReviewItem,
   type SrSettings,
 } from '@shared/sm2';
@@ -339,6 +340,7 @@ export async function gradeCard(
       reps: prev.repetitions,
       thinkMs: capMs(timing?.thinkMs),
       durationMs: capMs(timing?.durationMs),
+      schedVer: SCHEDULER_VERSION,
     });
   });
   return { card: { ...card, ...patch }, reviewId };
