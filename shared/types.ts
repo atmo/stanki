@@ -117,6 +117,18 @@ function dedupeContexts(list: CardContext[]): CardContext[] {
   });
 }
 
+/**
+ * One recorded change to the scheduling settings. Reviews only say what the
+ * scheduler did, never what it was configured to do, so without this a later
+ * analysis cannot tell which regime a stretch of study was produced under —
+ * or whether changing a limit actually helped.
+ */
+export interface SettingsChange {
+  ts: number;
+  deckId?: string; // absent = the global set
+  changes: Record<string, [from: number | undefined, to: number | undefined]>;
+}
+
 export interface ReviewLog {
   id: string;
   cardId: string;

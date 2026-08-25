@@ -1,6 +1,7 @@
 import { db } from './db';
 import type { Card, CardDirection, Deck, Grade, ReviewDirection, ReviewLog } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
+import type { SettingsChange } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
 import {
   scheduleState,
@@ -42,7 +43,45 @@ export async function getSettings(): Promise<SrSettings> {
   const stored = await getMeta<Partial<SrSettings>>('srSettings', {});
   return { ...DEFAULT_SETTINGS, ...stored };
 }
-export const saveSettings = (s: SrSettings) => setMeta('srSettings', s);
+const SETTINGS_LOG_KEY = 'settingsLog';
+const SETTINGS_COALESCE_MS = 5 * 60_000;
+
+/** Append a settings change, so later analysis can date each scheduling regime. */
+async function logSettingsChange(
+  before: Partial<SrSettings>,
+  after: Partial<SrSettings>,
+  deckId?: string,
+): Promise<void> {
+  const changes: SettingsChange['changes'] = {};
+  for (const k of new Set([...Object.keys(before), ...Object.keys(after)]) as Set<keyof SrSettings>) {
+    if (before[k] !== after[k]) changes[k] = [before[k], after[k]];
+  }
+  if (!Object.keys(changes).length) return;
+
+  const log = await getMeta<SettingsChange[]>(SETTINGS_LOG_KEY, []);
+  const last = log[log.length - 1];
+  const now = Date.now();
+  // The settings UI saves on every keystroke and slider tick, so fold rapid
+  // edits to the same scope into one entry (keeping the original `from`) rather
+  // than recording a trail of intermediate values.
+  if (last && last.deckId === deckId && now - last.ts < SETTINGS_COALESCE_MS) {
+    for (const [k, [from, to]] of Object.entries(changes)) {
+      last.changes[k] = [last.changes[k]?.[0] ?? from, to];
+    }
+    last.ts = now;
+  } else {
+    log.push({ ts: now, deckId, changes });
+  }
+  await setMeta(SETTINGS_LOG_KEY, log);
+}
+
+export const getSettingsLog = () => getMeta<SettingsChange[]>(SETTINGS_LOG_KEY, []);
+
+export async function saveSettings(s: SrSettings): Promise<void> {
+  const before = await getSettings();
+  await setMeta('srSettings', s);
+  await logSettingsChange(before, s);
+}
 
 /** A deck's effective settings: its own overrides if present, else the global set. */
 export function effectiveSettings(deck: Pick<Deck, 'settings'> | undefined, global: SrSettings): SrSettings {
@@ -56,7 +95,9 @@ export async function getDeckSettings(deckId: string): Promise<SrSettings> {
 
 /** Set (or clear, with undefined) a deck's scheduling/limit overrides. */
 export async function setDeckSettings(id: string, settings: SrSettings | undefined): Promise<void> {
+  const before = (await db.decks.get(id))?.settings ?? {};
   await db.decks.update(id, { settings, updatedAt: Date.now() });
+  await logSettingsChange(before, settings ?? {}, id);
 }
 
 export const getLastSync = () => getMeta<number | null>('lastSync', null);
@@ -323,15 +364,23 @@ export interface ExportBundle {
   // none, and a single-deck share (exportDeck) omits them because importDeck
   // regenerates card ids, which would orphan every log entry.
   reviews?: ReviewLog[];
+  // The scheduling config the history was produced under, and when it changed.
+  // Per-deck overrides already ride along on `decks[].settings`. Exported for
+  // analysis only — import deliberately does not apply them, since silently
+  // rewriting someone's scheduler config is not what "import" should mean.
+  settings?: SrSettings;
+  settingsLog?: SettingsChange[];
 }
 
 export async function exportAll(): Promise<ExportBundle> {
-  const [decks, cards, reviews] = await Promise.all([
+  const [decks, cards, reviews, settings, settingsLog] = await Promise.all([
     db.decks.toArray(),
     db.cards.toArray(),
     db.reviews.toArray(),
+    getSettings(),
+    getSettingsLog(),
   ]);
-  return { app: 'stanki', schemaVersion: 1, exportedAt: Date.now(), decks, cards, reviews };
+  return { app: 'stanki', schemaVersion: 1, exportedAt: Date.now(), decks, cards, reviews, settings, settingsLog };
 }
 
 export async function importBundle(bundle: ExportBundle): Promise<void> {
