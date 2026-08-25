@@ -27,6 +27,7 @@ export interface SrSettings {
   hardMultiplier: number; // interval growth on "hard" — a nudge, not a full ease step
   newCardsPerDay: number; // max brand-new cards introduced per deck per day
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
+  leechThreshold: number; // lapses in one direction before a card is flagged (0 = off)
 }
 
 /** A captured usage sentence, optionally with the page URL it came from. A

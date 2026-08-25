@@ -18,6 +18,7 @@ export const DEFAULT_SETTINGS: SrSettings = {
   hardMultiplier: 1.2,
   newCardsPerDay: 20,
   maxReviewsPerDay: 50,
+  leechThreshold: 5,
 };
 
 export interface DailyReviewCounts {

@@ -32,6 +32,11 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
           onChange={(e) => onChange('hardMultiplier', Number(e.target.value))} />
       </label>
       <label className="field">
+        <span>Leech threshold (lapses, 0 = off)</span>
+        <input type="number" className="input" min={0} max={50} value={s.leechThreshold}
+          onChange={(e) => onChange('leechThreshold', Math.max(0, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
         <span>New cards / day</span>
         <input type="number" className="input" min={0} max={500} value={s.newCardsPerDay}
           onChange={(e) => onChange('newCardsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />

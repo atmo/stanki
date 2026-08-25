@@ -20,9 +20,12 @@ import {
   setDeckSettings,
   effectiveSettings,
   getSettings,
+  getDeckSettings,
+  getLeechCounts,
 } from '../../db/repo';
 import { type Card, type CardContext, type Deck, type ReviewDirection, cardContexts } from '@shared/types';
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
+import { worstLeech, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { ContextsField } from '../../components/ContextsField';
 import { SettingsFields } from '../../components/SettingsFields';
 
@@ -57,10 +60,12 @@ function CardRow({
   card,
   selected,
   onToggle,
+  leech,
 }: {
   card: Card;
   selected: boolean;
   onToggle: (id: string) => void;
+  leech: number;
 }) {
   const [editing, setEditing] = useState(false);
   const [front, setFront] = useState(card.front);
@@ -123,6 +128,11 @@ function CardRow({
       />
       <div className="card-row-main">
         <strong>{card.front}</strong>
+        {leech > 0 && (
+          <span className="tag-leech" title={`Missed ${leech}x in the last ${LEECH_WINDOW_DAYS} days — worth an example or a clearer definition`}>
+            ⚠ {leech}
+          </span>
+        )}
         <span className="muted"> — {card.back || '(no answer)'}</span>
         {card.explanation && <p className="explanation small">{card.explanation}</p>}
         {cardContexts(card).map((c, i) => (
@@ -173,7 +183,8 @@ export function DeckEditor() {
     const allDecks = (await db.decks.filter((d) => !d.deleted).toArray()).sort((a, b) =>
       a.name.localeCompare(b.name),
     );
-    return { deck, cards, allDecks };
+    const [leeches, settings] = await Promise.all([getLeechCounts(), getDeckSettings(id)]);
+    return { deck, cards, allDecks, leeches, settings };
   }, [id]);
 
   // Run the dictionary lookup and pre-fill empty Back/Explanation fields.
@@ -433,7 +444,13 @@ export function DeckEditor() {
 
       <ul className="card-list">
         {visibleCards.map((c) => (
-          <CardRow key={c.id} card={c} selected={selected.has(c.id)} onToggle={toggle} />
+          <CardRow
+            key={c.id}
+            card={c}
+            selected={selected.has(c.id)}
+            onToggle={toggle}
+            leech={isLeech(worstLeech(data.leeches, c.id), data.settings.leechThreshold) ? worstLeech(data.leeches, c.id) : 0}
+          />
         ))}
       </ul>
       {q && visibleCards.length === 0 && <p className="muted empty">No cards match “{search.trim()}”.</p>}

@@ -3,6 +3,7 @@ import type { Card, CardDirection, Deck, Grade, ReviewDirection, ReviewLog } fro
 import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import type { SettingsChange } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
+import { leechCounts, LEECH_WINDOW_DAYS } from '@shared/leech';
 import {
   scheduleState,
   fuzzSchedule,
@@ -195,6 +196,14 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
     // that due cards needed, which delayed them and caused more lapses still.
   }
   return { newToday, reviewsToday };
+}
+
+/** Recent lapses per card+direction, for the leech flag. Derived rather than
+ * stored: it's a display hint, so a device that hasn't synced the log just shows
+ * fewer flags instead of behaving differently. */
+export async function getLeechCounts(now = Date.now()): Promise<Map<string, number>> {
+  const since = now - LEECH_WINDOW_DAYS * 86_400_000;
+  return leechCounts(await db.reviews.where('ts').aboveOrEqual(since).toArray(), now);
 }
 
 /** In-place Fisher-Yates shuffle. */

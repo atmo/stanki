@@ -275,3 +275,8 @@ body {
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
 .field span { font-size: 0.9rem; color: var(--muted); }
 code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 0.85em; }
+
+/* Leech flag: shown after the reveal in review, and beside the front in the
+   deck editor, where the remedy (editing the card) is one click away. */
+.leech-note { color: #fbbf24; font-size: 0.85rem; margin: 8px 0 0; }
+.tag-leech { margin-left: 6px; font-size: 0.72rem; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px; padding: 0 5px; white-space: nowrap; }

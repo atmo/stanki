@@ -4,7 +4,8 @@ import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type CardContext, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, updateCard, deleteCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, updateCard, deleteCard } from '../../db/repo';
+import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
@@ -176,6 +177,7 @@ export function Review() {
   const [overLimit, setOverLimit] = useState(false);
   const [nowTs, setNowTs] = useState(Date.now()); // ticks only while gated
   const [forceShow, setForceShow] = useState(false); // "show it anyway" escape hatch
+  const [leeches, setLeeches] = useState<Map<string, number>>(new Map());
 
   // A card is servable once its dueDate has passed. Only a card just graded
   // "Again" carries a future dueDate — new cards hold createdAt and due reviews
@@ -202,6 +204,7 @@ export function Review() {
       const s = await getDeckSettings(id);
       setSettings(s);
       setDeckName((await getDeck(id))?.name ?? '');
+      setLeeches(await getLeechCounts());
       setQueue(await reviewQueue(id, s));
     })();
   }, [id]);
@@ -427,6 +430,14 @@ export function Review() {
             <div className="card-back">
               {answer ? <Answer text={answer} match={NO_MATCH} reveal /> : <span className="muted">(no answer yet)</span>}
             </div>
+            {/* Only after the reveal: seeing "you keep missing this" beforehand
+                would prime the recall attempt and bias the grade you give. */}
+            {isLeech(leechCount(leeches, card.id, direction), settings.leechThreshold) && (
+              <p className="leech-note">
+                ⚠ Missed {leechCount(leeches, card.id, direction)}× in this direction over the last{' '}
+                {LEECH_WINDOW_DAYS} days — editing this card will likely help more than repeating it.
+              </p>
+            )}
             {card.explanation && <p className="explanation">{card.explanation}</p>}
             {cardContexts(card).map((c, i) => (
               <Context key={i} ctx={c} match={matchWord} />
