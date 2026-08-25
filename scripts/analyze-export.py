@@ -3,6 +3,10 @@
 if the bundle carries a review log — the diagnostics that explain retention.
 
 Usage: python3 scripts/analyze-export.py <export.json> [deck-name-substring]
+
+Several review fields were added after the first analysis and are still filling
+up. The report prints their coverage so it is obvious when there is enough data
+to write the analysis each one unlocks — see PENDING below.
 """
 import json
 import sys
@@ -57,6 +61,27 @@ if len(sys.argv) > 2:
     print(f"scoped to {', '.join(dk.get('name','?') for dk in decks.values())}")
 
 print(f"decks {len(decks)}  cards {len(cards)}  reviews {len(reviews)}")
+
+# Fields added after this script was first written. Each replaces something the
+# report currently infers, or unlocks an analysis it cannot do at all yet.
+PENDING = {
+    "prevDue": "exact lateness (drop the timestamp chaining)",
+    "prevEase": "retention vs ease — is ease predicting anything?",
+    "thinkMs": "recall latency vs outcome (currently inferred from gaps)",
+    "posInSession": "does accuracy decay within a sitting?",
+    "overLimit": "capped vs past-the-cap study",
+    "schedVer": "segment regimes instead of averaging across them",
+}
+if reviews:
+    print("\nfields still filling up — write the analysis when the count is worth it:")
+    for k, why in PENDING.items():
+        n = sum(1 for r in reviews if r.get(k) is not None)
+        print(f"  {k:<13}{n:>6}/{len(reviews)}  {why}")
+    if d.get("settings"):
+        print(f"\nsettings in bundle: {d['settings']}")
+        print(f"settings changes logged: {len(d.get('settingsLog') or [])}")
+    else:
+        print("\n(no settings in this bundle — exported from a build before that landed)")
 
 # Review *units*: one per active direction, matching what the app schedules.
 def units(card):
