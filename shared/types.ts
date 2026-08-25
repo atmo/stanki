@@ -148,6 +148,7 @@ export interface ReviewLog {
   durationMs?: number; // shown -> graded
   schedVer?: number; // SCHEDULER_VERSION that produced this schedule
   posInSession?: number; // 1-based position within the sitting, for fatigue analysis
+  overLimit?: boolean; // studied past the daily cap, rather than inside it
 }
 
 export const SCHEMA_VERSION = 1 as const;

@@ -169,6 +169,10 @@ export function Review() {
   const [deckName, setDeckName] = useState('');
   const [undoSnap, setUndoSnap] = useState<UndoSnapshot | null>(null);
   const [more, setMore] = useState<ReviewItem[] | null>(null); // extra over-limit reviews
+  // True once the session continues past the daily cap, so the log can tell
+  // capped study from over-limit study — otherwise a deck whose cap is never
+  // reached looks identical to one that is exceeded every day.
+  const [overLimit, setOverLimit] = useState(false);
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
 
   useEffect(() => {
@@ -191,6 +195,7 @@ export function Review() {
     if (more && more.length) {
       setQueue(more);
       setMore(null);
+      setOverLimit(true);
       setRevealed(false);
       setEditing(false);
     }
@@ -223,6 +228,7 @@ export function Review() {
   const pos = useRef(0);
   useEffect(() => {
     pos.current = 0;
+    setOverLimit(false); // the component survives a deck switch, so reset per deck
   }, [id]);
   useEffect(() => {
     shownAt.current = Date.now();
@@ -240,6 +246,7 @@ export function Review() {
       thinkMs: revealedAt.current ? revealedAt.current - shownAt.current : undefined,
       durationMs: Date.now() - shownAt.current,
       posInSession: (pos.current += 1),
+      overLimit: overLimit || undefined,
     };
     const { card: updated, reviewId } = await gradeCard(card, direction, g, ctx);
     setUndoSnap({ prior: card, reviewId, queue, done });

@@ -299,6 +299,7 @@ export interface ReviewContext {
   thinkMs?: number; // shown -> revealed
   durationMs?: number; // shown -> graded
   posInSession?: number; // 1-based position within this sitting
+  overLimit?: boolean; // served from the past-the-cap queue
 }
 
 // A card left on screen (tab in the background, interrupted session) would log
@@ -344,6 +345,7 @@ export async function gradeCard(
       durationMs: capMs(ctx?.durationMs),
       schedVer: SCHEDULER_VERSION,
       posInSession: ctx?.posInSession,
+      overLimit: ctx?.overLimit,
     });
   });
   return { card: { ...card, ...patch }, reviewId };
