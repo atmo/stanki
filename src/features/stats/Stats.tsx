@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { db } from '../../db/db';
-import { computeStats, emptyRecall, rangeStartFor, startOfDay, fmtDay, monthShort, RETENTION_BUCKETS, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
+import { computeStats, emptyRecall, emptyBacklog, rangeStartFor, startOfDay, fmtDay, monthShort, RETENTION_BUCKETS, LATE_BUCKETS, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
 
 // Anki's conventional target; bars are coloured against it so the curve reads at
 // a glance. A bucket with few reviews is dimmed rather than trusted.
@@ -110,7 +110,7 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, buckets, granularity, history, historyByDeck, added, addedByDeck, recall, recallByDeck, hardest } = data;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, buckets, granularity, history, historyByDeck, added, addedByDeck, recall, recallByDeck, backlog, backlogByDeck, hardest } = data;
 
   const deckOptions = byDeck.map((d) => ({ id: d.id, name: d.name })).sort((a, b) => a.name.localeCompare(b.name));
   // Fall back to "all" if the scoped deck no longer exists.
@@ -139,6 +139,11 @@ export function Stats() {
       sub: b.t ? String(b.t) : '',
     };
   });
+
+  const bl = scopeId === 'all' ? backlog : (backlogByDeck.get(scopeId) ?? emptyBacklog());
+  // Days of study to clear the backlog at recent throughput. A floor, not a
+  // forecast: more cards fall due every day it isn't cleared.
+  const daysToClear = bl.pace > 0 ? bl.late / bl.pace : 0;
 
   const activeForecast = scopeId === 'all' ? forecast : (forecastByDeck.get(scopeId) ?? new Array<number>(forecast.length).fill(0));
   const dueToday = activeForecast[0];
@@ -266,6 +271,51 @@ export function Stats() {
           New = never reviewed · Young = interval &lt; {MATURE_DAYS}d · Mature = interval ≥ {MATURE_DAYS}d.
           Each direction of a two-sided card is counted separately.
         </p>
+      </section>
+
+      <section className="panel">
+        <h2>Backlog</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
+        {bl.late === 0 ? (
+          <p className="muted">
+            Nothing overdue{bl.dueToday > 0 ? ` — ${bl.dueToday} due today` : ''}. Cards are arriving on schedule.
+          </p>
+        ) : (
+          <>
+            <div className="stat-summary">
+              <div>
+                <div className="stat-num">{bl.late}</div>
+                <div className="stat-label">overdue</div>
+              </div>
+              <div>
+                <div className="stat-num">{bl.dueToday}</div>
+                <div className="stat-label">due today</div>
+              </div>
+              <div>
+                <div className="stat-num">{bl.oldest}d</div>
+                <div className="stat-label">oldest</div>
+              </div>
+            </div>
+            <div className="deck-stats">
+              {LATE_BUCKETS.map((b, i) => (
+                bl.buckets[i] > 0 && (
+                  <div className="deck-stat" key={b.label}>
+                    <span className={i >= 2 ? 'ds-again' : undefined}>{b.label} late</span>
+                    <span className="ds-cols2"><span /><span><b>{bl.buckets[i]}</b></span></span>
+                  </div>
+                )
+              ))}
+            </div>
+            <p className="muted small">
+              {daysToClear >= 1
+                ? `About ${Math.ceil(daysToClear)} day${Math.ceil(daysToClear) === 1 ? '' : 's'} of study to clear at your recent pace of ${Math.round(bl.pace)}/day — a floor, since more fall due meanwhile. `
+                : ''}
+              A late card is a harder card: waiting twice the scheduled interval costs roughly as much
+              retention as doubling the interval would. The forecast below folds these into “today”,
+              so this is the only place the delay shows.
+            </p>
+          </>
+        )}
       </section>
 
       <section className="panel">

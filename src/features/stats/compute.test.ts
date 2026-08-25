@@ -92,6 +92,60 @@ describe('computeStats — forecast', () => {
   });
 });
 
+describe('computeStats — backlog', () => {
+  const deckId = 'd';
+  const at = (daysLate: number) => card(`c${daysLate}`, deckId, { interval: 10, dueDate: TODAY - daysLate * DAY });
+
+  it('buckets waiting cards by how many whole days late they are', () => {
+    const s = run([at(0), at(1), at(3), at(10), at(90)], [deck(deckId)], []);
+    expect(s.backlog.dueToday).toBe(1); // due at today's midnight is due, not late
+    expect(s.backlog.late).toBe(4);
+    expect(s.backlog.buckets).toEqual([1, 1, 1, 1]); // 1d, 2-7d, 8-30d, 30d+
+    expect(s.backlog.oldest).toBe(90);
+  });
+
+  it('ignores new cards and anything not yet due', () => {
+    const s = run(
+      [
+        card('new', deckId, { interval: 0, dueDate: TODAY - 5 * DAY }), // unscheduled
+        card('future', deckId, { interval: 10, dueDate: TODAY + 3 * DAY }),
+      ],
+      [deck(deckId)],
+      [],
+    );
+    expect([s.backlog.late, s.backlog.dueToday]).toEqual([0, 0]);
+  });
+
+  it('counts both directions of a two-sided card', () => {
+    const c = card('x', deckId, {
+      interval: 10, dueDate: TODAY - 2 * DAY,
+      reverse: { interval: 5, easeFactor: 2.5, repetitions: 1, dueDate: TODAY - 2 * DAY },
+    });
+    expect(run([c], [deck(deckId, { reviewDirection: 'both' })], []).backlog.late).toBe(2);
+  });
+
+  it('measures pace from day-scale reviews only, over a fixed window', () => {
+    const reviews = [
+      review('a', 'c1', TODAY - 2 * DAY, 5, 'good'), // counts
+      review('b', 'c1', TODAY - 3 * DAY, 0, 'good'), // an introduction, not a review
+      review('c', 'c1', TODAY - 40 * DAY, 5, 'good'), // outside the pace window
+    ];
+    const s = run([at(1)], [deck(deckId)], reviews, 365);
+    expect(s.backlog.pace).toBeCloseTo(1 / 14, 6);
+  });
+
+  it('keeps each deck backlog separate', () => {
+    const s = run(
+      [card('a', 'd1', { interval: 10, dueDate: TODAY - 4 * DAY }), card('b', 'd2', { interval: 10, dueDate: TODAY })],
+      [deck('d1'), deck('d2')],
+      [],
+    );
+    expect(s.backlogByDeck.get('d1')!.late).toBe(1);
+    expect(s.backlogByDeck.get('d2')!.late).toBe(0);
+    expect(s.backlogByDeck.get('d2')!.dueToday).toBe(1);
+  });
+});
+
 describe('computeStats — recall', () => {
   const cards = [card('a', 'd'), card('b', 'd'), card('c', 'd')];
   const decks = [deck('d')];

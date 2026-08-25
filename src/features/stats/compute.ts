@@ -9,6 +9,36 @@ export const FORECAST_DAYS = 21;
 
 export type Maturity = { nw: number; young: number; mature: number };
 
+/** How far past its due date a waiting card is. Lateness is what actually costs
+ * retention — a card seen at four times its interval is a different card from
+ * one seen on time — and the forecast hides it by folding everything overdue
+ * into "today". */
+export const LATE_BUCKETS = [
+  { min: 1, max: 2, label: '1 day' },
+  { min: 2, max: 8, label: '2–7 days' },
+  { min: 8, max: 31, label: '1–4 weeks' },
+  { min: 31, max: Infinity, label: 'over a month' },
+];
+
+export type Backlog = {
+  buckets: number[]; // one per LATE_BUCKETS entry
+  late: number; // total overdue
+  dueToday: number; // due today and not yet late
+  oldest: number; // days past due of the most neglected card
+  pace: number; // recent day-scale reviews per day, for a catch-up estimate
+};
+export const emptyBacklog = (): Backlog => ({
+  buckets: LATE_BUCKETS.map(() => 0),
+  late: 0,
+  dueToday: 0,
+  oldest: 0,
+  pace: 0,
+});
+
+// Throughput is measured over a fixed window rather than the selected range, so
+// a catch-up estimate doesn't swing wildly when you change the date filter.
+const PACE_DAYS = 14;
+
 export const startOfDay = (t: number) => {
   const d = new Date(t);
   d.setHours(0, 0, 0, 0);
@@ -136,6 +166,8 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
   const forecast = new Array<number>(FORECAST_DAYS).fill(0);
   const forecastByDeck = new Map<string, number[]>();
   const perDeck = new Map<string, Maturity & { total: number }>();
+  const backlog = emptyBacklog();
+  const backlogByDeck = new Map<string, Backlog>();
 
   for (const { card, schedule } of units) {
     const { interval, dueDate } = schedule;
@@ -156,7 +188,32 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
         if (!fd) forecastByDeck.set(card.deckId, (fd = new Array<number>(FORECAST_DAYS).fill(0)));
         fd[idx]++;
       }
+      // Whole days late, so a card due at this morning's midnight reads as due
+      // today rather than a fraction of a day overdue.
+      const late = -offset;
+      let bl = backlogByDeck.get(card.deckId);
+      if (!bl) backlogByDeck.set(card.deckId, (bl = emptyBacklog()));
+      if (late >= 1) {
+        const bi = LATE_BUCKETS.findIndex((b) => late >= b.min && late < b.max);
+        for (const t of [backlog, bl]) {
+          t.buckets[bi]++;
+          t.late++;
+          t.oldest = Math.max(t.oldest, late);
+        }
+      } else if (late === 0) {
+        backlog.dueToday++;
+        bl.dueToday++;
+      }
     }
+  }
+
+  // Recent throughput, for "how long would clearing this take".
+  const paceFrom = now - PACE_DAYS * DAY;
+  for (const r of reviews) {
+    if (r.ts < paceFrom || r.prevInterval < 1) continue;
+    backlog.pace += 1 / PACE_DAYS;
+    const bl = backlogByDeck.get(r.deckId ?? cardDeck.get(r.cardId) ?? '');
+    if (bl) bl.pace += 1 / PACE_DAYS;
   }
 
   const byDeck = [...perDeck.entries()]
@@ -251,6 +308,8 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
     ...maturity,
     dueNow,
     today,
+    backlog,
+    backlogByDeck,
     forecast,
     forecastByDeck,
     byDeck,
