@@ -1,6 +1,6 @@
 // Core domain types shared between the PWA and the browser extension.
 
-export type Grade = 'again' | 'good' | 'easy';
+export type Grade = 'again' | 'hard' | 'good' | 'easy';
 
 // Which way a card is shown during review.
 //  forward = prompt with front, guess back; reverse = prompt with back, guess front.
@@ -24,6 +24,7 @@ export interface SrSettings {
   easyBonus: number; // multiplier applied to interval on "easy"
   easyFirstInterval: number; // days a new card jumps to when graded "easy"
   againInterval: number; // minutes to wait after "again" (min 1)
+  hardMultiplier: number; // interval growth on "hard" — a nudge, not a full ease step
   newCardsPerDay: number; // max brand-new cards introduced per deck per day
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
 }

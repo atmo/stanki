@@ -121,7 +121,7 @@ export function Stats() {
   const { ret, answers, lapses } = rec;
   const youngRet = rec.young;
   const matureRet = rec.mature;
-  const answerTotal = answers.again + answers.good + answers.easy;
+  const answerTotal = answers.again + answers.hard + answers.good + answers.easy;
 
   // Forgetting curve: retention per interval bucket, on a fixed 0–100 scale.
   const curveTotal = rec.curve.reduce((s, b) => s + b.t, 0);
@@ -218,13 +218,15 @@ export function Stats() {
         </p>
         {answerTotal > 0 ? (
           <>
-            <div className="stat-bar" role="img" aria-label={`${answers.again} again, ${answers.good} good, ${answers.easy} easy`}>
+            <div className="stat-bar" role="img" aria-label={`${answers.again} again, ${answers.hard} hard, ${answers.good} good, ${answers.easy} easy`}>
               <div className="seg seg-again" style={{ flexGrow: answers.again }} title={`Again: ${answers.again}`} />
+              <div className="seg seg-hard" style={{ flexGrow: answers.hard }} title={`Hard: ${answers.hard}`} />
               <div className="seg seg-good" style={{ flexGrow: answers.good }} title={`Good: ${answers.good}`} />
               <div className="seg seg-easy" style={{ flexGrow: answers.easy }} title={`Easy: ${answers.easy}`} />
             </div>
             <ul className="stat-legend">
               <li><span className="dot dot-again" /> Again <b>{answers.again}</b></li>
+              <li><span className="dot dot-hard" /> Hard <b>{answers.hard}</b></li>
               <li><span className="dot dot-good" /> Good <b>{answers.good}</b></li>
               <li><span className="dot dot-easy" /> Easy <b>{answers.easy}</b></li>
             </ul>

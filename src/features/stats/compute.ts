@@ -137,7 +137,7 @@ export type Recall = {
   curve: { p: number; t: number }[]; // pass/total per RETENTION_BUCKETS entry
   young: { p: number; t: number };
   mature: { p: number; t: number };
-  answers: { again: number; good: number; easy: number };
+  answers: { again: number; hard: number; good: number; easy: number };
   lapses: number;
 };
 export const emptyRecall = (): Recall => ({
@@ -145,7 +145,7 @@ export const emptyRecall = (): Recall => ({
   curve: RETENTION_BUCKETS.map(() => ({ p: 0, t: 0 })),
   young: { p: 0, t: 0 },
   mature: { p: 0, t: 0 },
-  answers: { again: 0, good: 0, easy: 0 },
+  answers: { again: 0, hard: 0, good: 0, easy: 0 },
   lapses: 0,
 });
 

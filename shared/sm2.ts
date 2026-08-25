@@ -15,6 +15,7 @@ export const DEFAULT_SETTINGS: SrSettings = {
   // working memory: measured retention on the following review roughly doubles
   // between a sub-minute gap and a five-to-fifteen minute one.
   againInterval: 5,
+  hardMultiplier: 1.2,
   newCardsPerDay: 20,
   maxReviewsPerDay: 50,
 };
@@ -129,7 +130,7 @@ export function newCardState(now = Date.now(), settings = DEFAULT_SETTINGS): Car
 }
 
 /**
- * SM-2 adapted to three grades, operating on a single direction's schedule.
+ * SM-2 adapted to four grades, operating on a single direction's schedule.
  * Pure: returns the next schedule without mutating the input.
  */
 export function scheduleState(
@@ -151,10 +152,19 @@ export function scheduleState(
     return { interval: mins / MINS_PER_DAY, easeFactor, repetitions, dueDate: now + mins * MIN_MS };
   }
 
-  const q = grade === 'easy' ? 5 : 4; // quality score
+  // SM-2 quality: 3 is "recalled, with difficulty", which the ease formula below
+  // turns into roughly -0.14, so repeated struggle slows a card down on its own.
+  const q = grade === 'easy' ? 5 : grade === 'hard' ? 3 : 4;
   repetitions += 1;
 
-  if (repetitions === 1) {
+  if (grade === 'hard') {
+    // Recalled, but only just. Nudge the interval instead of taking the full
+    // ease step: an answer dragged up after long hesitation predicts failure far
+    // better than a confident one, and without this the two are scheduled alike.
+    // Sub-day intervals (a new card, or one in relearning) read as a day, so
+    // Hard always graduates to at least tomorrow rather than shrinking.
+    interval = Math.round(Math.max(interval, 1) * settings.hardMultiplier);
+  } else if (repetitions === 1) {
     // Graduating interval: Easy jumps ahead of Good so the two differ on a new
     // card (otherwise the easy bonus rounds 1d back to 1d).
     interval = grade === 'easy' ? settings.easyFirstInterval : 1;
@@ -186,8 +196,9 @@ export function scheduleState(
  *   1 — original SM-2: second interval 6d, no fuzz
  *   2 — second interval 4d; intervals fuzzed +/-15%
  *   3 — relearning steps are time-gated (againInterval is enforced, default 5m)
+ *   4 — a Hard grade (q=3, interval x hardMultiplier) sits between Again and Good
  */
-export const SCHEDULER_VERSION = 3;
+export const SCHEDULER_VERSION = 4;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;
@@ -234,6 +245,7 @@ export function previewIntervals(
   // Interval is independent of `now`, so any reference time works here.
   return {
     again: scheduleState(s, 'again', 0, settings).interval,
+    hard: scheduleState(s, 'hard', 0, settings).interval,
     good: scheduleState(s, 'good', 0, settings).interval,
     easy: scheduleState(s, 'easy', 0, settings).interval,
   };

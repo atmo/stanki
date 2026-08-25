@@ -7,6 +7,7 @@
   --primary: #2563eb;
   --primary-h: #1d4ed8;
   --again: #dc2626;
+  --hard: #d97706;
   --good: #16a34a;
   --easy: #0891b2;
   --danger: #b91c1c;
@@ -55,6 +56,7 @@ body {
 .btn-disabled, .btn[aria-disabled='true'] { opacity: 0.4; pointer-events: none; }
 .btn-block { width: 100%; flex-direction: column; padding: 14px; }
 .btn-again { background: var(--again); border-color: var(--again); }
+.btn-hard { background: var(--hard); border-color: var(--hard); }
 .btn-good { background: var(--good); border-color: var(--good); }
 .btn-easy { background: var(--easy); border-color: var(--easy); }
 .btn-block small { opacity: 0.85; font-size: 0.78rem; font-weight: 400; }
@@ -103,6 +105,7 @@ body {
 .seg-young, .dot-young { background: #16a34a; }
 .seg-mature, .dot-mature { background: #2dd4bf; }
 .seg-again, .dot-again { background: var(--again); }
+.seg-hard, .dot-hard { background: var(--hard); }
 .seg-good, .dot-good { background: var(--good); }
 .seg-easy, .dot-easy { background: var(--easy); }
 .stat-legend { list-style: none; display: flex; gap: 18px; flex-wrap: wrap; padding: 0; margin: 8px 0; font-size: 0.9rem; }
@@ -218,7 +221,8 @@ body {
 .source-link { color: #93c5fd; font-size: 0.8rem; text-align: center; word-break: break-all; }
 .card-meta { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px; word-break: break-word; }
 .card-meta a { color: #93c5fd; }
-.grade-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.grade-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.grade-row .btn-block { padding: 12px 4px; }
 .review-done { text-align: center; padding: 40px 0; display: flex; flex-direction: column; gap: 14px; align-items: center; }
 
 /* Add word screen */

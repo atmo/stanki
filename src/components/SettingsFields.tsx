@@ -27,6 +27,11 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
           onChange={(e) => onChange('againInterval', Math.max(1, Math.round(Number(e.target.value))))} />
       </label>
       <label className="field">
+        <span>Hard multiplier ({s.hardMultiplier.toFixed(2)}×)</span>
+        <input type="range" min={1} max={2} step={0.05} value={s.hardMultiplier}
+          onChange={(e) => onChange('hardMultiplier', Number(e.target.value))} />
+      </label>
+      <label className="field">
         <span>New cards / day</span>
         <input type="number" className="input" min={0} max={500} value={s.newCardsPerDay}
           onChange={(e) => onChange('newCardsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />

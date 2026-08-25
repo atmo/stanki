@@ -153,6 +153,7 @@ function Answer({ text, match, reveal }: { text: string; match: Matcher; reveal:
 
 const GRADES: { grade: Grade; label: string; cls: string }[] = [
   { grade: 'again', label: 'Again', cls: 'btn-again' },
+  { grade: 'hard', label: 'Hard', cls: 'btn-hard' },
   { grade: 'good', label: 'Good', cls: 'btn-good' },
   { grade: 'easy', label: 'Easy', cls: 'btn-easy' },
 ];

@@ -84,6 +84,38 @@ describe('schedule', () => {
     expect(c.easeFactor).toBeGreaterThanOrEqual(1.3);
   });
 
+  it('Hard nudges the interval instead of taking the full ease step', () => {
+    const good = run(['good', 'good', 'good']); // 1 -> 4 -> 10 (4 * 2.5)
+    const hard = run(['good', 'good', 'hard']); // 1 -> 4 -> 5  (4 * 1.2)
+    expect(good.interval).toBe(10);
+    expect(hard.interval).toBe(5);
+    expect(hard.interval).toBeGreaterThan(4); // still moves forward — it was recalled
+  });
+
+  it('Hard lowers ease, so repeated struggle slows the card by itself', () => {
+    expect(run(['good', 'hard']).easeFactor).toBeCloseTo(2.36, 2); // q=3 -> -0.14
+    expect(run(['good', 'hard', 'hard']).easeFactor).toBeCloseTo(2.22, 2);
+    expect(run(['good', 'good']).easeFactor).toBeCloseTo(2.5, 5); // Good leaves it be
+  });
+
+  it('Hard never lands below a day, from a new or a relearning card', () => {
+    expect(run(['hard']).interval).toBe(1); // new card graduates
+    expect(run(['good', 'again', 'hard']).interval).toBe(1); // sub-day relearning step
+  });
+
+  it('Hard counts as a pass: it advances repetitions rather than resetting them', () => {
+    const c = run(['good', 'hard']);
+    expect(c.repetitions).toBe(2);
+    expect(run(['good', 'again']).repetitions).toBe(0); // unlike Again
+  });
+
+  it('previewIntervals orders the four grades', () => {
+    const p = previewIntervals(run(['good', 'good']));
+    expect(p.again).toBeLessThan(p.hard);
+    expect(p.hard).toBeLessThan(p.good);
+    expect(p.good).toBeLessThanOrEqual(p.easy);
+  });
+
   it('does not mutate the input card', () => {
     const card = makeCard();
     const snapshot = { ...card };

@@ -170,7 +170,7 @@ describe('computeStats — recall', () => {
 
   it('answer breakdown counts every in-range press, including learning steps', () => {
     const s = run(cards, decks, reviews);
-    expect(s.recall.answers).toEqual({ again: 1, good: 2, easy: 0 }); // r1,r3 good; r2 again; r4 excluded
+    expect(s.recall.answers).toEqual({ again: 1, hard: 0, good: 2, easy: 0 }); // r1,r3 good; r2 again; r4 excluded
   });
 
   it('records study history in the day bucket, split new vs review', () => {
