@@ -7,7 +7,7 @@
 // deck instead of being duplicated or resurrected in its old deck.
 
 import { db } from '../db/db';
-import { getDeviceId, setLastSync } from '../db/repo';
+import { getDeviceId, setLastSync, getSettings, getSettingsLog } from '../db/repo';
 import {
   buildSnapshot,
   mergeCards,
@@ -79,6 +79,76 @@ async function maybeBackup(
   );
   // Keep the newest MAX_BACKUPS (the new one + MAX_BACKUPS-1 existing); drop the rest.
   for (const f of backups.slice(MAX_BACKUPS - 1)) await deleteFile(getToken, f.id);
+}
+
+// Monthly archive: one self-contained snapshot per calendar month, kept for a
+// year. The rolling backups above cover roughly a day (five files, six hours
+// apart, oldest evicted), which makes them a rollback and not a record —
+// answering "how did this compare to the summer?" needs something that survives.
+const ARCHIVE_KIND = 'archive';
+const MAX_ARCHIVES = 12;
+
+/**
+ * Write this month's archive if it doesn't exist yet. Keyed by calendar month
+ * rather than written on a date, because a sync only happens when the app runs:
+ * aiming at the 1st would simply miss any month you didn't open it that day,
+ * whereas "the first sync of the month" always lands.
+ *
+ * Unlike a backup it carries settings, so an old archive says which scheduler
+ * config produced the state it captured, and it skips the content-hash check —
+ * an unchanged month is still worth a checkpoint.
+ */
+async function maybeArchive(
+  getToken: TokenProvider,
+  files: DriveFile[],
+  decks: Deck[],
+  cards: Card[],
+  reviews: ReviewLog[],
+): Promise<void> {
+  if (cards.length === 0) return; // never archive (and rotate against) an empty state
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const archives = files
+    .filter((f) => f.appProperties?.kind === ARCHIVE_KIND)
+    .sort((a, b) => ((a.appProperties?.month ?? '') < (b.appProperties?.month ?? '') ? 1 : -1));
+  if (archives.some((f) => f.appProperties?.month === month)) return;
+
+  const [settings, settingsLog] = await Promise.all([getSettings(), getSettingsLog()]);
+  const bundle = {
+    app: 'stanki',
+    schemaVersion: SCHEMA_VERSION,
+    exportedAt: Date.now(),
+    decks,
+    cards,
+    reviews,
+    settings,
+    settingsLog,
+  };
+  await createFile(
+    getToken,
+    `archive-${month}.json`,
+    { kind: ARCHIVE_KIND, month, cards: String(cards.length) },
+    bundle,
+  );
+  for (const f of archives.slice(MAX_ARCHIVES - 1)) await deleteFile(getToken, f.id);
+}
+
+export interface ArchiveRef {
+  id: string;
+  month: string; // YYYY-MM
+  cards: number;
+}
+
+/** The monthly archives, newest first. */
+export async function listArchives(getToken: TokenProvider): Promise<ArchiveRef[]> {
+  const files = await listAppFiles(getToken);
+  return files
+    .filter((f) => f.appProperties?.kind === ARCHIVE_KIND)
+    .map((f) => ({
+      id: f.id,
+      month: f.appProperties?.month ?? f.modifiedTime.slice(0, 7),
+      cards: Number(f.appProperties?.cards ?? 0),
+    }))
+    .sort((a, b) => (a.month < b.month ? 1 : -1));
 }
 
 export interface BackupRef {
@@ -276,6 +346,13 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
     await maybeBackup(getToken, files, [...mergedDecks.values()], mergedCards, allReviews);
   } catch (e) {
     console.warn('[Stanki] backup failed', e);
+  }
+
+  // Monthly archive, likewise best-effort.
+  try {
+    await maybeArchive(getToken, files, [...mergedDecks.values()], mergedCards, allReviews);
+  } catch (e) {
+    console.warn('[Stanki] archive failed', e);
   }
 
   await setLastSync(now);

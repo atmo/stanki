@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useStore } from '../../store/store';
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { getSettings, saveSettings, exportAll, importBundle, type ExportBundle } from '../../db/repo';
-import { listBackups, restoreBackup, fetchBackup, type BackupRef } from '../../sync/sync';
+import { listBackups, listArchives, restoreBackup, fetchBackup, type BackupRef, type ArchiveRef } from '../../sync/sync';
 import { SettingsFields } from '../../components/SettingsFields';
 import { getToken } from '../../sync/googleAuth';
 
@@ -27,6 +27,7 @@ export function Settings() {
   const [s, setS] = useState<SrSettings>(DEFAULT_SETTINGS);
   const fileRef = useRef<HTMLInputElement>(null);
   const [backups, setBackups] = useState<BackupRef[] | null>(null);
+  const [archives, setArchives] = useState<ArchiveRef[] | null>(null);
   const [backupBusy, setBackupBusy] = useState(false);
 
   useEffect(() => {
@@ -39,6 +40,28 @@ export function Settings() {
       setBackups(await listBackups(getToken));
     } catch (e) {
       alert(`Could not load backups: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
+  async function loadArchives() {
+    setBackupBusy(true);
+    try {
+      setArchives(await listArchives(getToken));
+    } catch (e) {
+      alert(`Could not load archives: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
+  async function downloadArchive(a: ArchiveRef) {
+    setBackupBusy(true);
+    try {
+      saveJson(await fetchBackup(getToken, a.id), `stanki-archive-${a.month}.json`);
+    } catch (e) {
+      alert(`Download failed: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setBackupBusy(false);
     }
@@ -145,6 +168,42 @@ export function Settings() {
                   <span>{new Date(b.at).toLocaleString()} · {b.cards} cards</span>
                   <button className="btn" onClick={() => void download(b)} disabled={backupBusy}>Download</button>
                   <button className="btn" onClick={() => void restore(b)} disabled={backupBusy}>Restore</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      )}
+
+      {configured && connected && (
+        <section className="panel">
+          <h2>Monthly archives</h2>
+          <p className="muted small">
+            One snapshot per calendar month, written on the month's first sync and kept for a year.
+            Backups above only reach back about a day, so these are what a later comparison —
+            “how does this look against the spring?” — has to work from. They include your settings,
+            so an old archive says which scheduler produced it. Download and open with
+            <code> scripts/analyze-export.py</code>; there's no restore, since rolling back months of
+            scheduling is almost never what you want.
+          </p>
+          {!archives ? (
+            <button className="btn" onClick={() => void loadArchives()} disabled={backupBusy}>
+              {backupBusy ? 'Loading…' : 'Show archives'}
+            </button>
+          ) : archives.length === 0 ? (
+            <p className="muted">No archives yet — the first lands on your next sync.</p>
+          ) : (
+            <ul className="backup-list">
+              {archives.map((a) => (
+                <li key={a.id} className="backup-item">
+                  <span>{a.month} · {a.cards} cards</span>
+                  <button
+                    className="btn"
+                    disabled={backupBusy}
+                    onClick={() => void downloadArchive(a)}
+                  >
+                    Download
+                  </button>
                 </li>
               ))}
             </ul>
