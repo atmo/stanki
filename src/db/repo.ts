@@ -293,10 +293,12 @@ export interface GradeResult {
   reviewId: string; // id of the logged review (for undo)
 }
 
-/** Answer timing measured by the review UI. */
-export interface ReviewTiming {
+/** What only the review UI knows about a grade: how long it took, and where in
+ * the sitting it happened. */
+export interface ReviewContext {
   thinkMs?: number; // shown -> revealed
   durationMs?: number; // shown -> graded
+  posInSession?: number; // 1-based position within this sitting
 }
 
 // A card left on screen (tab in the background, interrupted session) would log
@@ -310,7 +312,7 @@ export async function gradeCard(
   card: Card,
   direction: CardDirection,
   grade: Grade,
-  timing?: ReviewTiming,
+  ctx?: ReviewContext,
 ): Promise<GradeResult> {
   const settings = await getDeckSettings(card.deckId);
   const now = Date.now();
@@ -338,9 +340,10 @@ export async function gradeCard(
       prevDue: prev.dueDate,
       prevEase: prev.easeFactor,
       reps: prev.repetitions,
-      thinkMs: capMs(timing?.thinkMs),
-      durationMs: capMs(timing?.durationMs),
+      thinkMs: capMs(ctx?.thinkMs),
+      durationMs: capMs(ctx?.durationMs),
       schedVer: SCHEDULER_VERSION,
+      posInSession: ctx?.posInSession,
     });
   });
   return { card: { ...card, ...patch }, reviewId };

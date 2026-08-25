@@ -147,6 +147,7 @@ export interface ReviewLog {
   thinkMs?: number; // shown -> answer revealed (recall latency)
   durationMs?: number; // shown -> graded
   schedVer?: number; // SCHEDULER_VERSION that produced this schedule
+  posInSession?: number; // 1-based position within the sitting, for fatigue analysis
 }
 
 export const SCHEMA_VERSION = 1 as const;

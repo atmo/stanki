@@ -217,6 +217,13 @@ export function Review() {
   // Answer timing, in refs so ticking the clock never re-renders the card.
   const shownAt = useRef(Date.now());
   const revealedAt = useRef<number | null>(null);
+  // Position within this sitting: counts every grade from opening the deck,
+  // including undone ones and any over-limit continuation, so it measures how
+  // far into the sitting you were rather than how much progress you made.
+  const pos = useRef(0);
+  useEffect(() => {
+    pos.current = 0;
+  }, [id]);
   useEffect(() => {
     shownAt.current = Date.now();
     revealedAt.current = null;
@@ -229,11 +236,12 @@ export function Review() {
 
   async function grade(g: Grade) {
     if (!item || !card || !queue) return;
-    const timing = {
+    const ctx = {
       thinkMs: revealedAt.current ? revealedAt.current - shownAt.current : undefined,
       durationMs: Date.now() - shownAt.current,
+      posInSession: (pos.current += 1),
     };
-    const { card: updated, reviewId } = await gradeCard(card, direction, g, timing);
+    const { card: updated, reviewId } = await gradeCard(card, direction, g, ctx);
     setUndoSnap({ prior: card, reviewId, queue, done });
     setRevealed(false);
     setEditing(false);
