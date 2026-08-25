@@ -173,6 +173,27 @@ export function Review() {
   // capped study from over-limit study — otherwise a deck whose cap is never
   // reached looks identical to one that is exceeded every day.
   const [overLimit, setOverLimit] = useState(false);
+  const [nowTs, setNowTs] = useState(Date.now()); // ticks only while gated
+  const [forceShow, setForceShow] = useState(false); // "show it anyway" escape hatch
+
+  // A card is servable once its dueDate has passed. Only a card just graded
+  // "Again" carries a future dueDate — new cards hold createdAt and due reviews
+  // hold a past local midnight — so this gates relearning steps and nothing
+  // else. Without it the re-queue served purely by array position, so at the
+  // tail of a session a lapsed card came back within seconds and was "passed"
+  // from working memory; those cards went on to survive their next real review
+  // only a third of the time, against two thirds when the gap was minutes.
+  const readyIdx = queue ? queue.findIndex((i) => forceShow || i.schedule.dueDate <= nowTs) : -1;
+  const waiting = !!queue && queue.length > 0 && readyIdx < 0;
+  const nextDueAt = waiting ? Math.min(...queue.map((i) => i.schedule.dueDate)) : 0;
+
+  // Only run a clock while something is actually gated, so an ordinary review
+  // never re-renders on a timer.
+  useEffect(() => {
+    if (!waiting) return;
+    const t = setInterval(() => setNowTs(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [waiting]);
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
 
   useEffect(() => {
@@ -186,10 +207,12 @@ export function Review() {
 
   // When the session empties, look for due reviews beyond the daily cap to offer.
   useEffect(() => {
-    if (queue && queue.length === 0) {
+    // Also while gated: extra reviews are the productive way to spend the wait,
+    // and they supply the spacing the lapsed card needs for free.
+    if (queue && (queue.length === 0 || waiting)) {
       void reviewQueue(id, settings, Date.now(), true).then(setMore);
     }
-  }, [queue, id, settings]);
+  }, [queue, waiting, id, settings]);
 
   function studyMore() {
     if (more && more.length) {
@@ -201,7 +224,7 @@ export function Review() {
     }
   }
 
-  const item = queue?.[0];
+  const item = readyIdx >= 0 ? queue![readyIdx] : undefined;
   const card = item?.card;
   const direction = item?.direction ?? 'forward';
   // Forward: prompt with the front, guess the back. Reverse: the other way.
@@ -252,17 +275,22 @@ export function Review() {
     setUndoSnap({ prior: card, reviewId, queue, done });
     setRevealed(false);
     setEditing(false);
+    setForceShow(false); // the escape hatch applies to one card only
+    // Remove the card we actually served, which is not necessarily the head:
+    // anything ahead of it is gated and has to stay queued.
+    const at = readyIdx;
     if (g === 'again') {
-      // Keep it in the session until graded something other than Again.
+      // Keep it in the session until graded something other than Again, now
+      // carrying a future dueDate that holds it back until it has had time to fade.
       const refreshed: ReviewItem = {
         ...item,
         card: updated,
         schedule: directionSchedule(updated, direction, settings),
       };
-      setQueue((q) => (q ? [...q.slice(1), refreshed] : q));
+      setQueue((q) => (q ? [...q.filter((_, i) => i !== at), refreshed] : q));
     } else {
       setDone((n) => n + 1);
-      setQueue((q) => (q ? q.slice(1) : q));
+      setQueue((q) => (q ? q.filter((_, i) => i !== at) : q));
     }
     // Restart the clock explicitly: with a single-card queue, "Again" re-queues
     // the same card, so the card-change effect above wouldn't fire.
@@ -302,6 +330,29 @@ export function Review() {
   }
 
   if (!queue) return <p className="muted">Loading…</p>;
+
+  // Everything left is a lapsed card still cooling off. Waiting is the point —
+  // re-testing it now would just read it back out of working memory — so offer
+  // the time productively rather than trapping you here.
+  if (waiting) {
+    const left = Math.max(0, Math.ceil((nextDueAt - nowTs) / 1000));
+    return (
+      <div className="review-done">
+        <h2>☕ {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}</h2>
+        <p className="muted">
+          {queue.length} card{queue.length === 1 ? '' : 's'} you missed {queue.length === 1 ? 'is' : 'are'} coming
+          back. Giving {queue.length === 1 ? 'it' : 'them'} a few minutes is what makes the retry count.
+        </p>
+        <div className="row">
+          <Link className="btn btn-primary" to="/">Back to decks</Link>
+          {more && more.length > 0 && (
+            <button className="btn" onClick={studyMore}>Study {more.length} more meanwhile</button>
+          )}
+          <button className="btn" onClick={() => setForceShow(true)}>Show anyway</button>
+        </div>
+      </div>
+    );
+  }
 
   if (!item || !card) {
     return (

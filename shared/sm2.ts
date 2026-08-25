@@ -11,7 +11,10 @@ export const DEFAULT_SETTINGS: SrSettings = {
   startingEase: 2.5,
   easyBonus: 1.3,
   easyFirstInterval: 4,
-  againInterval: 1,
+  // Long enough that the retry is a real retrieval rather than a read-back from
+  // working memory: measured retention on the following review roughly doubles
+  // between a sub-minute gap and a five-to-fifteen minute one.
+  againInterval: 5,
   newCardsPerDay: 20,
   maxReviewsPerDay: 50,
 };
@@ -182,8 +185,9 @@ export function scheduleState(
  * Bump this whenever a change alters the intervals the scheduler produces.
  *   1 — original SM-2: second interval 6d, no fuzz
  *   2 — second interval 4d; intervals fuzzed +/-15%
+ *   3 — relearning steps are time-gated (againInterval is enforced, default 5m)
  */
-export const SCHEDULER_VERSION = 2;
+export const SCHEDULER_VERSION = 3;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;
