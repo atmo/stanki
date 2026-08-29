@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from 'dexie';
-import type { Card, CardSource, Deck, ReviewLog } from '@shared/types';
+import type { Card, CardSource, Deck, LogEntry, ReviewLog } from '@shared/types';
 import { cardContexts } from '@shared/types';
 
 // Key-value bag for app metadata (deviceId, settings, lastSync, ...).
@@ -12,6 +12,7 @@ export class StankiDB extends Dexie {
   decks!: EntityTable<Deck, 'id'>;
   cards!: EntityTable<Card, 'id'>;
   reviews!: EntityTable<ReviewLog, 'id'>;
+  logs!: EntityTable<LogEntry, 'id'>;
   meta!: EntityTable<Meta, 'key'>;
 
   constructor() {
@@ -90,6 +91,10 @@ export class StankiDB extends Dexie {
             if (deckId) r.deckId = deckId;
           });
       });
+    // v6: a local error log. New table only — no data migration, and it is
+    // deliberately absent from earlier versions so an existing database sees a
+    // real version bump rather than a silent schema mismatch.
+    this.version(6).stores({ ...stores, logs: '&id, ts' });
   }
 }
 

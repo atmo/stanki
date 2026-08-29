@@ -8,6 +8,7 @@
 
 import { db } from '../db/db';
 import { getDeviceId, setLastSync, getSettings, getSettingsLog } from '../db/repo';
+import { logError } from '../db/logs';
 import {
   buildSnapshot,
   mergeCards,
@@ -345,14 +346,14 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
   try {
     await maybeBackup(getToken, files, [...mergedDecks.values()], mergedCards, allReviews);
   } catch (e) {
-    console.warn('[Stanki] backup failed', e);
+    void logError('backup', e);
   }
 
   // Monthly archive, likewise best-effort.
   try {
     await maybeArchive(getToken, files, [...mergedDecks.values()], mergedCards, allReviews);
   } catch (e) {
-    console.warn('[Stanki] archive failed', e);
+    void logError('archive', e);
   }
 
   await setLastSync(now);

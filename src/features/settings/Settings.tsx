@@ -5,6 +5,7 @@ import { getSettings, saveSettings, exportAll, importBundle, type ExportBundle }
 import { listBackups, listArchives, restoreBackup, fetchBackup, type BackupRef, type ArchiveRef } from '../../sync/sync';
 import { SettingsFields } from '../../components/SettingsFields';
 import { getToken } from '../../sync/googleAuth';
+import { debugConsoleOn, setDebugConsole } from '../../debugConsole';
 
 function fmtTime(ts: number | null): string {
   return ts ? new Date(ts).toLocaleString() : 'never';
@@ -210,6 +211,26 @@ export function Settings() {
           )}
         </section>
       )}
+
+      <section className="panel">
+        <h2>Debug console</h2>
+        <p className="muted small">
+          Shows an on-screen console (vConsole) — the only practical way to watch what the app is
+          doing on a phone. Loaded only while switched on, so it costs a normal session nothing.
+          Errors are recorded either way; see About → Recent errors.
+        </p>
+        <label className="row">
+          <input
+            type="checkbox"
+            defaultChecked={debugConsoleOn()}
+            onChange={(e) => {
+              setDebugConsole(e.target.checked);
+              location.reload(); // vConsole attaches at startup
+            }}
+          />
+          <span>Enable on-screen console</span>
+        </label>
+      </section>
 
       <section className="panel">
         <h2>Scheduling &amp; limits</h2>

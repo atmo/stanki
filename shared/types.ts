@@ -153,6 +153,18 @@ export interface ReviewLog {
   overLimit?: boolean; // studied past the daily cap, rather than inside it
 }
 
+/** One recorded error. Local-only: never synced, since which device produced an
+ * error is half of what identifies it. */
+export interface LogEntry {
+  id: string;
+  ts: number;
+  scope: string; // 'sync' | 'render' | 'promise' | ...
+  message: string;
+  stack?: string;
+  context?: Record<string, unknown>;
+  count?: number; // repeats of the same message folded together
+}
+
 export const SCHEMA_VERSION = 1 as const;
 
 // One snapshot file per deck, stored in Google Drive's appDataFolder.

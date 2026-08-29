@@ -280,3 +280,8 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
    deck editor, where the remedy (editing the card) is one click away. */
 .leech-note { color: #fbbf24; font-size: 0.85rem; margin: 8px 0 0; }
 .tag-leech { margin-left: 6px; font-size: 0.72rem; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px; padding: 0 5px; white-space: nowrap; }
+
+/* Error log viewer (About -> Recent errors). */
+.log-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px solid var(--border); }
+.log-scope { font-size: 0.72rem; color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.35); border-radius: 6px; padding: 0 5px; }
+.log-msg { font-size: 0.85rem; word-break: break-word; }

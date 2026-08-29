@@ -72,6 +72,10 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
+        // The debug console is opt-in and only loaded when switched on, so
+        // precaching it would make every install pay ~290KB for a chunk almost
+        // nobody fetches. It comes from the network the first time it is enabled.
+        globIgnores: ['**/vconsole*.js'],
         // The app is local-first; cache the shell so it runs fully offline.
         navigateFallback: 'index.html',
         // Allow precaching the large lemma-data chunk (~4 MB).

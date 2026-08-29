@@ -3,6 +3,7 @@
 
 import { GOOGLE_CLIENT_ID, DRIVE_SCOPE, isDriveConfigured } from '../config';
 import { authErrorMessage, type AuthErrorKind } from '@shared/authError';
+import { logError } from '../db/logs';
 
 interface TokenResponse {
   access_token: string;
@@ -93,7 +94,7 @@ function loadGis(): Promise<void> {
 
 function authError(kind: AuthErrorKind, raw?: string): Error {
   const msg = authErrorMessage(kind, { surface: 'pwa', origin: location.origin }, raw);
-  console.error('[Stanki] Google auth failed:', { kind, origin: location.origin, raw });
+  void logError('auth', msg, { kind, origin: location.origin, raw });
   return new Error(msg);
 }
 

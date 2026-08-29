@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { signIn, signOut, getToken, isSignedIn } from '../sync/googleAuth';
+import { logError } from '../db/logs';
 import { syncAll } from '../sync/sync';
 import { getLastSync } from '../db/repo';
 import { isDriveConfigured } from '../config';
@@ -37,6 +38,7 @@ export const useStore = create<AppState>((set, get) => ({
       set({ connected: true });
       await get().syncNow();
     } catch (e) {
+      void logError('connect', e);
       set({ connected: false, syncStatus: 'error', syncError: errMsg(e) });
     }
   },
@@ -53,6 +55,7 @@ export const useStore = create<AppState>((set, get) => ({
       await syncAll(getToken);
       set({ syncStatus: 'idle', lastSync: await getLastSync() });
     } catch (e) {
+      void logError('sync', e);
       set({ syncStatus: 'error', syncError: errMsg(e) });
     }
   },

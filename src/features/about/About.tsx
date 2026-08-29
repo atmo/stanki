@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { getLastSync } from '../../db/repo';
+import { clearLogs, LOG_TTL_MS } from '../../db/logs';
 import { startOfDay } from '@shared/sm2';
 import { listAppFiles, downloadJson } from '@shared/drive';
 import { getToken } from '../../sync/googleAuth';
@@ -18,6 +19,28 @@ function fmtBuild(iso: string): string {
 
 export function About() {
   const connected = useStore((s) => s.connected);
+  // Live so Clear takes effect and new errors appear without a reload.
+  const logs = useLiveQuery(() => db.logs.orderBy('ts').reverse().toArray(), []);
+
+  async function copyLogs() {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(logs ?? [], null, 2));
+    } catch {
+      alert('Could not copy — use Download instead.');
+    }
+  }
+
+  function downloadLogs() {
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(logs ?? [], null, 2)], { type: 'application/json' }),
+    );
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `stanki-errors-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   const [report, setReport] = useState<string>('');
   const [busy, setBusy] = useState(false);
 
@@ -100,6 +123,40 @@ export function About() {
               {busy ? 'Reading…' : 'Inspect Drive review log'}
             </button>
             {report && <pre className="diag-report">{report}</pre>}
+          </>
+        )}
+      </section>
+
+      <section className="panel">
+        <h2>Recent errors</h2>
+        <p className="muted small">
+          Errors recorded on this device over the last {Math.round(LOG_TTL_MS / 86_400_000)} days,
+          including ones that happened with no console open. Not synced — which device produced an
+          error is part of what identifies it.
+        </p>
+        {!logs ? (
+          <p className="muted">…</p>
+        ) : logs.length === 0 ? (
+          <p className="muted">Nothing recorded. </p>
+        ) : (
+          <>
+            <ul className="backup-list">
+              {logs.slice(0, 20).map((l) => (
+                <li key={l.id} className="log-item">
+                  <div>
+                    <span className="log-scope">{l.scope}</span>{' '}
+                    <span className="muted small">{new Date(l.ts).toLocaleString()}</span>
+                    {(l.count ?? 1) > 1 && <span className="muted small"> ×{l.count}</span>}
+                  </div>
+                  <div className="log-msg">{l.message}</div>
+                </li>
+              ))}
+            </ul>
+            <div className="row">
+              <button className="btn" onClick={() => void copyLogs()}>Copy all</button>
+              <button className="btn" onClick={() => downloadLogs()}>Download</button>
+              <button className="btn btn-danger" onClick={() => void clearLogs()}>Clear</button>
+            </div>
           </>
         )}
       </section>
