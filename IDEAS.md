@@ -4,10 +4,16 @@ Candidate features beyond what's already built. Effort is a rough guess:
 **S** small, **M** medium, **L** large.
 
 Already shipped, so not repeated below: SM-2 with four grades and per-deck
-settings, time-gated relearning, interval fuzz, daily limits, bidirectional
-review with sibling burying, undo, Drive sync of decks and the full review log,
-Dutch lookup with lemma-aware highlighting, leech flagging, and a Stats tab
-covering retention, the forgetting curve, backlog, forecast and history.
+settings, interval fuzz, daily limits, bidirectional review with sibling burying,
+undo, Drive sync of decks and the full review log, monthly archives, local error
+logging, Dutch lookup with lemma-aware highlighting, leech flagging, and a Stats
+tab covering retention, the forgetting curve, backlog, forecast and history.
+
+Relearning works by queue position: a missed card returns at a random spot at
+least `againGapCards` (50) ahead, and is held over until tomorrow when fewer
+cards than that remain or the day's allowance for it runs out. Held-over cards
+are flagged on the card, exempt from the review cap, and counted apart from
+cards falling due.
 
 ## What the data already ruled out
 
@@ -22,7 +28,13 @@ kept here so they don't get re-proposed:
   exactly the retention observed.
 - **New-card learning is fine; relearning was broken.** First day after
   introduction 82.6%, first day after a relearn 55.7% — so learning steps for
-  *new* cards are not needed. Only the relearning path was, and it is now gated.
+  *new* cards are not needed. Only the relearning path was, and it has been
+  rebuilt around queue position.
+- **Spacing is real but small, and waiting is the wrong way to buy it.** Holding
+  card maturity fixed, a longer gap before the retry is worth ~9–10 points, not
+  the ~39 the raw buckets suggested. Five minutes beats two by about a point,
+  while leaving a card until tomorrow beats both — so spacing should come from
+  work you were going to do anyway, never from a timer that can strand you.
 - **Fast answers are good answers.** Failures were the slowest grade; sub-2s
   answers went on to pass 87.4% against 69.6% for 15s+ ones. Rushing was not the
   problem — but latency is a strong difficulty signal the scheduler still ignores.
@@ -51,6 +63,17 @@ kept here so they don't get re-proposed:
 - [ ] **Persistent sibling burying** (S–M) — burying is per queue *build*, so
       re-entering review the same day can serve the side that was buried. Needs a
       `buriedUntil` to hold until the next day, as Anki does.
+- [ ] **Resume a lapse from where it was** (M) — probably the largest remaining
+      cut in review volume. A miss overwrites the card's interval with a sub-day
+      value, so a 60-day card that slips restarts at 1 day and re-climbs
+      `1 → 4 → 10 → 25`; roughly 400 cards did that over the analysed period. The
+      pre-lapse interval survives in the log as the miss's `prevInterval`, so
+      carrying it on the card (a `lapsedFrom`) would let relearning resume at a
+      fraction of it, as Anki's "new interval" percentage does.
+- [ ] **Put held-over cards near the front of the next day's queue** (S) —
+      `reviewQueue` shuffles, so a card carried over lands anywhere. Landing late
+      means too few cards remain to re-queue it, so it is held over again and can
+      ping-pong for days without ever getting a same-day retry.
 - [ ] **Reschedule tool** (M) — recompute due dates under current settings, so a
       settings change reaches the existing backlog instead of only new reviews.
 - [ ] **Max-interval cap + configurable graduating/second interval** (S each) —
