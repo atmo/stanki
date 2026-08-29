@@ -297,6 +297,12 @@ export function Stats() {
                 <div className="stat-num">{bl.oldest}d</div>
                 <div className="stat-label">oldest</div>
               </div>
+              {bl.relearning > 0 && (
+                <div>
+                  <div className="stat-num">{bl.relearning}</div>
+                  <div className="stat-label">relearning</div>
+                </div>
+              )}
             </div>
             <div className="deck-stats">
               {LATE_BUCKETS.map((b, i) => (

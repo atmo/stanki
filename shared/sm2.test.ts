@@ -318,3 +318,26 @@ describe('deferToTomorrow', () => {
     expect(passed.repetitions).toBe(1);
   });
 });
+
+describe('selectDue — relearning is not charged to the cap', () => {
+  const at = 10 * DAY;
+  const unit = (id: string, interval: number): ReviewItem => ({
+    card: { id, deckId: 'd', front: '', back: '', interval, easeFactor: 2.5,
+            repetitions: 0, dueDate: 0, createdAt: 0, updatedAt: 0 },
+    direction: 'forward',
+    schedule: { interval, easeFactor: 2.5, repetitions: 0, dueDate: 0 },
+  });
+  const settings = { ...DEFAULT_SETTINGS, newCardsPerDay: 0, maxReviewsPerDay: 2 };
+
+  it('serves part-finished cards even once the allowance is spent', () => {
+    const items = [unit('r1', 5), unit('r2', 5), unit('r3', 5), unit('l1', 5 / 1440), unit('l2', 5 / 1440)];
+    const q = selectDue(items, { newToday: 0, reviewsToday: 0 }, settings, at);
+    expect(q.filter((i) => i.schedule.interval >= 1)).toHaveLength(2); // the cap
+    expect(q.filter((i) => i.schedule.interval < 1)).toHaveLength(2); // both, uncapped
+  });
+
+  it('still shows them when the allowance is already used up', () => {
+    const q = selectDue([unit('r1', 5), unit('l1', 5 / 1440)], { newToday: 0, reviewsToday: 2 }, settings, at);
+    expect(q.map((i) => i.card.id)).toEqual(['l1']);
+  });
+});

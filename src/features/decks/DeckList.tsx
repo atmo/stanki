@@ -66,7 +66,7 @@ export function DeckList() {
 
     const byDeck = new Map<
       string,
-      { total: number; newDue: number; reviewDue: number; dueReviews: number; reviewCap: number }
+      { total: number; newDue: number; relearnDue: number; reviewDue: number; dueReviews: number; reviewCap: number }
     >();
     for (const deck of decks) {
       const dc = cardsByDeck.get(deck.id) ?? [];
@@ -76,12 +76,15 @@ export function DeckList() {
       const items = dc.flatMap((c) => itemsForCard(c, direction, eff));
       const due = selectDue(items, d, eff, now);
       const newDue = due.filter((i) => i.schedule.interval === 0).length;
+      // Part-finished cards are shown apart from cards falling due: they are work
+      // already started, and lumping them together hides why a count moved.
+      const relearnDue = due.filter((i) => i.schedule.interval > 0 && i.schedule.interval < 1).length;
       // All reviews due today ignoring the daily cap — so a capped-out deck can
       // still be opened to study extra reviews.
       const dueReviews = items.filter(
         (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < endOfLocalDay(now),
       ).length;
-      byDeck.set(deck.id, { total: dc.length, newDue, reviewDue: due.length - newDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
+      byDeck.set(deck.id, { total: dc.length, newDue, relearnDue, reviewDue: due.length - newDue - relearnDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
     }
 
     decks.sort((a, b) => a.name.localeCompare(b.name));
@@ -139,12 +142,12 @@ export function DeckList() {
 
       <ul className="deck-list">
         {data.decks.map((deck) => {
-          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, reviewDue: 0, dueReviews: 0, reviewCap: 0 };
+          const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, relearnDue: 0, reviewDue: 0, dueReviews: 0, reviewCap: 0 };
           // Reviews due today beyond today's cap — studyable over the limit.
           const extraReviews = Math.max(0, stats.dueReviews - stats.reviewDue);
           // Enable Review if anything's in today's session, or extra reviews are
           // due beyond the cap (studyable over the limit from the done screen).
-          const canReview = stats.newDue + stats.reviewDue > 0 || stats.dueReviews > 0;
+          const canReview = stats.newDue + stats.reviewDue + stats.relearnDue > 0 || stats.dueReviews > 0;
           return (
             <li key={deck.id} className="deck-item">
               <div className="deck-main">
@@ -157,6 +160,11 @@ export function DeckList() {
                   )}
                   {stats.reviewDue > 0 && (
                     <span className="badge badge-due" title="Cards to revisit">{stats.reviewDue} review</span>
+                  )}
+                  {stats.relearnDue > 0 && (
+                    <span className="badge badge-relearn" title="Missed earlier and not yet recalled — these ignore the daily limit">
+                      {stats.relearnDue} relearning
+                    </span>
                   )}
                   {extraReviews > 0 && (
                     <span className="badge badge-extra" title={`${extraReviews} more due today, beyond the ${stats.reviewCap}/day review cap`}>

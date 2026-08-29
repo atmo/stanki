@@ -285,3 +285,4 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 .log-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-top: 1px solid var(--border); }
 .log-scope { font-size: 0.72rem; color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.35); border-radius: 6px; padding: 0 5px; }
 .log-msg { font-size: 0.85rem; word-break: break-word; }
+.badge-relearn { background: rgba(217, 119, 6, 0.22); color: #fbbf24; margin-left: 8px; }

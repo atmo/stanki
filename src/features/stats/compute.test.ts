@@ -104,6 +104,19 @@ describe('computeStats — backlog', () => {
     expect(s.backlog.oldest).toBe(90);
   });
 
+  it('counts part-finished cards as relearning, alongside due/late', () => {
+    const s = run(
+      [
+        card('mid', deckId, { interval: 5 / 1440, dueDate: TODAY - 1000 }), // missed earlier today
+        card('late', deckId, { interval: 10, dueDate: TODAY - 3 * DAY }),
+      ],
+      [deck(deckId)],
+      [],
+    );
+    expect(s.backlog.relearning).toBe(1);
+    expect(s.backlog.late).toBe(1); // the day-scale card, counted separately
+  });
+
   it('ignores new cards and anything not yet due', () => {
     const s = run(
       [

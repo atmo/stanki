@@ -119,9 +119,16 @@ export function selectDue(
 
   const seen = new Set<string>(); // card ids already chosen — bury the sibling
   const reviewItems: ReviewItem[] = [];
+  let capped = 0; // only day-scale reviews are charged to the cap
   for (const it of due) {
     if (it.schedule.interval === 0 || seen.has(it.card.id)) continue;
-    if (reviewItems.length >= reviewRemaining) continue;
+    // A sub-day interval means the card is part-way through relearning: work
+    // already started rather than new work arriving, so it is not held back by
+    // the daily allowance. dailyCounts leaves it uncharged for the same reason,
+    // and counting it here but not there would let the cap drift.
+    const chargeable = it.schedule.interval >= 1;
+    if (chargeable && capped >= reviewRemaining) continue;
+    if (chargeable) capped++;
     reviewItems.push(it);
     seen.add(it.card.id);
   }

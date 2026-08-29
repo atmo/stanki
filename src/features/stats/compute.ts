@@ -25,6 +25,7 @@ export type Backlog = {
   late: number; // total overdue
   dueToday: number; // due today and not yet late
   oldest: number; // days past due of the most neglected card
+  relearning: number; // missed earlier and not yet recalled — started, not late
   pace: number; // recent day-scale reviews per day, for a catch-up estimate
 };
 export const emptyBacklog = (): Backlog => ({
@@ -32,6 +33,7 @@ export const emptyBacklog = (): Backlog => ({
   late: 0,
   dueToday: 0,
   oldest: 0,
+  relearning: 0,
   pace: 0,
 });
 
@@ -203,6 +205,12 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
       } else if (late === 0) {
         backlog.dueToday++;
         bl.dueToday++;
+      }
+      // Counted alongside, not instead: a part-finished card is outstanding work
+      // whether or not it is late, and it is the one kind the cap ignores.
+      if (interval < 1 && late >= 0) {
+        backlog.relearning++;
+        bl.relearning++;
       }
     }
   }
