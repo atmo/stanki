@@ -153,6 +153,7 @@ export interface ReviewLog {
   schedVer?: number; // SCHEDULER_VERSION that produced this schedule
   posInSession?: number; // 1-based position within the sitting, for fatigue analysis
   overLimit?: boolean; // studied past the daily cap, rather than inside it
+  deferred?: boolean; // this miss ended the card's day rather than re-queuing it
 }
 
 /** One recorded error. Local-only: never synced, since which device produced an

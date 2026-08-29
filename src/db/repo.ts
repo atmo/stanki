@@ -7,6 +7,7 @@ import { leechCounts, LEECH_WINDOW_DAYS } from '@shared/leech';
 import {
   scheduleState,
   fuzzSchedule,
+  deferToTomorrow,
   newCardState,
   selectDue,
   directionSchedule,
@@ -313,6 +314,7 @@ export interface ReviewContext {
   durationMs?: number; // shown -> graded
   posInSession?: number; // 1-based position within this sitting
   overLimit?: boolean; // served from the past-the-cap queue
+  defer?: boolean; // leave the card until tomorrow instead of re-queuing it
 }
 
 // A card left on screen (tab in the background, interrupted session) would log
@@ -333,7 +335,10 @@ export async function gradeCard(
   const prev = directionSchedule(card, direction, settings);
   // Fuzz at the persistence boundary, so the stored interval (and the logged
   // newInterval) is the fuzzed one, while grade previews stay deterministic.
-  const next = fuzzSchedule(scheduleState(prev, grade, now, settings), now);
+  let next = fuzzSchedule(scheduleState(prev, grade, now, settings), now);
+  // A miss the caller has decided not to re-queue: only the due date moves, so
+  // the card stays mid-relearning and still has to be recalled to graduate.
+  if (ctx?.defer) next = deferToTomorrow(next, now);
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
   const reviewId = uid();
@@ -359,6 +364,7 @@ export async function gradeCard(
       schedVer: SCHEDULER_VERSION,
       posInSession: ctx?.posInSession,
       overLimit: ctx?.overLimit,
+      deferred: ctx?.defer,
     });
   });
   return { card: { ...card, ...patch }, reviewId };
@@ -496,4 +502,19 @@ export async function importDeck(bundle: ExportBundle): Promise<ImportResult> {
     if (toAdd.length) await db.cards.bulkPut(toAdd);
   });
   return { deck, added: toAdd.length, skipped: incoming.length - toAdd.length, merged: !!existing };
+}
+
+/** How many times this side of a card has been missed today — the allowance that
+ * decides whether another miss re-queues it or leaves it until tomorrow. Read
+ * from the log rather than stored, so it resets at the day boundary by itself. */
+export async function missesToday(
+  cardId: string,
+  direction: CardDirection,
+  now = Date.now(),
+): Promise<number> {
+  const since = startOfDay(now);
+  const rows = await db.reviews.where('ts').aboveOrEqual(since).toArray();
+  return rows.filter(
+    (r) => r.cardId === cardId && (r.direction ?? 'forward') === direction && r.grade === 'again',
+  ).length;
 }

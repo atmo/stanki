@@ -4,7 +4,7 @@ import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type CardContext, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, updateCard, deleteCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, missesToday, updateCard, deleteCard } from '../../db/repo';
 import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
@@ -178,6 +178,7 @@ export function Review() {
   const [leeches, setLeeches] = useState<Map<string, number>>(new Map());
 
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
+  const [deferred, setDeferred] = useState(0); // cards left until tomorrow this session
 
   useEffect(() => {
     void (async () => {
@@ -253,21 +254,39 @@ export function Review() {
       posInSession: (pos.current += 1),
       overLimit: overLimit || undefined,
     };
-    const { card: updated, reviewId } = await gradeCard(card, direction, g, ctx);
+    // A miss goes back into the queue far enough ahead that answering it again is
+    // a real recall rather than a read-back — but only if there is that much left
+    // to do. With less than the gap remaining, or once the day's allowance for
+    // this card is used up, it is left until tomorrow instead: re-showing it
+    // immediately is the worst-performing option available, and tomorrow is the
+    // best.
+    const rest = queue.length - 1;
+    const gap = Math.max(0, settings.againGapCards);
+    const defer =
+      g === 'again' &&
+      (rest < gap || (await missesToday(card.id, direction)) + 1 >= settings.againMaxPerDay);
+
+    const { card: updated, reviewId } = await gradeCard(card, direction, g, { ...ctx, defer });
     setUndoSnap({ prior: card, reviewId, queue, done });
     setRevealed(false);
     setEditing(false);
-    if (g === 'again') {
-      // Keep it in the session until graded something other than Again, now
-      // carrying a future dueDate that holds it back until it has had time to fade.
+    if (g === 'again' && !defer) {
       const refreshed: ReviewItem = {
         ...item,
         card: updated,
         schedule: directionSchedule(updated, direction, settings),
       };
-      setQueue((q) => (q ? [...q.slice(1), refreshed] : q));
+      // Uniformly at random from the gap to the end, so the wait varies instead
+      // of every missed card landing the same distance away.
+      const at = gap + Math.floor(Math.random() * (rest - gap + 1));
+      setQueue((q) => {
+        if (!q) return q;
+        const without = q.slice(1);
+        return [...without.slice(0, at), refreshed, ...without.slice(at)];
+      });
     } else {
-      setDone((n) => n + 1);
+      if (g === 'again') setDeferred((n) => n + 1);
+      else setDone((n) => n + 1);
       setQueue((q) => (q ? q.slice(1) : q));
     }
     // Restart the clock explicitly: with a single-card queue, "Again" re-queues
@@ -317,6 +336,12 @@ export function Review() {
           {done > 0 ? `${done} card${done === 1 ? '' : 's'} reviewed in ` : 'No more cards due in '}
           “{deckName}”.
         </p>
+        {deferred > 0 && (
+          <p className="muted">
+            {deferred} card{deferred === 1 ? '' : 's'} you missed {deferred === 1 ? 'is' : 'are'} waiting
+            until tomorrow — a night's gap does more for them than another look now.
+          </p>
+        )}
         {more && more.length > 0 && (
           <p className="muted">
             {more.length} more review{more.length === 1 ? '' : 's'} due beyond today’s limit.
