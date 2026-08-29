@@ -416,11 +416,17 @@ export function Review() {
 
         {!revealed && clue && (
           <div className="clue">
-            {/* Contexts with the word covered — a usage hint that doesn't give the
-                answer away (tap the block to peek at the word itself). */}
-            {cardContexts(card).map((c, i) => (
-              <p key={i} className="context">{maskText(c.text, matchWord, false)}</p>
-            ))}
+            {/* Only cover the word when it is the answer. Going forward, the word
+                is the prompt sitting right above — masking it in the example hides
+                nothing and just makes the sentence harder to read, so highlight it
+                instead (and keep the source link that comes with Context). */}
+            {cardContexts(card).map((c, i) =>
+              direction === 'reverse' ? (
+                <p key={i} className="context">{maskText(c.text, matchWord, false)}</p>
+              ) : (
+                <Context key={i} ctx={c} match={matchWord} />
+              ),
+            )}
           </div>
         )}
 
