@@ -23,12 +23,18 @@ export const leechKey = (cardId: string, direction: CardDirection) => `${cardId}
  *
  * A lapse is "Again" on a card that had reached a day-scale interval: failing a
  * learning step is part of learning, and Hard is a pass, not a failure.
+ *
+ * A miss that ended the card's day counts too, whatever interval it was at.
+ * Those keep a sub-day interval, so without this a card missed and postponed
+ * every single day would never register a lapse at all — leaving exactly the
+ * cards most worth editing as the ones the flag cannot see.
  */
 export function leechCounts(reviews: ReviewLog[], now = Date.now()): Map<string, number> {
   const since = now - LEECH_WINDOW_DAYS * DAY;
   const out = new Map<string, number>();
   for (const r of reviews) {
-    if (r.ts < since || r.prevInterval < 1 || r.grade !== 'again') continue;
+    if (r.ts < since || r.grade !== 'again') continue;
+    if (r.prevInterval < 1 && !r.deferred) continue;
     const k = leechKey(r.cardId, r.direction ?? 'forward');
     out.set(k, (out.get(k) ?? 0) + 1);
   }

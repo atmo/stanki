@@ -20,6 +20,13 @@ describe('leechCounts', () => {
     expect(leechCount(c, 'a', 'forward')).toBe(0);
   });
 
+  it('counts a miss that ended the day for that card, whatever its interval', () => {
+    // Deferred cards keep a sub-day interval, so without the flag a card missed
+    // and postponed every day would never register a lapse.
+    const c = leechCounts([log('a', 'again', 5 / 1440, { deferred: true })], NOW);
+    expect(leechCount(c, 'a', 'forward')).toBe(1);
+  });
+
   it('ignores failures while learning or relearning', () => {
     // A new card, and a sub-day relearning step: failing those is just learning.
     const c = leechCounts([log('a', 'again', 0), log('a', 'again', 5 / 1440)], NOW);
