@@ -354,7 +354,15 @@ export function DeckEditor() {
         </label>
         {deck.settings ? (
           <div className="deck-settings">
-            <SettingsFields value={deck.settings} onChange={(key, v) => void setDeckSettings(id, { ...deck.settings!, [key]: v })} />
+            {/* Render the *resolved* set, never the stored object: overrides saved
+                before a setting existed lack that key, and the type cannot say so.
+                Writing the resolved set back also completes it on the next edit. */}
+            <SettingsFields
+              value={effectiveSettings(deck, globalSettings)}
+              onChange={(key, v) =>
+                void setDeckSettings(id, { ...effectiveSettings(deck, globalSettings), [key]: v })
+              }
+            />
           </div>
         ) : (
           <p className="muted small">Using the global settings.</p>

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
-import type { Card, Grade } from './types';
+import { effectiveSettings, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import type { Card, Grade, SrSettings } from './types';
 
 const NOW = 1_700_000_000_000;
 const DAY = 86_400_000;
@@ -262,5 +262,31 @@ describe('fuzzSchedule', () => {
       expect(interval).toBeGreaterThanOrEqual(17);
       expect(interval).toBeLessThanOrEqual(23);
     }
+  });
+});
+
+describe('effectiveSettings', () => {
+  it('applies a deck override on top of the global set', () => {
+    const eff = effectiveSettings({ settings: { maxReviewsPerDay: 200 } }, DEFAULT_SETTINGS);
+    expect(eff.maxReviewsPerDay).toBe(200);
+    expect(eff.startingEase).toBe(DEFAULT_SETTINGS.startingEase);
+  });
+
+  it('fills in keys a stored set predates', () => {
+    // What a deck saved before hardMultiplier/leechThreshold existed looks like.
+    // The type claims a complete SrSettings, so only resolving through here keeps
+    // callers from reading undefined off it — which is exactly what crashed the
+    // deck editor when it rendered deck.settings directly.
+    const stale = { startingEase: 2, easyBonus: 1.3, easyFirstInterval: 4, againInterval: 1,
+                    newCardsPerDay: 20, maxReviewsPerDay: 50 } as unknown as SrSettings;
+    const eff = effectiveSettings({ settings: stale }, DEFAULT_SETTINGS);
+    expect(eff.startingEase).toBe(2); // the override survives
+    expect(eff.hardMultiplier).toBe(DEFAULT_SETTINGS.hardMultiplier); // the gap is filled
+    expect(eff.leechThreshold).toBe(DEFAULT_SETTINGS.leechThreshold);
+  });
+
+  it('falls back to the global set when a deck has no overrides', () => {
+    expect(effectiveSettings(undefined, DEFAULT_SETTINGS)).toEqual(DEFAULT_SETTINGS);
+    expect(effectiveSettings({}, DEFAULT_SETTINGS)).toEqual(DEFAULT_SETTINGS);
   });
 });

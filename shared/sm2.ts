@@ -21,6 +21,19 @@ export const DEFAULT_SETTINGS: SrSettings = {
   leechThreshold: 5,
 };
 
+/**
+ * A deck's effective settings: the global set with the deck's overrides applied.
+ * Always resolve through this rather than reading `deck.settings` directly — a
+ * set stored before a setting existed simply lacks that key, and the type cannot
+ * express that, so raw reads hand callers an object that lies about its shape.
+ */
+export function effectiveSettings(
+  deck: { settings?: Partial<SrSettings> } | undefined,
+  global: SrSettings,
+): SrSettings {
+  return { ...global, ...(deck?.settings ?? {}) };
+}
+
 export interface DailyReviewCounts {
   newToday: number; // new cards already introduced today (this deck)
   reviewsToday: number; // review cards already done today (this deck)

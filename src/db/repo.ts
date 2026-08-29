@@ -15,9 +15,11 @@ import {
   endOfLocalDay,
   DEFAULT_SETTINGS,
   SCHEDULER_VERSION,
+  effectiveSettings,
   type ReviewItem,
   type SrSettings,
 } from '@shared/sm2';
+export { effectiveSettings };
 
 const uid = () => crypto.randomUUID();
 
@@ -85,11 +87,6 @@ export async function saveSettings(s: SrSettings): Promise<void> {
   await logSettingsChange(before, s);
 }
 
-/** A deck's effective settings: its own overrides if present, else the global set. */
-export function effectiveSettings(deck: Pick<Deck, 'settings'> | undefined, global: SrSettings): SrSettings {
-  return { ...global, ...(deck?.settings ?? {}) };
-}
-
 export async function getDeckSettings(deckId: string): Promise<SrSettings> {
   const [global, deck] = await Promise.all([getSettings(), db.decks.get(deckId)]);
   return effectiveSettings(deck, global);
@@ -98,8 +95,12 @@ export async function getDeckSettings(deckId: string): Promise<SrSettings> {
 /** Set (or clear, with undefined) a deck's scheduling/limit overrides. */
 export async function setDeckSettings(id: string, settings: SrSettings | undefined): Promise<void> {
   const before = (await db.decks.get(id))?.settings ?? {};
-  await db.decks.update(id, { settings, updatedAt: Date.now() });
-  await logSettingsChange(before, settings ?? {}, id);
+  // Fill in any key the caller omitted: a stored set written before a setting
+  // existed would otherwise stay partial forever, and every reader of it has to
+  // trust a type that the persisted data no longer matches.
+  const full = settings ? { ...DEFAULT_SETTINGS, ...settings } : undefined;
+  await db.decks.update(id, { settings: full, updatedAt: Date.now() });
+  await logSettingsChange(before, full ?? {}, id);
 }
 
 export const getLastSync = () => getMeta<number | null>('lastSync', null);
