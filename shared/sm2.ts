@@ -19,6 +19,8 @@ export const DEFAULT_SETTINGS: SrSettings = {
   newCardsPerDay: 20,
   maxReviewsPerDay: 50,
   leechThreshold: 5,
+  againGapCards: 50,
+  againMaxPerDay: 3,
 };
 
 /**
@@ -199,6 +201,21 @@ export function scheduleState(
   return { interval, easeFactor, repetitions, dueDate: startOfLocalDay(now + interval * DAY_MS) };
 }
 
+/**
+ * Park a missed card until tomorrow instead of showing it again today. Only the
+ * due date moves: interval, repetitions and ease are left exactly as the miss
+ * left them, so the card is still mid-relearning and has to be recalled tomorrow
+ * to graduate — setting it to a day would hand a thrice-missed card the same
+ * schedule as one recalled first time.
+ *
+ * Steps a calendar day rather than adding 24h, so a clock change cannot land it
+ * on the wrong date.
+ */
+export function deferToTomorrow(s: CardSchedule, now = Date.now()): CardSchedule {
+  const d = new Date(now);
+  return { ...s, dueDate: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime() };
+}
+
 // Random spread applied to a day-scale interval, and the interval below which
 // there is no room to spread (a 1-day interval can only stay 1 day).
 /**
@@ -211,8 +228,10 @@ export function scheduleState(
  *   2 — second interval 4d; intervals fuzzed +/-15%
  *   3 — relearning steps are time-gated (againInterval is enforced, default 5m)
  *   4 — a Hard grade (q=3, interval x hardMultiplier) sits between Again and Good
+ *   5 — missed cards return by queue position rather than a timed gate, and are
+ *       left until tomorrow once the day's allowance for them runs out
  */
-export const SCHEDULER_VERSION = 4;
+export const SCHEDULER_VERSION = 5;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;

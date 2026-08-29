@@ -37,6 +37,16 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
           onChange={(e) => onChange('leechThreshold', Math.max(0, Math.round(Number(e.target.value))))} />
       </label>
       <label className="field">
+        <span>Cards before a missed card returns</span>
+        <input type="number" className="input" min={0} max={500} value={s.againGapCards}
+          onChange={(e) => onChange('againGapCards', Math.max(0, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
+        <span>Misses per day before leaving it until tomorrow</span>
+        <input type="number" className="input" min={1} max={20} value={s.againMaxPerDay}
+          onChange={(e) => onChange('againMaxPerDay', Math.max(1, Math.round(Number(e.target.value))))} />
+      </label>
+      <label className="field">
         <span>New cards / day</span>
         <input type="number" className="input" min={0} max={500} value={s.newCardsPerDay}
           onChange={(e) => onChange('newCardsPerDay', Math.max(0, Math.round(Number(e.target.value))))} />

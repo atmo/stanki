@@ -28,6 +28,8 @@ export interface SrSettings {
   newCardsPerDay: number; // max brand-new cards introduced per deck per day
   maxReviewsPerDay: number; // max review (non-new) cards per deck per day
   leechThreshold: number; // lapses in one direction before a card is flagged (0 = off)
+  againGapCards: number; // cards that must pass before a missed card returns
+  againMaxPerDay: number; // misses in one day before a card is left until tomorrow
 }
 
 /** A captured usage sentence, optionally with the page URL it came from. A

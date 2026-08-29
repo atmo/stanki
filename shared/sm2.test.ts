@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveSettings, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import { effectiveSettings, deferToTomorrow, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
 import type { Card, Grade, SrSettings } from './types';
 
 const NOW = 1_700_000_000_000;
@@ -288,5 +288,33 @@ describe('effectiveSettings', () => {
   it('falls back to the global set when a deck has no overrides', () => {
     expect(effectiveSettings(undefined, DEFAULT_SETTINGS)).toEqual(DEFAULT_SETTINGS);
     expect(effectiveSettings({}, DEFAULT_SETTINGS)).toEqual(DEFAULT_SETTINGS);
+  });
+});
+
+describe('deferToTomorrow', () => {
+  const sched = { interval: 5 / 1440, easeFactor: 2.1, repetitions: 0, dueDate: NOW };
+
+  it('moves the due date to tomorrow and touches nothing else', () => {
+    const d = deferToTomorrow(sched, NOW);
+    const due = new Date(d.dueDate);
+    const today = new Date(NOW);
+    expect([due.getHours(), due.getMinutes()]).toEqual([0, 0]);
+    expect(due.getDate()).toBe(new Date(NOW + DAY).getDate());
+    // Still mid-relearning: recalling it tomorrow is what graduates it.
+    expect([d.interval, d.easeFactor, d.repetitions]).toEqual([sched.interval, 2.1, 0]);
+    expect(due.getTime()).toBeGreaterThan(today.getTime());
+  });
+
+  it('steps a calendar day, so it lands correctly across a month end', () => {
+    const lastOfMonth = new Date(2025, 0, 31, 22, 30).getTime(); // 31 Jan, late evening
+    const due = new Date(deferToTomorrow(sched, lastOfMonth).dueDate);
+    expect([due.getFullYear(), due.getMonth(), due.getDate()]).toEqual([2025, 1, 1]); // 1 Feb
+  });
+
+  it('a deferred card still graduates only when it is recalled', () => {
+    // repetitions stayed 0, so the next pass takes the graduating branch.
+    const passed = schedule({ ...makeCard(), ...deferToTomorrow(sched, NOW) }, 'good', NOW);
+    expect(passed.interval).toBe(1);
+    expect(passed.repetitions).toBe(1);
   });
 });
