@@ -289,3 +289,16 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 /* Carried-over note: this card was missed on an earlier day. Muted rather than
    amber, so it reads as context and not as the leech warning's call to act. */
 .held-note { color: #93c5fd; font-size: 0.85rem; margin: 8px 0 0; }
+
+/* Held-over toast. Top-right rather than bottom: the grade buttons live at the
+   bottom and a thumb would sit right on top of it. */
+.toast {
+  position: fixed; top: calc(env(safe-area-inset-top) + 64px); right: 12px; z-index: 20;
+  max-width: min(320px, calc(100vw - 24px));
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 10px 12px; border-radius: var(--radius);
+  background: var(--panel-2); border: 1px solid var(--border);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35); cursor: pointer;
+}
+.toast-front { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.toast-why { font-size: 0.8rem; color: var(--muted); }

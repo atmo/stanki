@@ -179,6 +179,18 @@ export function Review() {
 
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
   const [deferred, setDeferred] = useState(0); // cards left until tomorrow this session
+  // Non-blocking notice that a card was held over. A toast rather than a modal:
+  // this fires ~20 times a session, and blocking each time would undo the very
+  // interruption the position-based queue was meant to remove.
+  const [toast, setToast] = useState<{ front: string; why: string } | null>(null);
+  const toastTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (toastTimer.current) window.clearTimeout(toastTimer.current); }, []);
+
+  function showToast(front: string, why: string) {
+    setToast({ front, why });
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 6000);
+  }
 
   useEffect(() => {
     void (async () => {
@@ -262,9 +274,18 @@ export function Review() {
     // best.
     const rest = queue.length - 1;
     const gap = Math.max(0, settings.againGapCards);
-    const defer =
-      g === 'again' &&
-      (rest < gap || (await missesToday(card.id, direction)) + 1 >= settings.againMaxPerDay);
+    const misses = g === 'again' ? (await missesToday(card.id, direction)) + 1 : 0;
+    const outOfRoom = rest < gap;
+    const outOfTries = misses >= settings.againMaxPerDay;
+    const defer = g === 'again' && (outOfRoom || outOfTries);
+    if (defer) {
+      showToast(
+        card.front,
+        outOfTries
+          ? `Held over until tomorrow — missed ${misses}× today.`
+          : 'Held over until tomorrow — too few cards left to space it.',
+      );
+    }
 
     const { card: updated, reviewId } = await gradeCard(card, direction, g, { ...ctx, defer });
     setUndoSnap({ prior: card, reviewId, queue, done });
@@ -382,6 +403,13 @@ export function Review() {
           <button className="btn btn-link danger" onClick={() => void deleteCurrent()}>Delete</button>
         </span>
       </div>
+
+      {toast && (
+        <div className="toast" role="status" onClick={() => setToast(null)}>
+          <strong className="toast-front">{toast.front}</strong>
+          <span className="toast-why">{toast.why}</span>
+        </div>
+      )}
 
       <div className="card-face">
         {/* Reverse review: the prompt is the back, whose examples must not reveal
