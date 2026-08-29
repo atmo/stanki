@@ -53,6 +53,10 @@ export interface CardSchedule {
   easeFactor: number; // starts at 2.5
   repetitions: number; // consecutive correct count
   dueDate: number; // epoch ms
+  // Missed and carried to another day rather than re-queued. State, not history:
+  // set when the card is held over, cleared the moment it is recalled — so
+  // nothing has to guess a cutoff the way counting past log entries would.
+  heldOver?: boolean;
 }
 
 export interface Card extends CardSchedule {

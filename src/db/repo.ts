@@ -339,6 +339,10 @@ export async function gradeCard(
   // A miss the caller has decided not to re-queue: only the due date moves, so
   // the card stays mid-relearning and still has to be recalled to graduate.
   if (ctx?.defer) next = deferToTomorrow(next, now);
+  // Track it on the card as well as the log: the log entry records that a miss
+  // happened, this records that the card is *currently* carrying one, and it is
+  // cleared by the recall that resolves it.
+  next = grade === 'again' ? { ...next, heldOver: ctx?.defer || prev.heldOver } : { ...next, heldOver: undefined };
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
   const reviewId = uid();

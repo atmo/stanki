@@ -414,6 +414,11 @@ export function Review() {
             </div>
             {/* Only after the reveal: seeing "you keep missing this" beforehand
                 would prime the recall attempt and bias the grade you give. */}
+            {item.schedule.heldOver && (
+              <p className="held-note">
+                Carried over — you missed this in an earlier session and it waited until today.
+              </p>
+            )}
             {isLeech(leechCount(leeches, card.id, direction), settings.leechThreshold) && (
               <p className="leech-note">
                 ⚠ Missed {leechCount(leeches, card.id, direction)}× in this direction over the last{' '}

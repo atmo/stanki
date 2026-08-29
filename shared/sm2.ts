@@ -77,8 +77,10 @@ export function directionSchedule(
   settings: SrSettings = DEFAULT_SETTINGS,
 ): CardSchedule {
   if (direction === 'forward') {
-    const { interval, easeFactor, repetitions, dueDate } = card;
-    return { interval, easeFactor, repetitions, dueDate };
+    // heldOver has to come along: it is read straight off the schedule during
+    // review, and picking the fields out by hand silently drops anything new.
+    const { interval, easeFactor, repetitions, dueDate, heldOver } = card;
+    return { interval, easeFactor, repetitions, dueDate, heldOver };
   }
   return card.reverse ?? { ...newCardState(card.createdAt, settings) };
 }

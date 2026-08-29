@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveSettings, deferToTomorrow, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import { effectiveSettings, deferToTomorrow, scheduleState, directionSchedule, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
 import type { Card, Grade, SrSettings } from './types';
 
 const NOW = 1_700_000_000_000;
@@ -339,5 +339,25 @@ describe('selectDue — relearning is not charged to the cap', () => {
   it('still shows them when the allowance is already used up', () => {
     const q = selectDue([unit('r1', 5), unit('l1', 5 / 1440)], { newToday: 0, reviewsToday: 2 }, settings, at);
     expect(q.map((i) => i.card.id)).toEqual(['l1']);
+  });
+});
+
+describe('heldOver is state, not history', () => {
+  const held = { interval: 5 / 1440, easeFactor: 2.3, repetitions: 0, dueDate: NOW, heldOver: true };
+
+  it('survives deferToTomorrow, which only moves the due date', () => {
+    expect(deferToTomorrow(held, NOW).heldOver).toBe(true);
+  });
+
+  it('reaches review through directionSchedule, which picks fields by hand', () => {
+    const card = { ...makeCard(), heldOver: true };
+    expect(directionSchedule(card, 'forward').heldOver).toBe(true);
+    expect(directionSchedule({ ...card, reverse: held }, 'reverse').heldOver).toBe(true);
+  });
+
+  it('is not carried forward by a recall — scheduleState builds a fresh schedule', () => {
+    const next = scheduleState(held, 'good', NOW);
+    expect(next.interval).toBe(1); // graduated
+    expect(next.heldOver).toBeUndefined();
   });
 });
