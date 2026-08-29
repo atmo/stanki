@@ -175,7 +175,8 @@ export function Review() {
   // capped study from over-limit study — otherwise a deck whose cap is never
   // reached looks identical to one that is exceeded every day.
   const [overLimit, setOverLimit] = useState(false);
-  const [nowTs, setNowTs] = useState(Date.now()); // ticks only while gated
+  // Exists only to re-render while a card cools off; the value is never read.
+  const [, setTick] = useState(0);
   const [forceShow, setForceShow] = useState(false); // "show it anyway" escape hatch
   const [leeches, setLeeches] = useState<Map<string, number>>(new Map());
 
@@ -186,7 +187,13 @@ export function Review() {
   // tail of a session a lapsed card came back within seconds and was "passed"
   // from working memory; those cards went on to survive their next real review
   // only a third of the time, against two thirds when the gap was minutes.
-  const readyIdx = queue ? queue.findIndex((i) => forceShow || i.schedule.dueDate <= nowTs) : -1;
+  // Judge readiness against the real clock. Holding "now" in state froze this
+  // comparison at whatever moment it was last set, and the only thing that set
+  // it was the waiting screen's own ticker — so a card that had long since
+  // ripened still failed the test until the countdown appeared and ticked once,
+  // flashing the wait screen for a beat before the card showed.
+  const now = Date.now();
+  const readyIdx = queue ? queue.findIndex((i) => forceShow || i.schedule.dueDate <= now) : -1;
   const waiting = !!queue && queue.length > 0 && readyIdx < 0;
   const nextDueAt = waiting ? Math.min(...queue.map((i) => i.schedule.dueDate)) : 0;
 
@@ -194,7 +201,7 @@ export function Review() {
   // never re-renders on a timer.
   useEffect(() => {
     if (!waiting) return;
-    const t = setInterval(() => setNowTs(Date.now()), 1000);
+    const t = setInterval(() => setTick((n) => n + 1), 1000);
     return () => clearInterval(t);
   }, [waiting]);
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
@@ -339,7 +346,7 @@ export function Review() {
   // re-testing it now would just read it back out of working memory — so offer
   // the time productively rather than trapping you here.
   if (waiting) {
-    const left = Math.max(0, Math.ceil((nextDueAt - nowTs) / 1000));
+    const left = Math.max(0, Math.ceil((nextDueAt - now) / 1000));
     return (
       <div className="review-done">
         <h2>☕ {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')}</h2>
