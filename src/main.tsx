@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router-dom';
 import { App } from './App';
 import { logError } from './db/logs';
 import { initDebugConsole } from './debugConsole';
+import { recordDailySnapshot } from './db/snapshots';
 import './styles.css';
 
 // Catch what never reaches a component: uncaught throws, and rejected promises
@@ -16,6 +17,9 @@ window.addEventListener('unhandledrejection', (e) => {
   void logError('promise', e.reason);
 });
 void initDebugConsole();
+// Levels that only exist as current state, tallied once a day so there is a
+// series to look at later. Failure here must never block startup.
+void recordDailySnapshot().catch((e) => logError('snapshot', e));
 
 // Web Share Target (Android) does a GET to the start URL with ?text=...; bridge
 // that into the hash route the app actually uses (#/add?text=...).

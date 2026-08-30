@@ -327,6 +327,7 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
     byDeck,
     buckets,
     granularity,
+    bucketIndexOf: indexOf, // so a caller can place its own series on the same axis
     history,
     historyByDeck,
     added,

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { db } from '../../db/db';
+import { listSnapshots } from '../../db/snapshots';
 import { computeStats, emptyRecall, emptyBacklog, rangeStartFor, startOfDay, fmtDay, monthShort, RETENTION_BUCKETS, LATE_BUCKETS, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
 
 // Anki's conventional target; bars are coloured against it so the curve reads at
@@ -102,7 +103,8 @@ export function Stats() {
       db.decks.filter((d) => !d.deleted).toArray(),
       db.reviews.toArray(),
     ]);
-    return computeStats(cards, decks, reviews, rangeStart, Date.now());
+    const stats = computeStats(cards, decks, reviews, rangeStart, Date.now());
+    return { ...stats, snapshots: await listSnapshots() };
   }, [rangeStart]);
 
   if (!data) return <p className="muted">Loading…</p>;
@@ -110,7 +112,7 @@ export function Stats() {
     return <p className="muted empty">No cards yet — add some and your stats will appear here.</p>;
   }
 
-  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, buckets, granularity, history, historyByDeck, added, addedByDeck, recall, recallByDeck, backlog, backlogByDeck, hardest } = data;
+  const { cards, decks, nw, young, mature, dueNow, today, forecast, forecastByDeck, byDeck, buckets, granularity, bucketIndexOf, history, historyByDeck, added, addedByDeck, recall, recallByDeck, backlog, backlogByDeck, hardest, snapshots } = data;
 
   const deckOptions = byDeck.map((d) => ({ id: d.id, name: d.name })).sort((a, b) => a.name.localeCompare(b.name));
   // Fall back to "all" if the scoped deck no longer exists.
@@ -164,6 +166,25 @@ export function Stats() {
   const heldMax = Math.max(1, ...activeHistory.map((h) => h.held));
   const heldBars = buckets.map((b, i) => ({ value: activeHistory[i].held, cls: 'bar-held', title: `${b.full}: ${activeHistory[i].held} held over`, label: b.label, sub: b.sub }));
   const heldTotal = activeHistory.reduce((n, h) => n + h.held, 0);
+
+  // The outstanding level, from the daily tallies. A level is sampled, not
+  // summed: each bucket takes its last reading rather than adding the days up.
+  const stockByBucket = buckets.map(() => -1);
+  for (const snap of snapshots) {
+    const i = bucketIndexOf(snap.day);
+    if (i < 0 || i >= buckets.length) continue;
+    const decksIn = scopeId === 'all' ? Object.values(snap.decks) : [snap.decks[scopeId]];
+    stockByBucket[i] = decksIn.reduce((n, d) => n + (d?.held ?? 0), 0);
+  }
+  const stockMax = Math.max(1, ...stockByBucket);
+  const stockBars = buckets.map((b, i) => ({
+    value: Math.max(0, stockByBucket[i]),
+    cls: 'bar-stock',
+    title: stockByBucket[i] < 0 ? `${b.full}: not recorded` : `${b.full}: ${stockByBucket[i]} still held over`,
+    label: b.label,
+    sub: b.sub,
+  }));
+  const haveStock = stockByBucket.some((v) => v >= 0);
 
   const activeAdded = scopeId === 'all' ? added : (addedByDeck.get(scopeId) ?? buckets.map(() => 0));
   const addedMax = Math.max(1, ...activeAdded);
@@ -345,7 +366,19 @@ export function Stats() {
               left to space the retry, or out of the day's allowance. <b>{heldTotal}</b> in this range.
               A downward trend means less work being carried forward.
             </p>
+            <div className="chart-title"><span className="dot bar-held" /> Pushed forward that day</div>
             <BarChart bars={heldBars} max={heldMax} />
+          </>
+        )}
+        {haveStock && (
+          <>
+            <div className="chart-title"><span className="dot bar-stock" /> Still held over</div>
+            <BarChart bars={stockBars} max={stockMax} />
+            <p className="muted small">
+              The outstanding level, tallied once a day — a level rather than a flow, so each column
+              is that period's last reading and not a sum. Recorded from the day this shipped;
+              earlier periods are blank because card state keeps no history.
+            </p>
           </>
         )}
       </section>

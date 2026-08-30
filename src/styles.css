@@ -305,3 +305,4 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 .toast-front { font-size: 0.9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .toast-why { font-size: 0.8rem; color: var(--muted); }
 .bar-held { background: #fbbf24; }
+.bar-stock { background: #f472b6; }
