@@ -84,7 +84,6 @@ body {
 .badge-muted { background: var(--panel-2); color: var(--muted); }
 .badge-due { background: rgba(37, 99, 235, 0.25); color: #93c5fd; margin-left: 8px; }
 .badge-new { background: rgba(22, 163, 74, 0.2); color: #86efac; margin-left: 8px; }
-.badge-extra { background: transparent; color: var(--muted); border: 1px solid var(--border); margin-left: 8px; }
 
 .about-list { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; margin: 12px 0; }
 .about-list dt { color: var(--muted); }

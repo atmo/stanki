@@ -79,10 +79,12 @@ export function DeckList() {
       // Part-finished cards are shown apart from cards falling due: they are work
       // already started, and lumping them together hides why a count moved.
       const relearnDue = due.filter((i) => i.schedule.interval > 0 && i.schedule.interval < 1).length;
-      // All reviews due today ignoring the daily cap — so a capped-out deck can
-      // still be opened to study extra reviews.
+      // Everything day-scale that is due, ignoring the cap, so a capped-out deck
+      // can still be opened to study past the limit. Day-scale only: relearning
+      // bypasses the cap entirely, so it can never be "beyond" it, and counting
+      // it here as well as in its own badge showed it twice.
       const dueReviews = items.filter(
-        (i) => !i.card.deleted && i.schedule.interval > 0 && i.schedule.dueDate < endOfLocalDay(now),
+        (i) => !i.card.deleted && i.schedule.interval >= 1 && i.schedule.dueDate < endOfLocalDay(now),
       ).length;
       byDeck.set(deck.id, { total: dc.length, newDue, relearnDue, reviewDue: due.length - newDue - relearnDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
     }
@@ -143,8 +145,6 @@ export function DeckList() {
       <ul className="deck-list">
         {data.decks.map((deck) => {
           const stats = data.byDeck.get(deck.id) ?? { total: 0, newDue: 0, relearnDue: 0, reviewDue: 0, dueReviews: 0, reviewCap: 0 };
-          // Reviews due today beyond today's cap — studyable over the limit.
-          const extraReviews = Math.max(0, stats.dueReviews - stats.reviewDue);
           // Enable Review if anything's in today's session, or extra reviews are
           // due beyond the cap (studyable over the limit from the done screen).
           const canReview = stats.newDue + stats.reviewDue + stats.relearnDue > 0 || stats.dueReviews > 0;
@@ -158,17 +158,25 @@ export function DeckList() {
                   {stats.newDue > 0 && (
                     <span className="badge badge-new" title="New cards to learn">{stats.newDue} new</span>
                   )}
-                  {stats.reviewDue > 0 && (
-                    <span className="badge badge-due" title="Cards to revisit">{stats.reviewDue} review</span>
+                  {stats.dueReviews > 0 && (
+                    <span
+                      className="badge badge-due"
+                      title={
+                        stats.dueReviews > stats.reviewDue
+                          ? `${stats.dueReviews} due; today's limit leaves room for ${stats.reviewDue} (${stats.reviewCap}/day). The rest is studyable past the limit.`
+                          : 'Cards to revisit'
+                      }
+                    >
+                      {/* What is due leads; the allowance is the qualifier. The
+                          other way round, the number shrank as the day's limit was
+                          spent and read as if the workload had. */}
+                      {stats.dueReviews} review
+                      {stats.dueReviews > stats.reviewDue && ` · ${stats.reviewDue} today`}
+                    </span>
                   )}
                   {stats.relearnDue > 0 && (
                     <span className="badge badge-relearn" title="Missed earlier and not yet recalled — these ignore the daily limit">
                       {stats.relearnDue} relearning
-                    </span>
-                  )}
-                  {extraReviews > 0 && (
-                    <span className="badge badge-extra" title={`${extraReviews} more due today, beyond the ${stats.reviewCap}/day review cap`}>
-                      +{extraReviews} more
                     </span>
                   )}
                 </span>
