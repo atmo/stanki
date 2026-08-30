@@ -189,7 +189,7 @@ describe('computeStats — recall', () => {
   it('records study history in the day bucket, split new vs review', () => {
     const s = run(cards, decks, reviews);
     const last = s.history[s.history.length - 1]; // "today"
-    expect(last).toEqual({ nw: 1, rv: 2 }); // r3 is new; r1,r2 are reviews
+    expect(last).toEqual({ nw: 1, rv: 2, held: 0 }); // r3 is new; r1,r2 are reviews
   });
 });
 
@@ -252,7 +252,16 @@ describe('computeStats — added & deck scope', () => {
     const reviews = [{ ...review('x', 'gone', TODAY, 5, 'good'), deckId: 'd1' }];
     const s = run([card('a', 'd1')], [deck('d1')], reviews);
     expect(s.recallByDeck.get('d1')!.ret).toEqual({ p: 1, t: 1 });
-    expect(s.historyByDeck.get('d1')!.at(-1)).toEqual({ nw: 0, rv: 1 });
+    expect(s.historyByDeck.get('d1')!.at(-1)).toEqual({ nw: 0, rv: 1, held: 0 });
+  });
+
+  it('counts cards held over per bucket, from the log', () => {
+    const reviews = [
+      { ...review('h1', 'a', TODAY, 5, 'again'), deferred: true },
+      { ...review('h2', 'a', TODAY, 5, 'again') }, // missed but re-queued, not held over
+    ];
+    const s = run([card('a', 'd')], [deck('d')], reviews);
+    expect(s.history.at(-1)!.held).toBe(1);
   });
 
   it('keeps per-deck history and recall separate', () => {
@@ -262,6 +271,6 @@ describe('computeStats — added & deck scope', () => {
     const s = run(cards, decks, reviews);
     expect(s.recallByDeck.get('d1')!.ret).toEqual({ p: 1, t: 1 });
     expect(s.recallByDeck.get('d2')!.ret).toEqual({ p: 0, t: 1 });
-    expect(s.historyByDeck.get('d1')!.at(-1)).toEqual({ nw: 0, rv: 1 });
+    expect(s.historyByDeck.get('d1')!.at(-1)).toEqual({ nw: 0, rv: 1, held: 0 });
   });
 });

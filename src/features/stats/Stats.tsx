@@ -155,11 +155,15 @@ export function Stats() {
     return { value: n, cls: 'bar-due', title: `${fmtDay(day)}${i === 0 ? ' (incl. overdue)' : ''}: ${n} due`, label: String(new Date(day).getDate()), sub: showMonth ? monthShort(day) : '' };
   });
 
-  const activeHistory = scopeId === 'all' ? history : (historyByDeck.get(scopeId) ?? buckets.map(() => ({ nw: 0, rv: 0 })));
+  const activeHistory = scopeId === 'all' ? history : (historyByDeck.get(scopeId) ?? buckets.map(() => ({ nw: 0, rv: 0, held: 0 })));
   const introMax = Math.max(1, ...activeHistory.map((h) => h.nw));
   const introBars = buckets.map((b, i) => ({ value: activeHistory[i].nw, cls: 'bar-new', title: `${b.full}: ${activeHistory[i].nw} introduced`, label: b.label, sub: b.sub }));
   const reviewMax = Math.max(1, ...activeHistory.map((h) => h.rv));
   const reviewBars = buckets.map((b, i) => ({ value: activeHistory[i].rv, cls: 'bar-rev', title: `${b.full}: ${activeHistory[i].rv} reviewed`, label: b.label, sub: b.sub }));
+
+  const heldMax = Math.max(1, ...activeHistory.map((h) => h.held));
+  const heldBars = buckets.map((b, i) => ({ value: activeHistory[i].held, cls: 'bar-held', title: `${b.full}: ${activeHistory[i].held} held over`, label: b.label, sub: b.sub }));
+  const heldTotal = activeHistory.reduce((n, h) => n + h.held, 0);
 
   const activeAdded = scopeId === 'all' ? added : (addedByDeck.get(scopeId) ?? buckets.map(() => 0));
   const addedMax = Math.max(1, ...activeAdded);
@@ -322,6 +326,26 @@ export function Stats() {
               retention as doubling the interval would. The forecast below folds these into “today”,
               so this is the only place the delay shows.
             </p>
+          </>
+        )}
+      </section>
+
+      <section className="panel">
+        <h2>Held over</h2>
+        {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
+        {heldTotal === 0 ? (
+          <p className="muted">
+            Nothing held over in this range. Cards are being missed and recalled within the session,
+            or not missed at all.
+          </p>
+        ) : (
+          <>
+            <p className="muted small">
+              Cards pushed to the next day per {granularity} — missed with too little of the session
+              left to space the retry, or out of the day's allowance. <b>{heldTotal}</b> in this range.
+              A downward trend means less work being carried forward.
+            </p>
+            <BarChart bars={heldBars} max={heldMax} />
           </>
         )}
       </section>

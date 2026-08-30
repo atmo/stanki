@@ -231,10 +231,10 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
   // --- Everything below is scoped to the selected date range [rangeStart, today]. ---
   const { buckets, granularity, indexOf } = bucketize(rangeStart, today);
   const nb = buckets.length;
-  const mkHist = () => Array.from({ length: nb }, () => ({ nw: 0, rv: 0 }));
+  const mkHist = () => Array.from({ length: nb }, () => ({ nw: 0, rv: 0, held: 0 }));
 
   const history = mkHist();
-  const historyByDeck = new Map<string, { nw: number; rv: number }[]>();
+  const historyByDeck = new Map<string, { nw: number; rv: number; held: number }[]>();
   const recall = emptyRecall();
   const recallByDeck = new Map<string, Recall>();
   const lapsesByCard = new Map<string, number>();
@@ -265,11 +265,15 @@ export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[],
     if (idx >= 0 && idx < nb) {
       if (isNew) history[idx].nw++;
       else history[idx].rv++;
+      // Held over: the miss that ended a card's day. Counted from the log, so it
+      // is a flow — how much work each day pushed forward — not a debt level.
+      if (r.deferred) history[idx].held++;
       if (deckId) {
         let bd = historyByDeck.get(deckId);
         if (!bd) historyByDeck.set(deckId, (bd = mkHist()));
         if (isNew) bd[idx].nw++;
         else bd[idx].rv++;
+        if (r.deferred) bd[idx].held++;
       }
     }
 
