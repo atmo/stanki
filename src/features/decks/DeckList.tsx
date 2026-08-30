@@ -83,9 +83,19 @@ export function DeckList() {
       // can still be opened to study past the limit. Day-scale only: relearning
       // bypasses the cap entirely, so it can never be "beyond" it, and counting
       // it here as well as in its own badge showed it twice.
-      const dueReviews = items.filter(
-        (i) => !i.card.deleted && i.schedule.interval >= 1 && i.schedule.dueDate < endOfLocalDay(now),
-      ).length;
+      //
+      // Counted per card, not per direction. selectDue buries siblings and so
+      // does the over-limit queue, so a card's two sides can never both be
+      // studied today — counting units here made the figure larger than anything
+      // reachable, and the difference from the capped count then read as the
+      // day's limit when it was really the burying.
+      const cutoff = endOfLocalDay(now);
+      const dueCards = new Set(
+        items
+          .filter((i) => !i.card.deleted && i.schedule.interval >= 1 && i.schedule.dueDate < cutoff)
+          .map((i) => i.card.id),
+      );
+      const dueReviews = dueCards.size;
       byDeck.set(deck.id, { total: dc.length, newDue, relearnDue, reviewDue: due.length - newDue - relearnDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
     }
 
