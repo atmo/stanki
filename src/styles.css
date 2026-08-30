@@ -159,14 +159,17 @@ body {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 14px; background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
 }
-.deck-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.deck-main { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1; }
 .deck-name { font-weight: 600; }
 .deck-desc { display: block; color: var(--muted); font-size: 0.82rem; white-space: pre-wrap; }
 .deck-desc.clamp { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .deck-more { background: none; border: none; padding: 0; cursor: pointer; color: var(--primary); font-size: 0.8rem; }
 .checkline { display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .deck-settings { border-left: 2px solid var(--border); padding-left: 12px; margin-top: 8px; }
-.deck-meta { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; }
+/* Wraps: with four badges the row outgrew the space beside the buttons and ran
+   underneath them. The badges keep their own margin-left for horizontal spacing,
+   since badge-due is shared with the review header's "reverse" pill. */
+.deck-meta { color: var(--muted); font-size: 0.85rem; display: flex; align-items: center; flex-wrap: wrap; row-gap: 4px; }
 .deck-actions { display: flex; gap: 8px; flex-shrink: 0; }
 
 /* Editor */
