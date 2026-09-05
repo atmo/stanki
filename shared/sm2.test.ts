@@ -405,6 +405,35 @@ describe('selectDue — the capped and uncapped counts attribute siblings alike'
   });
 });
 
+describe('selectDue — a sibling buried until tomorrow', () => {
+  const at = 10 * DAY;
+  const unit = (id: string, direction: 'forward' | 'reverse', buriedUntil?: number): ReviewItem => ({
+    card: { id, deckId: 'd', front: '', back: '', interval: 5, easeFactor: 2.5,
+            repetitions: 3, dueDate: 0, createdAt: 0, updatedAt: 0 },
+    direction,
+    schedule: { interval: 5, easeFactor: 2.5, repetitions: 3, dueDate: 0, buriedUntil },
+  });
+  const daily = { newToday: 0, reviewsToday: 0 };
+
+  it('stays out of the queue even with no sibling left to compete', () => {
+    // The per-build burying could not do this: after the forward side was
+    // studied it was no longer due, so a fresh queue served the reverse.
+    const q = selectDue([unit('a', 'reverse', at + DAY)], daily, DEFAULT_SETTINGS, at);
+    expect(q).toHaveLength(0);
+  });
+
+  it('returns once the burial has expired', () => {
+    const q = selectDue([unit('a', 'reverse', at - 1)], daily, DEFAULT_SETTINGS, at);
+    expect(q).toHaveLength(1);
+  });
+
+  it('is ignored when both directions are wanted in one session', () => {
+    const q = selectDue([unit('a', 'reverse', at + DAY)], daily,
+      { ...DEFAULT_SETTINGS, bothDirectionsPerSession: true }, at);
+    expect(q).toHaveLength(1);
+  });
+});
+
 describe('selectDue — both directions in one session', () => {
   const at = 10 * DAY;
   const side = (id: string, direction: 'forward' | 'reverse'): ReviewItem => ({

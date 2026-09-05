@@ -8,6 +8,7 @@ import {
   scheduleState,
   fuzzSchedule,
   deferToTomorrow,
+  startOfNextDay,
   newCardState,
   selectDue,
   directionSchedule,
@@ -248,6 +249,9 @@ export async function reviewQueue(
     const seen = new Set<string>();
     const due = items.filter((i) => {
       if (i.card.deleted || i.schedule.interval === 0 || i.schedule.dueDate >= cutoff) return false;
+      // Studying past the limit must not undo the burial either, or the sibling
+      // separation would last only as long as you stayed inside the cap.
+      if (bury && i.schedule.buriedUntil && i.schedule.buriedUntil > now) return false;
       if (bury && seen.has(i.card.id)) return false;
       seen.add(i.card.id);
       return true;
@@ -349,6 +353,23 @@ export async function gradeCard(
   next = grade === 'again' ? { ...next, heldOver: ctx?.defer || prev.heldOver } : { ...next, heldOver: undefined };
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
+
+  // Bury the other side until tomorrow, the way Anki does: studying one
+  // direction should stop the other being tested the same day, and the previous
+  // per-build burying never managed that — leaving review and re-entering built
+  // a fresh queue in which the sibling was no longer competing, so it was served
+  // anyway, just after a detour via the deck list.
+  //
+  // The sibling's due date is left where it is, so it arrives a day late rather
+  // than being rescheduled for a reason unconnected to how well it is known.
+  const deck = await getDeck(card.deckId);
+  if (!settings.bothDirectionsPerSession && (deck?.reviewDirection ?? 'forward') === 'both') {
+    const otherDir: CardDirection = direction === 'forward' ? 'reverse' : 'forward';
+    const other = directionSchedule({ ...card, ...patch } as Card, otherDir, settings);
+    const buried = { ...other, buriedUntil: startOfNextDay(now) };
+    if (otherDir === 'forward') Object.assign(patch, buried);
+    else patch.reverse = buried;
+  }
   const reviewId = uid();
   await db.transaction('rw', db.cards, db.reviews, async () => {
     await db.cards.update(card.id, patch);

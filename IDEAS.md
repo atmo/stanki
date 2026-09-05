@@ -15,6 +15,10 @@ cards than that remain or the day's allowance for it runs out. Held-over cards
 are flagged on the card, exempt from the review cap, and counted apart from
 cards falling due.
 
+Studying one side of a two-sided card buries the other until the next day, so a
+deck is one sitting rather than two. `bothDirectionsPerSession` turns that off
+for a deck that would rather have everything in one queue.
+
 ## What the data already ruled out
 
 Findings from analysing a real 8,656-review export (`scripts/analyze-export.py`),
@@ -60,9 +64,6 @@ kept here so they don't get re-proposed:
       a `suspended` flag on `CardSchedule` (per direction, like the rest of the
       schedule) that syncs like `deleted`. Leech flagging deliberately stops short
       of this, but manual suspend is still missing.
-- [ ] **Persistent sibling burying** (S–M) — burying is per queue *build*, so
-      re-entering review the same day can serve the side that was buried. Needs a
-      `buriedUntil` to hold until the next day, as Anki does.
 - [ ] **Resume a lapse from where it was** (M) — probably the largest remaining
       cut in review volume. A miss overwrites the card's interval with a sub-day
       value, so a 60-day card that slips restarts at 1 day and re-climbs

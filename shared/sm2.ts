@@ -78,10 +78,11 @@ export function directionSchedule(
   settings: SrSettings = DEFAULT_SETTINGS,
 ): CardSchedule {
   if (direction === 'forward') {
-    // heldOver has to come along: it is read straight off the schedule during
-    // review, and picking the fields out by hand silently drops anything new.
-    const { interval, easeFactor, repetitions, dueDate, heldOver } = card;
-    return { interval, easeFactor, repetitions, dueDate, heldOver };
+    // heldOver and buriedUntil have to come along: they are read straight off
+    // the schedule during selection and review, and picking the fields out by
+    // hand silently drops anything new.
+    const { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil } = card;
+    return { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil };
   }
   return card.reverse ?? { ...newCardState(card.createdAt, settings) };
 }
@@ -114,18 +115,18 @@ export function selectDue(
   // Day-level scheduling: a card due any time today is due today (not only once
   // its exact timestamp passes), matching the local-midnight due dates.
   const cutoff = endOfLocalDay(now);
+  const bury = !settings.bothDirectionsPerSession;
   const due = items
     .filter((i) => !i.card.deleted && i.schedule.dueDate < cutoff)
+    // Buried by its sibling having been studied. Unlike the per-build burying
+    // below, this survives leaving review and coming back, so a deck is one
+    // sitting rather than two — the point of burying being that the two sides
+    // are not tested on the same day, which per-build burying never achieved.
+    .filter((i) => !bury || !i.schedule.buriedUntil || i.schedule.buriedUntil <= now)
     .sort((a, b) => a.schedule.dueDate - b.schedule.dueDate);
   const newRemaining = Math.max(0, settings.newCardsPerDay - daily.newToday);
   const reviewRemaining = Math.max(0, settings.maxReviewsPerDay - daily.reviewsToday);
 
-  // Burying is per queue build, so the sides skipped here are still due and are
-  // served the next time review is opened — which is why a two-sided deck takes
-  // two sittings. Turning it off puts everything due in one queue: the shuffle
-  // keeps the two sides apart, but the second one is a weaker test, since its
-  // answer was on screen earlier in the session.
-  const bury = !settings.bothDirectionsPerSession;
   const seen = new Set<string>(); // card ids already chosen — bury the sibling
   const reviewItems: ReviewItem[] = [];
   let capped = 0; // only day-scale reviews are charged to the cap
@@ -228,8 +229,14 @@ export function scheduleState(
  * on the wrong date.
  */
 export function deferToTomorrow(s: CardSchedule, now = Date.now()): CardSchedule {
+  return { ...s, dueDate: startOfNextDay(now) };
+}
+
+/** Local midnight at the start of tomorrow. Steps a calendar day rather than
+ * adding 24h, so a clock change cannot land it on the wrong date. */
+export function startOfNextDay(now = Date.now()): number {
   const d = new Date(now);
-  return { ...s, dueDate: new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime() };
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
 }
 
 // Random spread applied to a day-scale interval, and the interval below which

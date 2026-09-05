@@ -58,6 +58,10 @@ export interface CardSchedule {
   // set when the card is held over, cleared the moment it is recalled — so
   // nothing has to guess a cutoff the way counting past log entries would.
   heldOver?: boolean;
+  // Held back until this time because the card's other side was studied. The
+  // due date is deliberately left alone, so the side arrives late rather than
+  // being quietly rescheduled for a reason that has nothing to do with recall.
+  buriedUntil?: number;
 }
 
 export interface Card extends CardSchedule {

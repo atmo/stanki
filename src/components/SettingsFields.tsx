@@ -42,8 +42,9 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
         <span>Show both directions in one session</span>
       </label>
       <p className="muted small">
-        Off, a card's two sides are split across two sittings. On, everything due is one queue —
-        but seeing a card's reverse after its forward is an easier test.
+        Off, studying one side holds the other back until tomorrow, so a deck is one sitting a day.
+        On, everything due is one queue — but a card's reverse is an easier test once its forward
+        has been on screen.
       </p>
       <label className="field">
         <span>Cards before a missed card returns</span>
