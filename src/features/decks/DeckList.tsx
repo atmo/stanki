@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { createDeck, getSettings, importDeck, effectiveSettings, type ExportBundle } from '../../db/repo';
-import { selectDue, itemsForCard, startOfDay, endOfLocalDay } from '@shared/sm2';
+import { selectDue, itemsForCard, startOfDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
 
 /** Deck description clamped to two lines, with a more/less toggle shown only
@@ -79,23 +79,15 @@ export function DeckList() {
       // Part-finished cards are shown apart from cards falling due: they are work
       // already started, and lumping them together hides why a count moved.
       const relearnDue = due.filter((i) => i.schedule.interval > 0 && i.schedule.interval < 1).length;
-      // Everything day-scale that is due, ignoring the cap, so a capped-out deck
-      // can still be opened to study past the limit. Day-scale only: relearning
-      // bypasses the cap entirely, so it can never be "beyond" it, and counting
-      // it here as well as in its own badge showed it twice.
-      //
-      // Counted per card, not per direction. selectDue buries siblings and so
-      // does the over-limit queue, so a card's two sides can never both be
-      // studied today — counting units here made the figure larger than anything
-      // reachable, and the difference from the capped count then read as the
-      // day's limit when it was really the burying.
-      const cutoff = endOfLocalDay(now);
-      const dueCards = new Set(
-        items
-          .filter((i) => !i.card.deleted && i.schedule.interval >= 1 && i.schedule.dueDate < cutoff)
-          .map((i) => i.card.id),
-      );
-      const dueReviews = dueCards.size;
+      // The same selection with the cap lifted, so the two figures differ in the
+      // cap and nothing else. Counting this by hand instead diverged over which
+      // side of a card claimed it: selectDue lets whichever unit sorts first bury
+      // its sibling, so a card with one side relearning and the other due lands
+      // under relearning — while a hand-rolled day-scale filter still counted it
+      // as due. The badge then reported that difference as the daily limit
+      // holding cards back, when they were already in the session.
+      const dueReviews = selectDue(items, d, { ...eff, maxReviewsPerDay: Number.MAX_SAFE_INTEGER }, now)
+        .filter((i) => i.schedule.interval >= 1).length;
       byDeck.set(deck.id, { total: dc.length, newDue, relearnDue, reviewDue: due.length - newDue - relearnDue, dueReviews, reviewCap: eff.maxReviewsPerDay });
     }
 

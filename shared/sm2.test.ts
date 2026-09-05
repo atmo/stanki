@@ -361,3 +361,46 @@ describe('heldOver is state, not history', () => {
     expect(next.heldOver).toBeUndefined();
   });
 });
+
+describe('selectDue — the capped and uncapped counts attribute siblings alike', () => {
+  const at = 10 * DAY;
+  // One card, both sides due: forward mid-relearning, reverse a normal review.
+  const both = (id: string): ReviewItem[] => [
+    { card: { id, deckId: 'd', front: '', back: '', interval: 5 / 1440, easeFactor: 2.5,
+              repetitions: 0, dueDate: 0, createdAt: 0, updatedAt: 0 },
+      direction: 'forward',
+      schedule: { interval: 5 / 1440, easeFactor: 2.5, repetitions: 0, dueDate: 0 } },
+    { card: { id, deckId: 'd', front: '', back: '', interval: 5, easeFactor: 2.5,
+              repetitions: 3, dueDate: 0, createdAt: 0, updatedAt: 0 },
+      direction: 'reverse',
+      schedule: { interval: 5, easeFactor: 2.5, repetitions: 3, dueDate: 0 } },
+  ];
+
+  it('counts such a card as relearning either way, never as a withheld review', () => {
+    const items = [...both('a'), ...both('b')];
+    const daily = { newToday: 0, reviewsToday: 0 };
+    const capped = selectDue(items, daily, { ...DEFAULT_SETTINGS, maxReviewsPerDay: 1 }, at);
+    const uncapped = selectDue(items, daily, { ...DEFAULT_SETTINGS, maxReviewsPerDay: Number.MAX_SAFE_INTEGER }, at);
+    const dayScale = (q: ReviewItem[]) => q.filter((i) => i.schedule.interval >= 1).length;
+
+    // Burying picks the relearning side in both passes, so neither counts a
+    // day-scale review — the badge's gap stays zero rather than blaming the cap.
+    expect(dayScale(uncapped)).toBe(0);
+    expect(dayScale(uncapped) - dayScale(capped)).toBe(0);
+    expect(uncapped).toHaveLength(2); // both cards served, as relearning
+  });
+
+  it('still reports a gap when the cap is what withholds work', () => {
+    const rev = (id: string): ReviewItem => ({
+      card: { id, deckId: 'd', front: '', back: '', interval: 5, easeFactor: 2.5,
+              repetitions: 3, dueDate: 0, createdAt: 0, updatedAt: 0 },
+      direction: 'forward',
+      schedule: { interval: 5, easeFactor: 2.5, repetitions: 3, dueDate: 0 },
+    });
+    const items = [rev('a'), rev('b'), rev('c')];
+    const daily = { newToday: 0, reviewsToday: 0 };
+    const capped = selectDue(items, daily, { ...DEFAULT_SETTINGS, maxReviewsPerDay: 2 }, at);
+    const uncapped = selectDue(items, daily, { ...DEFAULT_SETTINGS, maxReviewsPerDay: Number.MAX_SAFE_INTEGER }, at);
+    expect(uncapped.length - capped.length).toBe(1);
+  });
+});
