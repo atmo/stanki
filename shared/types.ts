@@ -77,6 +77,15 @@ export interface Card extends CardSchedule {
   context?: string;
   examples?: string[];
   source?: CardSource;
+  // Synonyms, stored one way only: linking A to B writes B here and leaves B
+  // untouched. A card's synonyms are the union of this list and the cards whose
+  // list names it, so the pairing reads as symmetric while each link is a
+  // single-card write — two devices linking the same card to different words
+  // then edit different cards and neither edit is lost.
+  links?: string[];
+  // Monotonic authority for `links`, mirroring `rev` below. Kept separate so
+  // removing a synonym does not also make this copy's contexts authoritative.
+  linkRev?: number;
   // Monotonic authority for `contexts`: on merge, a higher `rev` *replaces* it
   // (rather than unioning), so an authoritative import/restore can drop entries.
   // Equal `rev` still unions, so normal accumulation works.

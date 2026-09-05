@@ -179,3 +179,35 @@ describe('mergeReviews', () => {
     expect(mergeReviews([ancient], [fresh]).map((r) => r.id).sort()).toEqual(['ancient', 'fresh']);
   });
 });
+
+describe('mergeCards — synonym links', () => {
+  const card = (over: Partial<Card> = {}): Card => ({
+    id: 'a', deckId: 'd', front: 'f', back: 'b', interval: 0, easeFactor: 2.5,
+    repetitions: 0, dueDate: 0, createdAt: 0, updatedAt: 0, ...over,
+  });
+
+  it('unions links at equal authority, so neither device loses one', () => {
+    // The case one-way storage is meant to survive: two devices linking the same
+    // card to different words.
+    const [m] = mergeCards([card({ links: ['b'], updatedAt: 2 })], [card({ links: ['c'], updatedAt: 1 })]);
+    expect(m.links!.sort()).toEqual(['b', 'c']);
+  });
+
+  it('lets a higher linkRev replace, so a removal is not resurrected', () => {
+    const [m] = mergeCards(
+      [card({ links: ['b'], linkRev: 5, updatedAt: 1 })],
+      [card({ links: ['b', 'c'], linkRev: 2, updatedAt: 9 })],
+    );
+    expect(m.links).toEqual(['b']);
+  });
+
+  it('keeps links and contexts on separate authorities', () => {
+    // Removing a synonym must not make this copy's contexts authoritative too.
+    const [m] = mergeCards(
+      [card({ links: [], linkRev: 9, contexts: [{ text: 'x' }], updatedAt: 2 })],
+      [card({ links: ['b'], contexts: [{ text: 'y' }], updatedAt: 1 })],
+    );
+    expect(m.links).toBeUndefined();
+    expect(m.contexts!.map((c) => c.text).sort()).toEqual(['x', 'y']); // still unioned
+  });
+});

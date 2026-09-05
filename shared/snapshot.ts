@@ -60,6 +60,19 @@ function pickCard(a: Card, b: Card): Card {
       ? dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c.text.trim())
       : cardContexts(ra > rb ? a : b);
   merged.contexts = contexts.length ? contexts : undefined;
+
+  // Links merge the same way, on their own counter: they accumulate so a synonym
+  // added on one device survives the other winning last-write-wins, while a
+  // higher linkRev (bumped whenever the list is edited) lets a removal through
+  // instead of the other copy resurrecting it.
+  const la = a.linkRev ?? 0;
+  const lb = b.linkRev ?? 0;
+  const links =
+    la === lb
+      ? [...new Set([...(a.links ?? []), ...(b.links ?? [])])]
+      : ((la > lb ? a : b).links ?? []);
+  merged.links = links.length ? links : undefined;
+  merged.linkRev = Math.max(la, lb) || undefined;
   merged.rev = Math.max(ra, rb) || undefined;
   delete merged.context; // legacy shapes canonicalized into `contexts`
   delete merged.examples;

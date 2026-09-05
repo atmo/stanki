@@ -95,6 +95,14 @@ export class StankiDB extends Dexie {
     // deliberately absent from earlier versions so an existing database sees a
     // real version bump rather than a silent schema mismatch.
     this.version(6).stores({ ...stores, logs: '&id, ts' });
+    // v7: synonym links. `*links` is a multi-entry index, so "which cards name
+    // this one" is a lookup rather than a scan of the collection — that query is
+    // what makes a one-way stored link display on both cards.
+    this.version(7).stores({
+      ...stores,
+      logs: '&id, ts',
+      cards: '&id, deckId, dueDate, updatedAt, deleted, [deckId+dueDate], *links',
+    });
   }
 }
 

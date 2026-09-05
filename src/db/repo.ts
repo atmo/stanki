@@ -547,3 +547,64 @@ export async function missesToday(
     (r) => r.cardId === cardId && (r.direction ?? 'forward') === direction && r.grade === 'again',
   ).length;
 }
+
+/** A card's synonyms: the ones it names, plus the ones naming it. Links are
+ * stored one way only, so the inbound half is what makes the pairing show on
+ * both cards — see `Card.links`. */
+export async function getLinkedCards(cardId: string): Promise<Card[]> {
+  const card = await db.cards.get(cardId);
+  const inbound = await db.cards.where('links').equals(cardId).toArray();
+  const ids = new Set([...(card?.links ?? []), ...inbound.map((c) => c.id)]);
+  ids.delete(cardId);
+  const cards = await db.cards.bulkGet([...ids]);
+  return cards.filter((c): c is Card => !!c && !c.deleted).sort((a, b) => a.front.localeCompare(b.front));
+}
+
+/** Link two cards as synonyms. Written on `from` only; the pairing is symmetric
+ * because reading unions both directions. */
+export async function linkCards(from: string, to: string): Promise<void> {
+  if (from === to) return;
+  const [a, b] = await Promise.all([db.cards.get(from), db.cards.get(to)]);
+  if (!a || !b) return;
+  if (a.links?.includes(to) || b.links?.includes(from)) return; // already paired either way
+  const now = Date.now();
+  await db.cards.update(from, { links: [...(a.links ?? []), to], linkRev: now, updatedAt: now });
+}
+
+/** Remove a synonym pairing, from whichever side happens to hold it. */
+export async function unlinkCards(x: string, y: string): Promise<void> {
+  const [a, b] = await Promise.all([db.cards.get(x), db.cards.get(y)]);
+  const now = Date.now();
+  if (a?.links?.includes(y)) {
+    const links = a.links.filter((id) => id !== y);
+    await db.cards.update(x, { links: links.length ? links : undefined, linkRev: now, updatedAt: now });
+  }
+  if (b?.links?.includes(x)) {
+    const links = b.links.filter((id) => id !== x);
+    await db.cards.update(y, { links: links.length ? links : undefined, linkRev: now, updatedAt: now });
+  }
+}
+
+/** Cards in the same deck whose front or back matches, for the synonym picker.
+ * Deck-scoped because a synonym across two languages is not one. */
+export async function searchDeckCards(
+  deckId: string,
+  query: string,
+  exclude: string[] = [],
+  limit = 8,
+): Promise<Card[]> {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const skip = new Set(exclude);
+  const hits = await db.cards
+    .where('deckId')
+    .equals(deckId)
+    .filter((c) => !c.deleted && !skip.has(c.id) &&
+      (c.front.toLowerCase().includes(q) || c.back.toLowerCase().includes(q)))
+    .limit(limit * 3)
+    .toArray();
+  // Front matches first, and earlier matches before later ones.
+  return hits
+    .sort((a, b) => a.front.toLowerCase().indexOf(q) - b.front.toLowerCase().indexOf(q))
+    .slice(0, limit);
+}
