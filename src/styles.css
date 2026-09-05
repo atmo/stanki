@@ -322,3 +322,4 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
 .lookup-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
 .lookup-hit { display: block; width: 100%; text-align: left; padding: 7px 10px; background: none; border: none; color: inherit; cursor: pointer; }
 .lookup-hit:hover { background: var(--panel); }
+.synonym-trail { margin: 8px 0 0; font-size: 0.9rem; }

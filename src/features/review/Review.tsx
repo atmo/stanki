@@ -4,7 +4,7 @@ import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type CardContext, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, missesToday, updateCard, deleteCard } from '../../db/repo';
+import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, getLinkedCards, missesToday, updateCard, deleteCard } from '../../db/repo';
 import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
@@ -183,6 +183,7 @@ export function Review() {
 
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
   const [deferred, setDeferred] = useState(0); // cards left until tomorrow this session
+  const [synonyms, setSynonyms] = useState<Card[]>([]);
   // Non-blocking notice that a card was held over. A toast rather than a modal:
   // this fires ~20 times a session, and blocking each time would undo the very
   // interruption the position-based queue was meant to remove.
@@ -225,6 +226,15 @@ export function Review() {
 
   const item = queue?.[0];
   const card = item?.card;
+
+  // Fetched per card, not per reveal, so the trail is ready the moment the
+  // answer is shown rather than appearing a beat later.
+  useEffect(() => {
+    if (!card) return setSynonyms([]);
+    let live = true;
+    void getLinkedCards(card.id).then((s) => live && setSynonyms(s));
+    return () => { live = false; };
+  }, [card?.id]);
   const direction = item?.direction ?? 'forward';
   // Forward: prompt with the front, guess the back. Reverse: the other way.
   const prompt = card ? (direction === 'forward' ? card.front : card.back) : '';
@@ -444,6 +454,12 @@ export function Review() {
             <div className="card-back">
               {answer ? <Answer text={answer} match={NO_MATCH} reveal /> : <span className="muted">(no answer yet)</span>}
             </div>
+            {synonyms.length > 0 && (
+              <p className="synonym-trail">
+                <span className="muted small">Also: </span>
+                {synonyms.map((c) => c.front).join(' · ')}
+              </p>
+            )}
             {/* Only after the reveal: seeing "you keep missing this" beforehand
                 would prime the recall attempt and bias the grade you give. */}
             {item.schedule.heldOver && (
