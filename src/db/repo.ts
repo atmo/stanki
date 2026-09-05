@@ -241,10 +241,14 @@ export async function reviewQueue(
   const items = cards.flatMap((c) => itemsForCard(c, direction, eff));
   if (overLimit) {
     const cutoff = endOfLocalDay(now);
-    const seen = new Set<string>(); // bury siblings here too (one direction per card)
+    // Burying follows the same setting as the capped queue: studying past the
+    // limit should not change which sides of a card the deck considers one
+    // session's worth.
+    const bury = !eff.bothDirectionsPerSession;
+    const seen = new Set<string>();
     const due = items.filter((i) => {
       if (i.card.deleted || i.schedule.interval === 0 || i.schedule.dueDate >= cutoff) return false;
-      if (seen.has(i.card.id)) return false;
+      if (bury && seen.has(i.card.id)) return false;
       seen.add(i.card.id);
       return true;
     });

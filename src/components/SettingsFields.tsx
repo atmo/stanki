@@ -3,7 +3,7 @@ import type { SrSettings } from '@shared/sm2';
 /** The scheduling + daily-limit inputs, shared by global Settings and the
  * per-deck override editor. Purely controlled: it renders `value` and reports
  * each change via `onChange`. */
-export function SettingsFields({ value: s, onChange }: { value: SrSettings; onChange: <K extends keyof SrSettings>(key: K, v: number) => void }) {
+export function SettingsFields({ value: s, onChange }: { value: SrSettings; onChange: <K extends keyof SrSettings>(key: K, v: SrSettings[K]) => void }) {
   return (
     <>
       <label className="field">
@@ -36,6 +36,15 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
         <input type="number" className="input" min={0} max={50} value={s.leechThreshold}
           onChange={(e) => onChange('leechThreshold', Math.max(0, Math.round(Number(e.target.value))))} />
       </label>
+      <label className="checkline">
+        <input type="checkbox" checked={s.bothDirectionsPerSession}
+          onChange={(e) => onChange('bothDirectionsPerSession', e.target.checked)} />
+        <span>Show both directions in one session</span>
+      </label>
+      <p className="muted small">
+        Off, a card's two sides are split across two sittings. On, everything due is one queue —
+        but seeing a card's reverse after its forward is an easier test.
+      </p>
       <label className="field">
         <span>Cards before a missed card returns</span>
         <input type="number" className="input" min={0} max={500} value={s.againGapCards}

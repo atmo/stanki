@@ -404,3 +404,24 @@ describe('selectDue — the capped and uncapped counts attribute siblings alike'
     expect(uncapped.length - capped.length).toBe(1);
   });
 });
+
+describe('selectDue — both directions in one session', () => {
+  const at = 10 * DAY;
+  const side = (id: string, direction: 'forward' | 'reverse'): ReviewItem => ({
+    card: { id, deckId: 'd', front: '', back: '', interval: 5, easeFactor: 2.5,
+            repetitions: 3, dueDate: 0, createdAt: 0, updatedAt: 0 },
+    direction,
+    schedule: { interval: 5, easeFactor: 2.5, repetitions: 3, dueDate: 0 },
+  });
+  const items = [side('a', 'forward'), side('a', 'reverse')];
+  const daily = { newToday: 0, reviewsToday: 0 };
+
+  it('buries the sibling by default, so the deck takes two sittings', () => {
+    expect(selectDue(items, daily, DEFAULT_SETTINGS, at)).toHaveLength(1);
+  });
+
+  it('serves both sides once the setting is on', () => {
+    const q = selectDue(items, daily, { ...DEFAULT_SETTINGS, bothDirectionsPerSession: true }, at);
+    expect(q.map((i) => i.direction).sort()).toEqual(['forward', 'reverse']);
+  });
+});

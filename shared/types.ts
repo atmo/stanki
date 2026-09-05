@@ -30,6 +30,7 @@ export interface SrSettings {
   leechThreshold: number; // lapses in one direction before a card is flagged (0 = off)
   againGapCards: number; // cards that must pass before a missed card returns
   againMaxPerDay: number; // misses in one day before a card is left until tomorrow
+  bothDirectionsPerSession: boolean; // serve a card's two sides in one sitting
 }
 
 /** A captured usage sentence, optionally with the page URL it came from. A
@@ -131,10 +132,13 @@ function dedupeContexts(list: CardContext[]): CardContext[] {
  * analysis cannot tell which regime a stretch of study was produced under —
  * or whether changing a limit actually helped.
  */
+/** Settings are numeric knobs plus a few switches. */
+export type SrSettingValue = number | boolean;
+
 export interface SettingsChange {
   ts: number;
   deckId?: string; // absent = the global set
-  changes: Record<string, [from: number | undefined, to: number | undefined]>;
+  changes: Record<string, [from: SrSettingValue | undefined, to: SrSettingValue | undefined]>;
 }
 
 export interface ReviewLog {

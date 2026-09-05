@@ -97,7 +97,7 @@ export function Settings() {
     }
   }
 
-  function update<K extends keyof SrSettings>(key: K, value: number) {
+  function update<K extends keyof SrSettings>(key: K, value: SrSettings[K]) {
     const next = { ...s, [key]: value };
     setS(next);
     void saveSettings(next);

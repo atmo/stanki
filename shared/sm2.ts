@@ -21,6 +21,7 @@ export const DEFAULT_SETTINGS: SrSettings = {
   leechThreshold: 5,
   againGapCards: 50,
   againMaxPerDay: 3,
+  bothDirectionsPerSession: false,
 };
 
 /**
@@ -119,11 +120,17 @@ export function selectDue(
   const newRemaining = Math.max(0, settings.newCardsPerDay - daily.newToday);
   const reviewRemaining = Math.max(0, settings.maxReviewsPerDay - daily.reviewsToday);
 
+  // Burying is per queue build, so the sides skipped here are still due and are
+  // served the next time review is opened — which is why a two-sided deck takes
+  // two sittings. Turning it off puts everything due in one queue: the shuffle
+  // keeps the two sides apart, but the second one is a weaker test, since its
+  // answer was on screen earlier in the session.
+  const bury = !settings.bothDirectionsPerSession;
   const seen = new Set<string>(); // card ids already chosen — bury the sibling
   const reviewItems: ReviewItem[] = [];
   let capped = 0; // only day-scale reviews are charged to the cap
   for (const it of due) {
-    if (it.schedule.interval === 0 || seen.has(it.card.id)) continue;
+    if (it.schedule.interval === 0 || (bury && seen.has(it.card.id))) continue;
     // A sub-day interval means the card is part-way through relearning: work
     // already started rather than new work arriving, so it is not held back by
     // the daily allowance. dailyCounts leaves it uncharged for the same reason,
@@ -136,7 +143,7 @@ export function selectDue(
   }
   const newItems: ReviewItem[] = [];
   for (const it of due) {
-    if (it.schedule.interval > 0 || seen.has(it.card.id)) continue;
+    if (it.schedule.interval > 0 || (bury && seen.has(it.card.id))) continue;
     if (newItems.length >= newRemaining) continue;
     newItems.push(it);
     seen.add(it.card.id);
