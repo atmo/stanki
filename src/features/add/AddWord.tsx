@@ -9,6 +9,7 @@ import { dedupKey } from '@shared/dedup';
 import type { CardContext } from '@shared/types';
 import { LookupResults } from '../lookup/LookupResults';
 import { ContextsField } from '../../components/ContextsField';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 export function AddWord() {
   const [params] = useSearchParams();
@@ -166,8 +167,8 @@ export function AddWord() {
             <Link to={`/deck/${exact[0].deckId}`}>edit instead?</Link>
           </p>
         )}
-        <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
-        <textarea className="input" placeholder="Explanation" rows={3} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+        <AutoTextarea className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
+        <AutoTextarea className="input" placeholder="Explanation" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <ContextsField contexts={contexts} onChange={setContexts} />
         <div className="row">
           <select className="input sel-move" value={deckId} onChange={(e) => setDeckId(e.target.value)}>

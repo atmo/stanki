@@ -9,6 +9,7 @@ import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 interface UndoSnapshot {
   prior: Card; // card state before the grade
@@ -46,8 +47,8 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
           Look up
         </button>
       </div>
-      <textarea className="input" placeholder="Back" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
-      <textarea className="input" placeholder="Explanation" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+      <AutoTextarea className="input" placeholder="Back" value={back} onChange={(e) => setBack(e.target.value)} />
+      <AutoTextarea className="input" placeholder="Explanation" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
       <label className="field-label">Context</label>
       <ContextsField contexts={contexts} onChange={setContexts} />
       <div className="row">

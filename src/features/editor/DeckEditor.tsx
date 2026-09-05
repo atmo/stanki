@@ -28,6 +28,7 @@ import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { worstLeech, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { ContextsField } from '../../components/ContextsField';
 import { SettingsFields } from '../../components/SettingsFields';
+import { AutoTextarea } from '../../components/AutoTextarea';
 
 const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
 
@@ -93,8 +94,8 @@ function CardRow({
             Look up
           </button>
         </div>
-        <textarea className="input" rows={2} value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
-        <textarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" rows={2} />
+        <AutoTextarea className="input" value={back} onChange={(e) => setBack(e.target.value)} placeholder="Back" />
+        <AutoTextarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" />
         <label className="field-label">Context</label>
         <ContextsField contexts={contexts} onChange={setContexts} />
         <CardMeta card={card} />
@@ -334,9 +335,8 @@ export function DeckEditor() {
 
       <label className="field">
         <span>Description</span>
-        <textarea
+        <AutoTextarea
           className="input"
-          rows={2}
           placeholder="Optional notes about this deck"
           defaultValue={data.deck.description ?? ''}
           onBlur={(e) => void setDeckDescription(id, e.target.value)}
@@ -376,8 +376,8 @@ export function DeckEditor() {
             Look up
           </button>
         </div>
-        <textarea className="input" placeholder="Back (answer / translation)" rows={2} value={back} onChange={(e) => setBack(e.target.value)} />
-        <textarea className="input" placeholder="Explanation (optional)" rows={2} value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+        <AutoTextarea className="input" placeholder="Back (answer / translation)" value={back} onChange={(e) => setBack(e.target.value)} />
+        <AutoTextarea className="input" placeholder="Explanation (optional)" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
         <ContextsField contexts={contexts} onChange={setContexts} />
         <div className="row">
           <button className="btn btn-primary" type="submit">Add card</button>
@@ -402,7 +402,7 @@ export function DeckEditor() {
       {showBulk && (
         <div className="card-form">
           <p className="muted small">One card per line, <code>front⇥back</code> (tab-separated).</p>
-          <textarea className="input" rows={5} value={bulk} onChange={(e) => setBulk(e.target.value)} placeholder={'hello\thola\nworld\tmundo'} />
+          <AutoTextarea className="input" value={bulk} onChange={(e) => setBulk(e.target.value)} placeholder={'hello\thola\nworld\tmundo'} />
           <button className="btn btn-primary" onClick={() => void importBulk()}>Import</button>
         </div>
       )}

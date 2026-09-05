@@ -1,4 +1,5 @@
 import type { CardContext } from '@shared/types';
+import { AutoTextarea } from './AutoTextarea';
 
 /** Edit a card's contexts: one editable sentence per row with an ✕ to remove and,
  * if the context was captured from a page, a small link to its source. Plus a
@@ -16,9 +17,8 @@ export function ContextsField({
     <div className="contexts-field">
       {contexts.map((c, i) => (
         <div key={i} className="context-row">
-          <textarea
+          <AutoTextarea
             className="input"
-            rows={1}
             placeholder="Context sentence"
             value={c.text}
             onChange={(e) => set(i, e.target.value)}
