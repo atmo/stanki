@@ -9,6 +9,7 @@ import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
+import { SynonymsField } from '../../components/SynonymsField';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
 interface UndoSnapshot {
@@ -51,6 +52,8 @@ function CardEdit({ card, onSave, onCancel }: { card: Card; onSave: (patch: Card
       <AutoTextarea className="input" placeholder="Explanation" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
       <label className="field-label">Context</label>
       <ContextsField contexts={contexts} onChange={setContexts} />
+      <label className="field-label">Synonyms</label>
+      <SynonymsField card={card} />
       <div className="row">
         <button className="btn btn-primary" onClick={() => void save()}>Save</button>
         <button className="btn" onClick={onCancel}>Cancel</button>

@@ -311,3 +311,14 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
    ceiling so a long answer cannot push the buttons off a phone screen. Manual
    resizing is off — the height is reclaimed on the next keystroke regardless. */
 textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
+
+/* Synonym links */
+.synonyms { display: flex; flex-direction: column; gap: 6px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; font-size: 0.82rem;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 999px; }
+.chip-x { background: none; border: none; color: var(--muted); cursor: pointer; padding: 0 2px; font-size: 1rem; line-height: 1; }
+.chip-x:hover { color: var(--danger, #f87171); }
+.lookup-list { list-style: none; margin: 0; padding: 0; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.lookup-hit { display: block; width: 100%; text-align: left; padding: 7px 10px; background: none; border: none; color: inherit; cursor: pointer; }
+.lookup-hit:hover { background: var(--panel); }

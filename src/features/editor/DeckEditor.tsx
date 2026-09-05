@@ -27,6 +27,7 @@ import { type Card, type CardContext, type Deck, type ReviewDirection, cardConte
 import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
 import { worstLeech, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { ContextsField } from '../../components/ContextsField';
+import { SynonymsField } from '../../components/SynonymsField';
 import { SettingsFields } from '../../components/SettingsFields';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
@@ -98,6 +99,10 @@ function CardRow({
         <AutoTextarea className="input" value={explanation} onChange={(e) => setExplanation(e.target.value)} placeholder="Explanation" />
         <label className="field-label">Context</label>
         <ContextsField contexts={contexts} onChange={setContexts} />
+        <label className="field-label">Synonyms</label>
+        {/* Links save immediately rather than on Save: they are writes to two
+            cards' relationship, not part of this card's draft. */}
+        <SynonymsField card={card} />
         <CardMeta card={card} />
         <div className="row">
           <button className="btn btn-primary" onClick={() => void save()}>Save</button>
