@@ -345,13 +345,13 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
 .btn-tiny { padding: 1px 7px; font-size: 0.76rem; }
 .link-row-wrap { display: flex; flex-direction: column; gap: 2px; }
 /* The card count doubles as the disclosure for the cards citing the link. */
-/* Plain muted text, as before, but big enough to read and to hit: the vertical
-   padding costs nothing visually with no background behind it, and gives the
-   control a tap target on a phone. The caret alone shows the open state. */
+/* Plain muted text on no background, at the caption size it always was. Only the
+   caret is enlarged — it is the part being aimed at, and it alone shows the open
+   state. line-height: 1 keeps the taller glyph from stretching the row. */
 .link-count { display: inline-flex; align-items: center; gap: 8px; padding: 6px 2px; cursor: pointer;
-  background: none; border: none; color: var(--muted); font-size: 1.6rem; white-space: nowrap; }
+  background: none; border: none; color: var(--muted); font-size: 0.8rem; white-space: nowrap; }
 .link-count:hover { color: var(--primary); }
-.link-count .caret { font-size: 1.8rem; }
+.link-count .caret { font-size: 1.8rem; line-height: 1; }
 .link-cards { list-style: none; margin: 2px 0 6px; padding-left: 14px; display: flex;
   flex-wrap: wrap; gap: 2px 12px; font-size: 0.82rem; }
 
