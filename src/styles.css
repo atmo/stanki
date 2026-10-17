@@ -357,3 +357,9 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
 .link-count .caret { color: var(--primary); font-size: 0.9rem; }
 .link-cards { list-style: none; margin: 2px 0 6px; padding-left: 14px; display: flex;
   flex-wrap: wrap; gap: 2px 12px; font-size: 0.82rem; }
+
+/* Deck editor is cards only; the deck's own configuration lives on its settings
+   screen, so the name here is a heading rather than a field. */
+.deck-title { flex: 1; min-width: 0; margin: 0; font-size: 1.15rem; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
+.deck-danger { margin-top: 22px; padding-top: 14px; border-top: 1px solid var(--border); }

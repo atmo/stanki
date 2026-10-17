@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
@@ -11,24 +11,14 @@ import {
   updateCard,
   deleteCard,
   deleteCards,
-  deleteDeck,
-  exportDeck,
   moveCards,
-  renameDeck,
-  setReviewDirection,
-  setDeckDescription,
-  setDeckSettings,
-  effectiveSettings,
-  getSettings,
   getDeckSettings,
   getLeechCounts,
 } from '../../db/repo';
-import { type Card, type CardContext, type Deck, type ReviewDirection, cardContexts } from '@shared/types';
-import { DEFAULT_SETTINGS, type SrSettings } from '@shared/sm2';
+import { type Card, type CardContext, type Deck, cardContexts } from '@shared/types';
 import { worstLeech, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { ContextsField } from '../../components/ContextsField';
 import { SynonymsField } from '../../components/SynonymsField';
-import { SettingsFields } from '../../components/SettingsFields';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
 const fmtDate = (ts: number | undefined): string => (ts ? new Date(ts).toLocaleDateString() : '—');
@@ -165,7 +155,6 @@ function CardRow({
 
 export function DeckEditor() {
   const { id = '' } = useParams();
-  const navigate = useNavigate();
   const [front, setFront] = useState('');
   const [back, setBack] = useState('');
   const [contexts, setContexts] = useState<CardContext[]>([]);
@@ -179,12 +168,6 @@ export function DeckEditor() {
   const [search, setSearch] = useState(params.get('q') ?? '');
   const [lookupTerm, setLookupTerm] = useState('');
   const [lookups, setLookups] = useState<Lookups | null>(null);
-  const [globalSettings, setGlobalSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
-
-  useEffect(() => {
-    void getSettings().then(setGlobalSettings);
-  }, []);
-
   const data = useLiveQuery(async () => {
     const deck = await db.decks.get(id);
     const cards = await db.cards.where('deckId').equals(id).filter((c) => !c.deleted).toArray();
@@ -278,29 +261,10 @@ export function DeckEditor() {
     setSelected(new Set());
   }
 
-  async function removeDeck(name: string, count: number) {
-    if (!confirm(`Delete deck “${name}” and its ${count} card(s)? This cannot be undone.`)) return;
-    await deleteDeck(id);
-    navigate('/');
-  }
-
-  async function doExport() {
-    const bundle = await exportDeck(id);
-    const name = bundle.decks[0]?.name ?? 'deck';
-    const slug = name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || 'deck';
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `stanki-deck-${slug}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
 
   if (!data) return <p className="muted">Loading…</p>;
   if (!data.deck) return <p className="muted">Deck not found. <Link to="/">Back</Link></p>;
 
-  const deck = data.deck;
   const otherDecks: Deck[] = data.allDecks.filter((d) => d.id !== id);
   const q = search.trim().toLowerCase();
   const visibleCards = q
@@ -313,68 +277,11 @@ export function DeckEditor() {
   return (
     <div>
       <div className="row editor-head">
-        <input
-          className="input title-input"
-          value={data.deck.name}
-          onChange={(e) => void renameDeck(id, e.target.value)}
-        />
+        {/* The name is shown, not edited: renaming belongs with the rest of the
+            deck's configuration, and this is the page's heading. */}
+        <h1 className="deck-title">{data.deck.name}</h1>
+        <Link className="btn" to={`/deck/${id}/settings`}>Settings</Link>
         <Link className="btn" to="/">Done</Link>
-        <button className="btn" onClick={() => void doExport()}>Export</button>
-        <button
-          className="btn btn-danger"
-          onClick={() => void removeDeck(deck.name, data.cards.length)}
-        >
-          Delete deck
-        </button>
-      </div>
-
-      <label className="field">
-        <span>Review direction</span>
-        <select
-          className="input"
-          value={data.deck.reviewDirection ?? 'forward'}
-          onChange={(e) => void setReviewDirection(id, e.target.value as ReviewDirection)}
-        >
-          <option value="forward">Front → back</option>
-          <option value="reverse">Back → front</option>
-          <option value="both">Both ways</option>
-        </select>
-      </label>
-
-      <label className="field">
-        <span>Description</span>
-        <AutoTextarea
-          className="input"
-          placeholder="Optional notes about this deck"
-          defaultValue={data.deck.description ?? ''}
-          onBlur={(e) => void setDeckDescription(id, e.target.value)}
-        />
-      </label>
-
-      <div className="field">
-        <label className="checkline">
-          <input
-            type="checkbox"
-            checked={!!deck.settings}
-            onChange={(e) => void setDeckSettings(id, e.target.checked ? effectiveSettings(deck, globalSettings) : undefined)}
-          />
-          <span>Custom scheduling &amp; limits for this deck</span>
-        </label>
-        {deck.settings ? (
-          <div className="deck-settings">
-            {/* Render the *resolved* set, never the stored object: overrides saved
-                before a setting existed lack that key, and the type cannot say so.
-                Writing the resolved set back also completes it on the next edit. */}
-            <SettingsFields
-              value={effectiveSettings(deck, globalSettings)}
-              onChange={(key, v) =>
-                void setDeckSettings(id, { ...effectiveSettings(deck, globalSettings), [key]: v })
-              }
-            />
-          </div>
-        ) : (
-          <p className="muted small">Using the global settings.</p>
-        )}
       </div>
 
       <form className="card-form" onSubmit={add}>
