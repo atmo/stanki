@@ -38,6 +38,11 @@ export interface SrSettings {
 export interface CardContext {
   text: string;
   url?: string;
+  // What to show and group by instead of `url`. Absent means they are the same.
+  // Lets an archive mirror or a tracking-laden link be filed under the site it
+  // actually came from — the grouping follows this, not the real address. Free
+  // text, not necessarily a url, so anything reading it must tolerate that.
+  displayUrl?: string;
   addedAt?: number;
 }
 

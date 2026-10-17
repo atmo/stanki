@@ -608,3 +608,26 @@ export async function searchDeckCards(
     .sort((a, b) => a.front.toLowerCase().indexOf(q) - b.front.toLowerCase().indexOf(q))
     .slice(0, limit);
 }
+
+/**
+ * Set (or clear) the label shown for a link, on every context that points at the
+ * same actual url. One url can sit on hundreds of cards — the KNM regulation
+ * link is on all 202 — so this is deliberately a collection-wide edit rather
+ * than a per-card one.
+ *
+ * Bumps `rev`, because merging unions contexts and de-dupes them by text: an
+ * edited copy and a stale one collapse to whichever comes first, so without an
+ * authority bump the relabel can simply vanish on the next sync.
+ */
+export async function setLinkDisplay(url: string, displayUrl: string | undefined): Promise<number> {
+  const label = displayUrl?.trim() || undefined;
+  const cards = await db.cards.filter((c) => !c.deleted && cardContexts(c).some((x) => x.url === url)).toArray();
+  const now = Date.now();
+  await db.transaction('rw', db.cards, async () => {
+    for (const c of cards) {
+      const contexts = cardContexts(c).map((x) => (x.url === url ? { ...x, displayUrl: label } : x));
+      await db.cards.update(c.id, { contexts, rev: now, updatedAt: now });
+    }
+  });
+  return cards.length;
+}

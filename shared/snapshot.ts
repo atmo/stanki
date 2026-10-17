@@ -54,7 +54,9 @@ function pickCard(a: Card, b: Card): Card {
   const ra = a.rev ?? 0;
   const rb = b.rev ?? 0;
   // Contexts de-dupe by their (trimmed) text — enough to collapse the same
-  // capture synced twice; the first copy's URL wins.
+  // capture synced twice; the first copy's URL wins. That is also why relabelling
+  // a link bumps `rev`: an edited copy and a stale one have identical text, so a
+  // union would keep whichever came first and the edit could vanish.
   const contexts =
     ra === rb
       ? dedupe([...cardContexts(a), ...cardContexts(b)], (c) => c.text.trim())

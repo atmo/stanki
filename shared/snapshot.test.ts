@@ -211,3 +211,28 @@ describe('mergeCards — synonym links', () => {
     expect(m.contexts!.map((c) => c.text).sort()).toEqual(['x', 'y']); // still unioned
   });
 });
+
+describe('mergeCards — a relabelled link', () => {
+  const card = (contexts: object[], over: Partial<Card> = {}): Card => ({
+    id: 'a', deckId: 'd', front: 'f', back: 'b', interval: 0, easeFactor: 2.5,
+    repetitions: 0, dueDate: 0, createdAt: 0, updatedAt: 0,
+    contexts: contexts as never, ...over,
+  });
+
+  it('survives a merge against a stale copy, via the rev bump', () => {
+    // Identical text on both sides, so a union would de-dupe to whichever came
+    // first and could drop the edit. The higher rev makes it authoritative.
+    const edited = card([{ text: 'zin', url: 'https://archive.is/x', displayUrl: 'https://nos.nl/a' }],
+      { rev: 500, updatedAt: 1 });
+    const stale = card([{ text: 'zin', url: 'https://archive.is/x' }], { updatedAt: 900 });
+    const [m] = mergeCards([edited], [stale]);
+    expect(m.contexts![0].displayUrl).toBe('https://nos.nl/a');
+  });
+
+  it('still unions a genuinely new context captured elsewhere', () => {
+    const a = card([{ text: 'een', url: 'https://x.test/1' }], { updatedAt: 2 });
+    const b = card([{ text: 'twee', url: 'https://x.test/2' }], { updatedAt: 1 });
+    const [m] = mergeCards([a], [b]);
+    expect(m.contexts!.map((c) => c.text).sort()).toEqual(['een', 'twee']);
+  });
+});
