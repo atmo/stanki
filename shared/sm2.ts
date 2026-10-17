@@ -173,6 +173,9 @@ export function scheduleState(
   settings: SrSettings = DEFAULT_SETTINGS,
 ): CardSchedule {
   let { interval, easeFactor, repetitions } = s;
+  // Captured before the branches below overwrite `interval`: whether the card
+  // had actually graduated decides what a struggle with it costs.
+  const wasDayScale = interval >= 1;
 
   if (grade === 'again') {
     // Re-show within the session. Interval is kept as a fraction of a day so it
@@ -180,7 +183,7 @@ export function scheduleState(
     // only dented for a genuine lapse of an already-graduated card (interval
     // >= 1 day) — repeatedly pressing Again while learning shouldn't thrash it.
     repetitions = 0;
-    if (interval >= 1) easeFactor = Math.max(MIN_EASE, easeFactor - 0.2);
+    if (wasDayScale) easeFactor = Math.max(MIN_EASE, easeFactor - 0.2);
     const mins = Math.max(1, settings.againInterval);
     return { interval: mins / MINS_PER_DAY, easeFactor, repetitions, dueDate: now + mins * MIN_MS };
   }
@@ -220,10 +223,18 @@ export function scheduleState(
     if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
   }
 
-  easeFactor = Math.max(
-    MIN_EASE,
-    easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
-  );
+  // Hard is charged ease on the same terms as Again: only once the card has
+  // graduated. Without this it was the sole grade that cost ease while learning,
+  // so struggling through an introduction or a relearning step was dearer than
+  // failing it outright — the better answer penalised and the worse one free.
+  // Good is +0.00 regardless, and Easy earning ease on a new card is the point
+  // of pressing it, so only Hard needs the guard.
+  if (grade !== 'hard' || wasDayScale) {
+    easeFactor = Math.max(
+      MIN_EASE,
+      easeFactor + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)),
+    );
+  }
 
   interval = Math.max(1, interval);
 
@@ -269,8 +280,9 @@ export function startOfNextDay(now = Date.now()): number {
  *       left until tomorrow once the day's allowance for them runs out
  *   6 — Hard advances the interval by at least a day, instead of the multiplier
  *       rounding away below ~3 days and parking the card
+ *   7 — Hard costs ease only once a card has graduated, matching Again
  */
-export const SCHEDULER_VERSION = 6;
+export const SCHEDULER_VERSION = 7;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;

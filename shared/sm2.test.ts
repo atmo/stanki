@@ -108,6 +108,28 @@ describe('schedule', () => {
     expect(scheduleState({ ...oneDay, interval: 10 }, 'hard', NOW).interval).toBe(12);
   });
 
+  it('Hard costs ease only once the card has graduated', () => {
+    // Before this, Hard was the one grade that charged ease while learning: a
+    // struggled introduction cost 0.14 while failing it outright cost nothing.
+    const newCard = { interval: 0, easeFactor: 2.5, repetitions: 0, dueDate: NOW };
+    expect(scheduleState(newCard, 'hard', NOW).easeFactor).toBe(2.5);
+
+    const relearning = { interval: 5 / 1440, easeFactor: 2.3, repetitions: 0, dueDate: NOW };
+    expect(scheduleState(relearning, 'hard', NOW).easeFactor).toBe(2.3);
+
+    // A graduated card still pays, which is where the signal belongs.
+    const graduated = { interval: 10, easeFactor: 2.5, repetitions: 4, dueDate: NOW };
+    expect(scheduleState(graduated, 'hard', NOW).easeFactor).toBeCloseTo(2.36, 5);
+  });
+
+  it('still lets Easy earn ease on a new card', () => {
+    // The guard is Hard-only: earning ease is the whole point of pressing Easy,
+    // and Good is neutral regardless.
+    const newCard = { interval: 0, easeFactor: 2.5, repetitions: 0, dueDate: NOW };
+    expect(scheduleState(newCard, 'easy', NOW).easeFactor).toBeCloseTo(2.6, 5);
+    expect(scheduleState(newCard, 'good', NOW).easeFactor).toBe(2.5);
+  });
+
   it('Hard stays below Good on a new card, rather than overtaking it', () => {
     // The floor must not reach a new or relearning card: Good graduates to one
     // day, so sending Hard to two would order the grades backwards.
