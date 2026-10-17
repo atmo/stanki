@@ -75,6 +75,33 @@ kept here so they don't get re-proposed:
       `reviewQueue` shuffles, so a card carried over lands anywhere. Landing late
       means too few cards remain to re-queue it, so it is held over again and can
       ping-pong for days without ever getting a same-day retry.
+- [ ] **Study every deck in one session** (M) — one queue across all decks rather
+      than opening each in turn. Build each deck's queue with its own settings and
+      its own daily counts, then merge and shuffle: selection still runs per deck,
+      so limits, review direction, burying and sibling rules all keep their
+      meaning. Needs a separate route (`/review-all`) — deck ids are not all
+      uuids, `inbox` and the KNM imports use literal ones — and the card's deck
+      shown per card, since a Dutch word and a civics question are different
+      tasks.
+
+      Prerequisite: `Review.tsx` resolves settings once per session, but the
+      *defer decision* reads `againGapCards`/`againMaxPerDay` from them, so a
+      mixed queue would apply one deck's rules to another's cards. Wants a
+      `Map<deckId, SrSettings>`; a no-op for a single deck, so it can land first
+      on its own. `gradeCard` is already per-card and needs nothing.
+
+      Blocked on one decision: **per-deck limits add up**. 50 + 50 + 20 + 20 + 20
+      is up to 160 new cards a day, and De/het and Irregular verbs hold 1,613
+      unseen cards between them — decks that are parked, not abandoned (Irregular
+      verbs has 2 studied cards). So a deck needs a way to sit out a combined
+      session: either `newCardsPerDay: 0`, which also stops it being studied
+      directly, or an "include in all-decks review" flag, which does not. The flag
+      is the better answer; it is one more setting.
+
+      Side effect worth expecting: hold-overs drop sharply. Tail deferrals are a
+      property of a session's *end* (~`gap` x miss-rate, confirmed across gap
+      values), so merging three sittings into one replaces three tails with one —
+      roughly 57 held-over cards a day becoming 19.
 - [ ] **Reschedule tool** (M) — recompute due dates under current settings, so a
       settings change reaches the existing backlog instead of only new reviews.
 - [ ] **Max-interval cap + configurable graduating/second interval** (S each) —
