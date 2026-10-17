@@ -98,6 +98,30 @@ describe('schedule', () => {
     expect(run(['good', 'good']).easeFactor).toBeCloseTo(2.5, 5); // Good leaves it be
   });
 
+  it('orders the grades, so a better answer is never scheduled sooner', () => {
+    // Hard gained a +1 floor before Good had one, and Good is round(i * ease) —
+    // which is 1 for a one-day card at the 1.30 floor. Hard 2, Good 1, Easy 1.
+    const floored = { interval: 1, easeFactor: 1.3, repetitions: 4, dueDate: NOW };
+    const p = previewIntervals(floored, DEFAULT_SETTINGS);
+    expect(p.hard).toBeLessThan(p.good);
+    expect(p.good).toBeLessThan(p.easy);
+    expect([p.hard, p.good, p.easy]).toEqual([2, 3, 4]);
+  });
+
+  it('advances a floored card on Good, not just on Hard', () => {
+    // round(1 * 1.3) is 1: at the ease floor Good left the card where it was,
+    // reviewed daily for ever. Good is 52% of answers, so this mattered more
+    // than the Hard case it was found alongside.
+    const floored = { interval: 1, easeFactor: 1.3, repetitions: 4, dueDate: NOW };
+    expect(scheduleState(floored, 'good', NOW).interval).toBeGreaterThan(1);
+  });
+
+  it('leaves a healthy card to the ease factor', () => {
+    const healthy = { interval: 10, easeFactor: 2.5, repetitions: 5, dueDate: NOW };
+    const p = previewIntervals(healthy, DEFAULT_SETTINGS);
+    expect([p.hard, p.good, p.easy]).toEqual([12, 25, 33]); // floors inactive
+  });
+
   it('Hard always gains ground once the card is day-scale', () => {
     // round(1 * 1.2) is 1, so without a floor a one-day card graded Hard stayed
     // at one day indefinitely while still losing ease on every press.

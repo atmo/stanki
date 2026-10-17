@@ -193,34 +193,37 @@ export function scheduleState(
   const q = grade === 'easy' ? 5 : grade === 'hard' ? 3 : 4;
   repetitions += 1;
 
+  // Hard's interval, needed even when grading something else: Good has to clear
+  // it, or the buttons come out in the wrong order.
+  //
+  // Each pass gains at least a day. Without that the multiplier rounds away on
+  // the short intervals where most reviews live — round(1 * 1.2) is 1 for Hard,
+  // and round(1 * 1.3) is 1 for Good at the ease floor — so the card is reviewed
+  // daily for ever, paying the ease step each time and escaping only by luck.
+  //
+  // The floor waits until the card is day-scale: on a new or relearning card it
+  // would send Hard to two days while Good graduates to one, which puts the
+  // grades the wrong way round in the other direction.
+  const hardIvl = wasDayScale
+    ? Math.max(Math.round(interval * settings.hardMultiplier), interval + 1)
+    : 1;
+
   if (grade === 'hard') {
-    // Recalled, but only just. Nudge the interval instead of taking the full
-    // ease step: an answer dragged up after long hesitation predicts failure far
-    // better than a confident one, and without this the two are scheduled alike.
-    // Sub-day intervals (a new card, or one in relearning) read as a day, so
-    // Hard always graduates to at least tomorrow rather than shrinking.
-    //
-    // Once day-scale, gain at least a day, or the multiplier rounds away on the
-    // short intervals where most reviews live: round(1 * 1.2) is 1, so a one-day
-    // card graded Hard stayed at one day for ever while still paying the ease
-    // step each time, escapable only by grading it Good. Measured over four
-    // months, 873 of 873 Hard presses on a one-day card left it where it was,
-    // and 61% of all Hard presses moved nothing. Anki enforces the same floor.
-    //
-    // The floor waits until the card is day-scale: applying it to a new or
-    // relearning card would send Hard to two days while Good graduates to one,
-    // which puts the grades the wrong way round.
-    interval =
-      interval >= 1
-        ? Math.max(Math.round(interval * settings.hardMultiplier), interval + 1)
-        : 1;
+    // Recalled, but only just: nudge the interval rather than taking the full
+    // ease step, since an answer dragged up after hesitation predicts failure
+    // far better than a confident one.
+    interval = hardIvl;
   } else if (repetitions === 1) {
     // Graduating interval: Easy jumps ahead of Good so the two differ on a new
     // card (otherwise the easy bonus rounds 1d back to 1d).
     interval = grade === 'easy' ? settings.easyFirstInterval : 1;
   } else {
-    interval = repetitions === 2 ? 4 : Math.round(interval * easeFactor);
-    if (grade === 'easy') interval = Math.round(interval * settings.easyBonus);
+    const grown = repetitions === 2 ? 4 : Math.round(interval * easeFactor);
+    // Strictly ahead of Hard, so a stronger answer is never scheduled sooner.
+    interval = Math.max(grown, hardIvl + 1);
+    if (grade === 'easy') {
+      interval = Math.max(Math.round(interval * settings.easyBonus), interval + 1);
+    }
   }
 
   // Hard is charged ease on the same terms as Again: only once the card has
@@ -281,8 +284,11 @@ export function startOfNextDay(now = Date.now()): number {
  *   6 — Hard advances the interval by at least a day, instead of the multiplier
  *       rounding away below ~3 days and parking the card
  *   7 — Hard costs ease only once a card has graduated, matching Again
+ *   8 — every pass gains at least a day, and the grades are strictly ordered:
+ *       Good clears Hard and Easy clears Good, so a better answer is never
+ *       scheduled sooner
  */
-export const SCHEDULER_VERSION = 7;
+export const SCHEDULER_VERSION = 8;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;
