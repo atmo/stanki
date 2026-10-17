@@ -98,6 +98,23 @@ describe('schedule', () => {
     expect(run(['good', 'good']).easeFactor).toBeCloseTo(2.5, 5); // Good leaves it be
   });
 
+  it('Hard always gains ground once the card is day-scale', () => {
+    // round(1 * 1.2) is 1, so without a floor a one-day card graded Hard stayed
+    // at one day indefinitely while still losing ease on every press.
+    const oneDay = { interval: 1, easeFactor: 2.5, repetitions: 3, dueDate: NOW };
+    expect(scheduleState(oneDay, 'hard', NOW).interval).toBe(2);
+    expect(scheduleState({ ...oneDay, interval: 2 }, 'hard', NOW).interval).toBe(3);
+    // Longer intervals already cleared the floor, so the multiplier still rules.
+    expect(scheduleState({ ...oneDay, interval: 10 }, 'hard', NOW).interval).toBe(12);
+  });
+
+  it('Hard stays below Good on a new card, rather than overtaking it', () => {
+    // The floor must not reach a new or relearning card: Good graduates to one
+    // day, so sending Hard to two would order the grades backwards.
+    expect(run(['hard']).interval).toBe(1);
+    expect(run(['good']).interval).toBe(1);
+  });
+
   it('Hard never lands below a day, from a new or a relearning card', () => {
     expect(run(['hard']).interval).toBe(1); // new card graduates
     expect(run(['good', 'again', 'hard']).interval).toBe(1); // sub-day relearning step
