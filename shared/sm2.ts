@@ -204,9 +204,16 @@ export function scheduleState(
   // The floor waits until the card is day-scale: on a new or relearning card it
   // would send Hard to two days while Good graduates to one, which puts the
   // grades the wrong way round in the other direction.
-  const hardIvl = wasDayScale
-    ? Math.max(Math.round(interval * settings.hardMultiplier), interval + 1)
-    : 1;
+  // Only a card with a streak to its name grows from its interval. Without the
+  // streak test a day-scale card whose repetitions had been zeroed offered Hard
+  // two days against Good's one — the graduating branch below ignores the
+  // interval, so Hard was the only grade still reading it. The scheduler cannot
+  // reach that state (the one thing that zeroes repetitions also makes the
+  // interval sub-day) but an imported or restored card can arrive in it.
+  const hardIvl =
+    wasDayScale && repetitions > 1
+      ? Math.max(Math.round(interval * settings.hardMultiplier), interval + 1)
+      : 1;
 
   if (grade === 'hard') {
     // Recalled, but only just: nudge the interval rather than taking the full

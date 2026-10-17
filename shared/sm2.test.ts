@@ -98,6 +98,40 @@ describe('schedule', () => {
     expect(run(['good', 'good']).easeFactor).toBeCloseTo(2.5, 5); // Good leaves it be
   });
 
+  it('never offers a weaker answer a longer interval, across the whole space', () => {
+    // Swept rather than argued: the +1 floors interact with the graduating
+    // branch, the ease factor and three settings, and an inversion is invisible
+    // until it appears on the buttons.
+    const intervals = [0, 5 / 1440, 0.5, 1, 2, 3, 4, 7, 10, 21, 60, 365, 1000];
+    const eases = [1.3, 1.6, 2.0, 2.5, 3.0];
+    const reps = [0, 1, 2, 3, 5, 20];
+    const variants = [
+      DEFAULT_SETTINGS,
+      { ...DEFAULT_SETTINGS, easyFirstInterval: 1 },
+      { ...DEFAULT_SETTINGS, easyBonus: 1.0 },
+      { ...DEFAULT_SETTINGS, hardMultiplier: 1.0 },
+      { ...DEFAULT_SETTINGS, hardMultiplier: 3, easyBonus: 1.0, easyFirstInterval: 1 },
+    ];
+    for (const settings of variants) {
+      for (const interval of intervals) {
+        for (const easeFactor of eases) {
+          for (const repetitions of reps) {
+            const p = previewIntervals({ interval, easeFactor, repetitions, dueDate: NOW }, settings);
+            const where = `i=${interval} e=${easeFactor} r=${repetitions}`;
+            expect(p.again, where).toBeLessThan(1);
+            expect(p.hard, where).toBeLessThanOrEqual(p.good);
+            expect(p.good, where).toBeLessThanOrEqual(p.easy);
+            // Strictly ordered wherever the card has a streak to grow from.
+            if (interval >= 1 && repetitions > 1) {
+              expect(p.hard, where).toBeLessThan(p.good);
+              expect(p.good, where).toBeLessThan(p.easy);
+            }
+          }
+        }
+      }
+    }
+  });
+
   it('orders the grades, so a better answer is never scheduled sooner', () => {
     // Hard gained a +1 floor before Good had one, and Good is round(i * ease) —
     // which is 1 for a one-day card at the 1.30 floor. Hard 2, Good 1, Easy 1.
