@@ -115,7 +115,8 @@ function LinkItem({ row }: { row: LinkRow }) {
             question the index invites, and the editor's own search can show
             them. */}
         <button className="link-count" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-          {row.cards.length} card{row.cards.length === 1 ? '' : 's'} {open ? '▾' : '▸'}
+          {row.cards.length} card{row.cards.length === 1 ? '' : 's'}
+          <span className="caret">{open ? '▾' : '▸'}</span>
         </button>
         {saved !== null && <span className="muted small">relabelled on {saved}</span>}
         <button className="btn btn-tiny" onClick={() => setEditing(true)}>Rename</button>
