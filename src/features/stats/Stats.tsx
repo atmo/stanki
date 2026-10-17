@@ -219,6 +219,31 @@ export function Stats() {
       </section>
 
       <section className="panel">
+        <h2>By deck</h2>
+        <div className="deck-stats">
+          <div className="deck-stat deck-stat-head">
+            <span>Deck</span>
+            <span className="ds-cols"><span>new</span><span>young</span><span>mature</span><span>total</span></span>
+          </div>
+          {byDeck.map((d) => (
+            <div className="deck-stat" key={d.id}>
+              <span className="ds-deck">
+                <span className="deck-stat-name">{d.name}</span>
+                {d.dir === 'both' && <span className="tag-2s" title="Two-sided — both directions counted">↔</span>}
+                {d.dir === 'reverse' && <span className="tag-2s" title="Reverse only">←</span>}
+              </span>
+              <span className="ds-cols">
+                <span className="ds-new">{d.nw}</span>
+                <span className="ds-young">{d.young}</span>
+                <span className="ds-mature">{d.mature}</span>
+                <span><b>{d.total}</b></span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="panel">
         <h2>Recall</h2>
         {showFilter && <DeckFilter options={deckOptions} value={scopeId} onChange={setScope} />}
         <div className="stat-summary">
@@ -412,31 +437,6 @@ export function Stats() {
           New cards added per {granularity}, over the selected range. <b>{addedSum}</b> added.
         </p>
         <BarChart bars={addedBars} max={addedMax} />
-      </section>
-
-      <section className="panel">
-        <h2>By deck</h2>
-        <div className="deck-stats">
-          <div className="deck-stat deck-stat-head">
-            <span>Deck</span>
-            <span className="ds-cols"><span>new</span><span>young</span><span>mature</span><span>total</span></span>
-          </div>
-          {byDeck.map((d) => (
-            <div className="deck-stat" key={d.id}>
-              <span className="ds-deck">
-                <span className="deck-stat-name">{d.name}</span>
-                {d.dir === 'both' && <span className="tag-2s" title="Two-sided — both directions counted">↔</span>}
-                {d.dir === 'reverse' && <span className="tag-2s" title="Reverse only">←</span>}
-              </span>
-              <span className="ds-cols">
-                <span className="ds-new">{d.nw}</span>
-                <span className="ds-young">{d.young}</span>
-                <span className="ds-mature">{d.mature}</span>
-                <span><b>{d.total}</b></span>
-              </span>
-            </div>
-          ))}
-        </div>
       </section>
 
       <section className="panel">
