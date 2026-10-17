@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { Card, CardDirection, Deck, Grade, ReviewDirection, ReviewLog } from '@shared/types';
+import type { Card, CardDirection, CardSchedule, Deck, Grade, ReviewDirection, ReviewLog } from '@shared/types';
 import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import type { SettingsChange } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
@@ -401,9 +401,32 @@ export async function gradeCard(
 }
 
 /** Reverse a grade: restore the card's prior state and drop its review-log entry. */
-export async function undoGrade(priorCard: Card, reviewId: string): Promise<void> {
+/**
+ * Put one direction of a card back as it was before a grade, and strike the
+ * review it logged.
+ *
+ * Only the schedule is restored, never the whole record: the snapshot was taken
+ * at grade time, so writing it back wholesale would also revert any edit to the
+ * card's text, contexts or synonyms made since. Harmless when undo reached one
+ * card back; not when it reaches twenty.
+ *
+ * The restored state is stamped with the current time so it wins the merge. The
+ * snapshot carries the card's *old* updatedAt, and putting that back left the
+ * copy on Drive looking newer — so the next sync re-applied the grade and the
+ * undo quietly disappeared.
+ */
+export async function undoGrade(
+  priorCard: Card,
+  direction: CardDirection,
+  priorSchedule: CardSchedule,
+  reviewId: string,
+): Promise<void> {
+  const patch: Partial<Card> =
+    direction === 'forward'
+      ? { ...priorSchedule, updatedAt: Date.now() }
+      : { reverse: priorSchedule, updatedAt: Date.now() };
   await db.transaction('rw', db.cards, db.reviews, async () => {
-    await db.cards.put(priorCard);
+    await db.cards.update(priorCard.id, patch);
     // Tombstoned, not deleted: mergeReviews unions by id, so a row that is
     // simply gone comes straight back from Drive — and the merge writes it into
     // the local table again, undoing the undo.

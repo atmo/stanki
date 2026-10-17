@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
-import { type Card, type CardContext, type Grade, cardContexts } from '@shared/types';
+import { type Card, type CardContext, type CardDirection, type CardSchedule, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
 import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, getLinkedCards, missesToday, updateCard, deleteCard } from '../../db/repo';
 import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
@@ -13,10 +13,13 @@ import { SynonymsField } from '../../components/SynonymsField';
 import { AutoTextarea } from '../../components/AutoTextarea';
 
 interface UndoSnapshot {
-  prior: Card; // card state before the grade
-  reviewId: string; // logged review to delete
+  prior: Card; // the card, for its id
+  direction: CardDirection; // which side was graded
+  priorSchedule: CardSchedule; // that side's schedule before the grade
+  reviewId: string; // the review to strike
   queue: ReviewItem[]; // session queue before the grade
   done: number; // done count before the grade
+  deferred: number; // held-over count before the grade
 }
 
 type CardPatch = Pick<Card, 'front' | 'back' | 'explanation' | 'contexts'>;
@@ -173,7 +176,9 @@ export function Review() {
   const [editing, setEditing] = useState(false);
   const [settings, setSettings] = useState<SrSettings>(DEFAULT_SETTINGS);
   const [deckName, setDeckName] = useState('');
-  const [undoSnap, setUndoSnap] = useState<UndoSnapshot | null>(null);
+  // A stack, not one slot: undo walks back through the whole sitting. Each entry
+  // holds the queue as an array of shared references, so depth is cheap.
+  const [undoStack, setUndoStack] = useState<UndoSnapshot[]>([]);
   const [more, setMore] = useState<ReviewItem[] | null>(null); // extra over-limit reviews
   // True once the session continues past the daily cap, so the log can tell
   // capped study from over-limit study — otherwise a deck whose cap is never
@@ -302,7 +307,10 @@ export function Review() {
     }
 
     const { card: updated, reviewId } = await gradeCard(card, direction, g, { ...ctx, defer });
-    setUndoSnap({ prior: card, reviewId, queue, done });
+    setUndoStack((st) => [
+      ...st,
+      { prior: card, direction, priorSchedule: item.schedule, reviewId, queue, done, deferred },
+    ]);
     setRevealed(false);
     setEditing(false);
     if (g === 'again' && !defer) {
@@ -331,11 +339,13 @@ export function Review() {
   }
 
   async function undoReview() {
-    if (!undoSnap) return;
-    await undoGrade(undoSnap.prior, undoSnap.reviewId);
-    setQueue(undoSnap.queue);
-    setDone(undoSnap.done);
-    setUndoSnap(null);
+    const snap = undoStack[undoStack.length - 1];
+    if (!snap) return;
+    await undoGrade(snap.prior, snap.direction, snap.priorSchedule, snap.reviewId);
+    setQueue(snap.queue);
+    setDone(snap.done);
+    setDeferred(snap.deferred);
+    setUndoStack((st) => st.slice(0, -1));
     setEditing(false);
     setRevealed(true); // show the answer so the card can be re-graded immediately
   }
@@ -345,7 +355,9 @@ export function Review() {
     if (!confirm(`Delete card “${card.front}”? This cannot be undone.`)) return;
     const cardId = card.id;
     await deleteCard(cardId);
-    setUndoSnap(null); // the grade-undo no longer applies to a deleted card
+    // The whole stack goes: an entry restores a card by id, and one of them may
+    // be the card just deleted.
+    setUndoStack([]);
     setEditing(false);
     setRevealed(false);
     // Drop every queue item for this card (both directions can be queued).
@@ -387,7 +399,11 @@ export function Review() {
           {more && more.length > 0 && (
             <button className="btn" onClick={studyMore}>Study {more.length} more</button>
           )}
-          {undoSnap && <button className="btn" onClick={() => void undoReview()}>Undo last</button>}
+          {undoStack.length > 0 && (
+            <button className="btn" onClick={() => void undoReview()}>
+              Undo{undoStack.length > 1 ? ` (${undoStack.length})` : ''}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -412,7 +428,11 @@ export function Review() {
           {direction === 'reverse' && <span className="badge badge-due">reverse</span>}
         </span>
         <span className="review-actions">
-          {undoSnap && <button className="btn btn-link" onClick={() => void undoReview()}>Undo</button>}
+          {undoStack.length > 0 && (
+            <button className="btn btn-link" onClick={() => void undoReview()}>
+              Undo{undoStack.length > 1 ? ` (${undoStack.length})` : ''}
+            </button>
+          )}
           <button className="btn btn-link" onClick={() => setEditing(true)}>Edit</button>
           <button className="btn btn-link danger" onClick={() => void deleteCurrent()}>Delete</button>
         </span>
