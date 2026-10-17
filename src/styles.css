@@ -332,7 +332,7 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
   border: none; color: inherit; cursor: pointer; text-align: left; }
 .links-head h2 { margin: 0; flex: 0 0 auto; }
 .links-head .muted { flex: 1; }
-.links-caret { color: var(--primary); font-size: 1.05rem; }
+.links-caret { color: var(--muted); font-size: 1.2rem; }
 .link-deck { margin-top: 14px; }
 .link-deck h3 { margin: 0 0 6px; font-size: 0.98rem; }
 .link-site { margin: 8px 0 0 10px; }
@@ -345,16 +345,13 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
 .btn-tiny { padding: 1px 7px; font-size: 0.76rem; }
 .link-row-wrap { display: flex; flex-direction: column; gap: 2px; }
 /* The card count doubles as the disclosure for the cards citing the link. */
-/* Reads as a control, not as a caption: it was muted 0.8rem text with no border,
-   so the one thing on the row you can open looked like the one thing you can't.
-   The padding also gives it a tap target worth aiming at on a phone. */
-.link-count { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; cursor: pointer;
-  background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
-  color: var(--text); font-size: 0.8rem; white-space: nowrap; }
-.link-count:hover { border-color: var(--primary); color: var(--primary); }
-.link-count[aria-expanded='true'] { background: rgba(37, 99, 235, 0.14); border-color: var(--primary);
-  color: var(--primary); }
-.link-count .caret { color: var(--primary); font-size: 0.9rem; }
+/* Plain muted text, as before, but big enough to read and to hit: the vertical
+   padding costs nothing visually with no background behind it, and gives the
+   control a tap target on a phone. The caret alone shows the open state. */
+.link-count { display: inline-flex; align-items: center; gap: 6px; padding: 5px 2px; cursor: pointer;
+  background: none; border: none; color: var(--muted); font-size: 0.95rem; white-space: nowrap; }
+.link-count:hover { color: var(--primary); }
+.link-count .caret { font-size: 1.1rem; }
 .link-cards { list-style: none; margin: 2px 0 6px; padding-left: 14px; display: flex;
   flex-wrap: wrap; gap: 2px 12px; font-size: 0.82rem; }
 
