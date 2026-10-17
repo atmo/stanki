@@ -64,13 +64,42 @@ kept here so they don't get re-proposed:
       a `suspended` flag on `CardSchedule` (per direction, like the rest of the
       schedule) that syncs like `deleted`. Leech flagging deliberately stops short
       of this, but manual suspend is still missing.
-- [ ] **Resume a lapse from where it was** (M) — probably the largest remaining
-      cut in review volume. A miss overwrites the card's interval with a sub-day
-      value, so a 60-day card that slips restarts at 1 day and re-climbs
-      `1 → 4 → 10 → 25`; roughly 400 cards did that over the analysed period. The
-      pre-lapse interval survives in the log as the miss's `prevInterval`, so
-      carrying it on the card (a `lapsedFrom`) would let relearning resume at a
-      fraction of it, as Anki's "new interval" percentage does.
+- [ ] **Soften the ease penalty on Hard** (S, decide with data) — Hard costs
+      -0.14 ease, which falls out of the SM-2 quality formula at q=3. Softening it
+      (say -0.05, as an explicit step or a `hardEasePenalty` setting) means no
+      longer deriving it from `q`, so this is a deliberate departure from
+      textbook SM-2 — unlike exempting learning steps, which only makes Hard
+      match what the Again path already does.
+
+      The case for: Hard now grows the interval by `max(x1.2, +1)` rather than
+      `x ease`, so it already schedules the card sooner. Ease is a *second*
+      penalty, and it keeps applying to every later Good. A card graded Hard five
+      times over its life then Good from 10 days reaches 104d at -0.14 against
+      252d at -0.05 — identical study history, and review frequency is inversely
+      proportional to interval, so roughly 2.5x the lifetime reviews.
+
+      The case against: ease exists to encode "this card is hard for me", and
+      -0.05 may under-signal. Note Good is neutral and Easy is pressed 1% of the
+      time, so ease only ratchets downward: over four months it ran -857
+      ease-points against +22 recovered, median ease 2.50 -> 2.30, units on the
+      1.30 floor 1.9% -> 9.4%.
+
+      Deliberately parked for a month: flooring Hard's interval gain (scheduler
+      v6) may stop the floor filling on its own, which settles the question. Watch
+      the share of units at 1.30 — if it is still climbing, soften; if it has
+      flattened, leave SM-2 alone. Separately, units already on the floor never
+      recover, since only Easy lifts ease — a repair pass or a higher MIN_EASE is
+      its own decision.
+- [ ] **Resume a lapse from where it was** (M) — a miss overwrites the card's
+      interval with a sub-day value, so a 60-day card that slips restarts at 1 day
+      and re-climbs `1 → 4 → 10 → 25`. Measured over four months: 2,646 lapses
+      gave up 11,028 card-days. Worth less than first estimated, though — 1,618 of
+      those were already at 1 day, where there is nothing to preserve, so the
+      prize is the ~970 lapses from 2d and up, perhaps 10% of volume rather than
+      "the largest remaining cut". The pre-lapse interval survives in the log as
+      the miss's `prevInterval`, so carrying it on the card (a `lapsedFrom`) would
+      let relearning resume at a fraction of it, as Anki's "new interval"
+      percentage does.
 - [ ] **Put held-over cards near the front of the next day's queue** (S) —
       `reviewQueue` shuffles, so a card carried over lands anywhere. Landing late
       means too few cards remain to re-queue it, so it is held over again and can
