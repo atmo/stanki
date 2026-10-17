@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { lookupWord, anwExplanation, joinSenses, type Lookups } from '@shared/lookup';
@@ -173,7 +173,10 @@ export function DeckEditor() {
   const [bulk, setBulk] = useState('');
   const [showBulk, setShowBulk] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [search, setSearch] = useState('');
+  // Seeded from ?q= so a link elsewhere can open the deck already filtered to
+  // one card — the links index uses it to reach the cards citing a url.
+  const [params] = useSearchParams();
+  const [search, setSearch] = useState(params.get('q') ?? '');
   const [lookupTerm, setLookupTerm] = useState('');
   const [lookups, setLookups] = useState<Lookups | null>(null);
   const [globalSettings, setGlobalSettings] = useState<SrSettings>(DEFAULT_SETTINGS);

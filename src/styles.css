@@ -343,3 +343,10 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
    pushing the count and the button off the row. */
 .link-label { flex: 1 1 12ch; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .btn-tiny { padding: 1px 7px; font-size: 0.76rem; }
+.link-row-wrap { display: flex; flex-direction: column; gap: 2px; }
+/* The card count doubles as the disclosure for the cards citing the link. */
+.link-count { background: none; border: none; padding: 0; cursor: pointer; color: var(--muted);
+  font-size: 0.8rem; white-space: nowrap; }
+.link-count:hover { color: var(--primary); }
+.link-cards { list-style: none; margin: 2px 0 6px; padding-left: 14px; display: flex;
+  flex-wrap: wrap; gap: 2px 12px; font-size: 0.82rem; }

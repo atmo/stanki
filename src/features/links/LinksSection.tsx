@@ -1,14 +1,20 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { cardContexts, type Card } from '@shared/types';
 import { contextDisplay, contextSite, withoutFragment } from '@shared/weburl';
 import { setLinkDisplay } from '../../db/repo';
 
+interface CardRef {
+  id: string;
+  deckId: string;
+  front: string;
+}
 interface LinkRow {
   url: string; // the document, fragment stripped — what opens, and what an edit keys on
   label: string; // displayUrl when set, else the url
-  cards: number; // how many cards cite it
+  cards: CardRef[]; // the cards citing it, for the expandable list
 }
 interface SiteGroup {
   site: string;
@@ -42,9 +48,15 @@ export function groupLinks(cards: Card[], deckNames: Map<string, string>): DeckG
       if (!sites) byDeck.set(card.deckId, (sites = new Map()));
       let links = sites.get(site);
       if (!links) sites.set(site, (links = new Map<string, LinkRow>()));
+      const ref: CardRef = { id: card.id, deckId: card.deckId, front: card.front };
       const row = links.get(doc);
-      if (row) row.cards++;
-      else links.set(doc, { url: doc, label, cards: 1 });
+      // A card can cite the same document from several captured sentences; it is
+      // still one card in the list.
+      if (row) {
+        if (!row.cards.some((c) => c.id === card.id)) row.cards.push(ref);
+      } else {
+        links.set(doc, { url: doc, label, cards: [ref] });
+      }
     }
   }
 
@@ -52,7 +64,9 @@ export function groupLinks(cards: Card[], deckNames: Map<string, string>): DeckG
   for (const [deckId, sites] of byDeck) {
     const groups: SiteGroup[] = [...sites].map(([site, links]) => ({
       site,
-      links: [...links.values()].sort((a, b) => a.label.localeCompare(b.label)),
+      links: [...links.values()]
+        .map((l) => ({ ...l, cards: l.cards.sort((a, b) => a.front.localeCompare(b.front)) }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
     }));
     // Alphabetical, but anything with no site to group on sits at the end.
     groups.sort((a, b) =>
@@ -72,6 +86,7 @@ function LinkItem({ row }: { row: LinkRow }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(row.label);
   const [saved, setSaved] = useState<number | null>(null);
+  const [open, setOpen] = useState(false);
 
   async function save() {
     // Typing the address back in clears the label rather than storing a copy.
@@ -91,15 +106,31 @@ function LinkItem({ row }: { row: LinkRow }) {
   }
 
   return (
-    <li className="link-row">
-      <a href={row.url} target="_blank" rel="noreferrer" title={row.url} className="link-label">
-        {row.label}
-      </a>
-      <span className="muted small">
-        {row.cards} card{row.cards === 1 ? '' : 's'}
-        {saved !== null && ` · relabelled on ${saved}`}
-      </span>
-      <button className="btn btn-tiny" onClick={() => setEditing(true)}>Rename</button>
+    <li className="link-row-wrap">
+      <div className="link-row">
+        <a href={row.url} target="_blank" rel="noreferrer" title={row.url} className="link-label">
+          {row.label}
+        </a>
+        {/* The count opens the cards: which words came out of this page is the
+            question the index invites, and the editor's own search can show
+            them. */}
+        <button className="link-count" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
+          {row.cards.length} card{row.cards.length === 1 ? '' : 's'} {open ? '▾' : '▸'}
+        </button>
+        {saved !== null && <span className="muted small">relabelled on {saved}</span>}
+        <button className="btn btn-tiny" onClick={() => setEditing(true)}>Rename</button>
+      </div>
+      {open && (
+        <ul className="link-cards">
+          {row.cards.map((c) => (
+            <li key={c.id}>
+              {/* ?q= seeds the deck editor's search, so the card is the one
+                  thing on screen rather than somewhere in a thousand rows. */}
+              <Link to={`/deck/${c.deckId}?q=${encodeURIComponent(c.front)}`}>{c.front}</Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </li>
   );
 }

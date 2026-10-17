@@ -15,7 +15,7 @@ describe('groupLinks', () => {
     const cards = Array.from({ length: 5 }, (_, i) => card(`c${i}`, 'd2', [{ url: 'https://x.nl/reg' }]));
     const [deck] = groupLinks(cards, names);
     expect(deck.total).toBe(1);
-    expect(deck.sites[0].links[0].cards).toBe(5);
+    expect(deck.sites[0].links[0].cards).toHaveLength(5);
   });
 
   it('collapses every capture of one page into a single row', () => {
@@ -26,7 +26,8 @@ describe('groupLinks', () => {
     );
     const [deck] = groupLinks(cards, names);
     expect(deck.total).toBe(1);
-    expect(deck.sites[0].links[0]).toMatchObject({ url: 'https://archive.ph/JtsB0', cards: 4 });
+    expect(deck.sites[0].links[0].url).toBe('https://archive.ph/JtsB0');
+    expect(deck.sites[0].links[0].cards).toHaveLength(4);
   });
 
   it('groups by the display label, so a mirror files under its source', () => {
@@ -60,6 +61,25 @@ describe('groupLinks', () => {
     const [deck] = groupLinks(cards, names);
     expect(deck.sites.map((s) => s.site)).toEqual(['aaa.nl', 'zzz.nl', 'no site']);
     expect(deck.sites[0].links.map((l) => l.label)).toEqual(['https://aaa.nl/1', 'https://aaa.nl/2']);
+  });
+
+  it('lists each citing card once, however many sentences it captured', () => {
+    // One card can quote the same article several times; it is still one card.
+    const cards = [
+      card('a', 'd1', [
+        { url: 'https://nos.nl/x#selection-1.0-1.5' },
+        { url: 'https://nos.nl/x#selection-9.0-9.5' },
+      ]),
+      card('b', 'd1', [{ url: 'https://nos.nl/x' }]),
+    ];
+    const [deck] = groupLinks(cards, names);
+    const row = deck.sites[0].links[0];
+    expect(row.cards.map((c) => c.front)).toEqual(['a', 'b']);
+  });
+
+  it('carries the deck id on each card, so the editor can be reached', () => {
+    const [deck] = groupLinks([card('a', 'd2', [{ url: 'https://nos.nl/x' }])], names);
+    expect(deck.sites[0].links[0].cards[0]).toMatchObject({ id: 'a', deckId: 'd2', front: 'a' });
   });
 
   it('ignores contexts with no url at all', () => {
