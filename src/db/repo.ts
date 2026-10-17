@@ -4,6 +4,7 @@ import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import type { SettingsChange } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
 import { leechCounts, LEECH_WINDOW_DAYS } from '@shared/leech';
+import { sameDocument } from '@shared/weburl';
 import {
   scheduleState,
   fuzzSchedule,
@@ -621,11 +622,18 @@ export async function searchDeckCards(
  */
 export async function setLinkDisplay(url: string, displayUrl: string | undefined): Promise<number> {
   const label = displayUrl?.trim() || undefined;
-  const cards = await db.cards.filter((c) => !c.deleted && cardContexts(c).some((x) => x.url === url)).toArray();
+  // Matched a fragment at a time, every context on the same document is
+  // relabelled together: the extension gives each captured sentence its own
+  // #selection anchor, so one article is stored under dozens of distinct urls.
+  const cards = await db.cards
+    .filter((c) => !c.deleted && cardContexts(c).some((x) => x.url && sameDocument(x.url, url)))
+    .toArray();
   const now = Date.now();
   await db.transaction('rw', db.cards, async () => {
     for (const c of cards) {
-      const contexts = cardContexts(c).map((x) => (x.url === url ? { ...x, displayUrl: label } : x));
+      const contexts = cardContexts(c).map((x) =>
+        x.url && sameDocument(x.url, url) ? { ...x, displayUrl: label } : x,
+      );
       await db.cards.update(c.id, { contexts, rev: now, updatedAt: now });
     }
   });

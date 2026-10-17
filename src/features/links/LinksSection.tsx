@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
 import { cardContexts, type Card } from '@shared/types';
-import { contextDisplay, contextSite } from '@shared/weburl';
+import { contextDisplay, contextSite, withoutFragment } from '@shared/weburl';
 import { setLinkDisplay } from '../../db/repo';
 
 interface LinkRow {
-  url: string; // the real address — what opens, and the key an edit applies to
+  url: string; // the document, fragment stripped — what opens, and what an edit keys on
   label: string; // displayUrl when set, else the url
   cards: number; // how many cards cite it
 }
@@ -31,15 +31,20 @@ export function groupLinks(cards: Card[], deckNames: Map<string, string>): DeckG
   for (const card of cards) {
     for (const ctx of cardContexts(card)) {
       if (!ctx.url) continue;
-      const label = contextDisplay(ctx) || ctx.url;
+      // Keyed on the document, not the captured sentence: the extension anchors
+      // each one with its own #selection, so an index keyed on the stored url
+      // lists the same article dozens of times and a relabel reaches only one
+      // card. The fragment is left on the card itself.
+      const doc = withoutFragment(ctx.url);
+      const label = contextDisplay(ctx) || doc;
       const site = contextSite(ctx) ?? UNGROUPED;
       let sites = byDeck.get(card.deckId);
       if (!sites) byDeck.set(card.deckId, (sites = new Map()));
       let links = sites.get(site);
       if (!links) sites.set(site, (links = new Map<string, LinkRow>()));
-      const row = links.get(ctx.url);
+      const row = links.get(doc);
       if (row) row.cards++;
-      else links.set(ctx.url, { url: ctx.url, label, cards: 1 });
+      else links.set(doc, { url: doc, label, cards: 1 });
     }
   }
 

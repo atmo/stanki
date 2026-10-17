@@ -45,8 +45,23 @@ export function registrableDomain(host: string): string {
   return MULTI_SUFFIX.has(lastTwo) ? parts.slice(-3).join('.') : lastTwo;
 }
 
+/**
+ * A link without its `#fragment`. The extension anchors each captured sentence
+ * with one (`#selection-1631.54-1631.64`), so every card citing the same page
+ * stores a different url: 249 archive links on cards are 17 actual articles. An
+ * index of links wants the article, and relabelling one should cover them all.
+ * The fragment stays on the card, so a card's own link still jumps to its
+ * sentence.
+ */
+export const withoutFragment = (u: string): string => u.split('#')[0] || u;
+
+/** Whether two links point at the same document, fragments aside. */
+export const sameDocument = (a: string, b: string): boolean =>
+  withoutFragment(a) === withoutFragment(b);
+
 /** What to show for a context's link, and what grouping is keyed on. */
-export const contextDisplay = (c: CardContext): string => (c.displayUrl ?? c.url ?? '').trim();
+export const contextDisplay = (c: CardContext): string =>
+  (c.displayUrl ?? withoutFragment(c.url ?? '')).trim();
 
 /** Which site group a context's link belongs to, or null if it has no host. */
 export function contextSite(c: CardContext): string | null {

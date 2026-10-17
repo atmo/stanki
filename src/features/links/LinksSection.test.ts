@@ -18,6 +18,17 @@ describe('groupLinks', () => {
     expect(deck.sites[0].links[0].cards).toBe(5);
   });
 
+  it('collapses every capture of one page into a single row', () => {
+    // 249 archive links on real cards are 17 articles; the difference is the
+    // #selection anchor the extension adds per captured sentence.
+    const cards = Array.from({ length: 4 }, (_, i) =>
+      card(`c${i}`, 'd1', [{ url: `https://archive.ph/JtsB0#selection-${i}.0-${i}.5` }]),
+    );
+    const [deck] = groupLinks(cards, names);
+    expect(deck.total).toBe(1);
+    expect(deck.sites[0].links[0]).toMatchObject({ url: 'https://archive.ph/JtsB0', cards: 4 });
+  });
+
   it('groups by the display label, so a mirror files under its source', () => {
     const cards = [
       card('a', 'd1', [{ url: 'https://archive.is/1', displayUrl: 'https://nos.nl/a' }]),

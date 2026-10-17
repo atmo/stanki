@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { hostOf, registrableDomain, contextSite, contextDisplay } from './weburl';
+import { hostOf, registrableDomain, contextSite, contextDisplay, withoutFragment, sameDocument } from './weburl';
 
 describe('hostOf', () => {
   it('reads an absolute url', () => {
@@ -63,5 +63,33 @@ describe('contextSite', () => {
 
   it('is null when there is no host to group on', () => {
     expect(contextSite({ text: '', url: 'https://x.test/a', displayUrl: 'my own notes' })).toBeNull();
+  });
+});
+
+describe('withoutFragment', () => {
+  it('drops a captured-sentence anchor', () => {
+    // The extension gives each sentence its own anchor, so one article is stored
+    // under as many urls as there are cards citing it.
+    expect(withoutFragment('https://archive.ph/JtsB0#selection-1631.54-1631.64'))
+      .toBe('https://archive.ph/JtsB0');
+  });
+
+  it('leaves a url with no fragment alone, and never returns empty', () => {
+    expect(withoutFragment('https://nos.nl/a')).toBe('https://nos.nl/a');
+    expect(withoutFragment('#only-a-fragment')).toBe('#only-a-fragment');
+  });
+
+  it('treats two captures of one page as the same document', () => {
+    expect(sameDocument('https://archive.is/xSQ0q#selection-1.2-1.3',
+                        'https://archive.is/xSQ0q#selection-9.9-9.9')).toBe(true);
+    expect(sameDocument('https://archive.is/xSQ0q', 'https://archive.is/wGy2V')).toBe(false);
+  });
+
+  it('shows the document when no label is set, fragment and all removed', () => {
+    expect(contextDisplay({ text: '', url: 'https://archive.ph/JtsB0#selection-1.2-1.3' }))
+      .toBe('https://archive.ph/JtsB0');
+    // An explicit label is used verbatim — it is the user's text, not a url.
+    expect(contextDisplay({ text: '', url: 'https://archive.ph/JtsB0#x', displayUrl: 'NRC — huizen' }))
+      .toBe('NRC — huizen');
   });
 });
