@@ -320,7 +320,13 @@ export async function syncAll(getToken: TokenProvider): Promise<void> {
   // we have nothing to contribute — skip rewriting a file that gets large.
   // Duplicate files still force a write: the canonical one may hold only part of
   // the union, and we delete the others below.
-  const needsWrite = allReviews.length > remoteReviews.length || reviewsFiles.length > 1;
+  // An undo replaces a live row with a tombstone, so the counts match and the
+  // length test alone would never push it — leaving Drive holding the row for a
+  // restore to resurrect later.
+  const remoteById = new Map(remoteReviews.map((r) => [r.id, r]));
+  const unsentTombstone = allReviews.some((r) => r.deleted && !remoteById.get(r.id)?.deleted);
+  const needsWrite =
+    allReviews.length > remoteReviews.length || reviewsFiles.length > 1 || unsentTombstone;
   if (canonical && needsWrite) {
     // Re-union with the canonical file's current reviews so a concurrently
     // pushed review isn't dropped by our overwrite.

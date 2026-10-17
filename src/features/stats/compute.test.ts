@@ -117,6 +117,16 @@ describe('computeStats — backlog', () => {
     expect(s.backlog.late).toBe(1); // the day-scale card, counted separately
   });
 
+  it('leaves an undone review out of every figure', () => {
+    const live = run([card('a', deckId)], [deck(deckId)], [review('r1', 'a', TODAY, 5, 'again')]);
+    const undone = run([card('a', deckId)], [deck(deckId)],
+      [{ ...review('r1', 'a', TODAY, 5, 'again'), deleted: true }]);
+    expect(live.recall.ret).toEqual({ p: 0, t: 1 }); // counted: a lapse at 5d
+    expect(undone.recall.ret).toEqual({ p: 0, t: 0 }); // tombstoned: not counted
+    expect(undone.recall.lapses).toBe(0);
+    expect(undone.history.at(-1)!.rv).toBe(0);
+  });
+
   it('ignores new cards and anything not yet due', () => {
     const s = run(
       [

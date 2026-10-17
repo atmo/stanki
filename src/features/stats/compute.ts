@@ -153,7 +153,10 @@ export const emptyRecall = (): Recall => ({
 
 /** Everything the Stats view renders, computed purely from the stored data plus
  * the selected date range. `now` is injected so it's deterministic in tests. */
-export function computeStats(cards: Card[], decks: Deck[], reviews: ReviewLog[], rangeStart: number, now: number) {
+export function computeStats(cards: Card[], decks: Deck[], allReviews: ReviewLog[], rangeStart: number, now: number) {
+  // Undone reviews are tombstoned rather than removed, so every figure here has
+  // to drop them or an undo leaves its grade in the statistics for ever.
+  const reviews = allReviews.filter((r) => !r.deleted);
   const today = startOfDay(now);
   const dirOf = new Map(decks.map((d) => [d.id, d.reviewDirection ?? 'forward'] as const));
   const deckName = new Map(decks.map((d) => [d.id, d.name] as const));

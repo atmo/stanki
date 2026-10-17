@@ -186,7 +186,7 @@ export async function dueCount(deckId: string, now = Date.now()): Promise<number
 export async function dailyCounts(deckId: string, now = Date.now()) {
   const [cards, reviews] = await Promise.all([
     db.cards.where('deckId').equals(deckId).primaryKeys() as Promise<string[]>,
-    db.reviews.where('ts').aboveOrEqual(startOfDay(now)).toArray(),
+    db.reviews.where('ts').aboveOrEqual(startOfDay(now)).filter((r) => !r.deleted).toArray(),
   ]);
   const ids = new Set(cards);
   let newToday = 0;
@@ -207,7 +207,7 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
  * fewer flags instead of behaving differently. */
 export async function getLeechCounts(now = Date.now()): Promise<Map<string, number>> {
   const since = now - LEECH_WINDOW_DAYS * 86_400_000;
-  return leechCounts(await db.reviews.where('ts').aboveOrEqual(since).toArray(), now);
+  return leechCounts(await db.reviews.where('ts').aboveOrEqual(since).filter((r) => !r.deleted).toArray(), now);
 }
 
 /** In-place Fisher-Yates shuffle. */
@@ -404,7 +404,10 @@ export async function gradeCard(
 export async function undoGrade(priorCard: Card, reviewId: string): Promise<void> {
   await db.transaction('rw', db.cards, db.reviews, async () => {
     await db.cards.put(priorCard);
-    await db.reviews.delete(reviewId);
+    // Tombstoned, not deleted: mergeReviews unions by id, so a row that is
+    // simply gone comes straight back from Drive — and the merge writes it into
+    // the local table again, undoing the undo.
+    await db.reviews.update(reviewId, { deleted: true });
   });
 }
 
@@ -543,7 +546,7 @@ export async function missesToday(
   now = Date.now(),
 ): Promise<number> {
   const since = startOfDay(now);
-  const rows = await db.reviews.where('ts').aboveOrEqual(since).toArray();
+  const rows = await db.reviews.where('ts').aboveOrEqual(since).filter((r) => !r.deleted).toArray();
   return rows.filter(
     (r) => r.cardId === cardId && (r.direction ?? 'forward') === direction && r.grade === 'again',
   ).length;

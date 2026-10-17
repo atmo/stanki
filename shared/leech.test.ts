@@ -27,6 +27,12 @@ describe('leechCounts', () => {
     expect(leechCount(c, 'a', 'forward')).toBe(1);
   });
 
+  it('ignores an undone lapse', () => {
+    // Tombstoned rather than removed, so it is still in the table.
+    const c = leechCounts([{ ...log('a', 'again', 5), deleted: true }], NOW);
+    expect(leechCount(c, 'a', 'forward')).toBe(0);
+  });
+
   it('ignores failures while learning or relearning', () => {
     // A new card, and a sub-day relearning step: failing those is just learning.
     const c = leechCounts([log('a', 'again', 0), log('a', 'again', 5 / 1440)], NOW);

@@ -45,7 +45,7 @@ export function About() {
   const [busy, setBusy] = useState(false);
 
   const stats = useLiveQuery(async () => {
-    const reviews = await db.reviews.where('ts').aboveOrEqual(startOfDay()).toArray();
+    const reviews = await db.reviews.where('ts').aboveOrEqual(startOfDay()).filter((r) => !r.deleted).toArray();
     let newToday = 0;
     let reviewsToday = 0;
     for (const r of reviews) {

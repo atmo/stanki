@@ -180,6 +180,11 @@ export interface ReviewLog {
   posInSession?: number; // 1-based position within the sitting, for fatigue analysis
   overLimit?: boolean; // studied past the daily cap, rather than inside it
   deferred?: boolean; // this miss ended the card's day rather than re-queuing it
+  // Undone. Kept rather than removed because merging the log is a union by id,
+  // so an absent row is indistinguishable from one a peer has not seen yet —
+  // dropping it locally just invites Drive's copy back on the next sync. Every
+  // reader has to skip these; only sync itself wants to see them.
+  deleted?: boolean;
 }
 
 /** One recorded error. Local-only: never synced, since which device produced an

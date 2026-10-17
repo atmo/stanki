@@ -41,7 +41,7 @@ export function DeckList() {
       db.decks.filter((d) => !d.deleted).toArray(),
       db.cards.filter((c) => !c.deleted).toArray(),
       getSettings(),
-      db.reviews.where('ts').aboveOrEqual(startOfDay(now)).toArray(),
+      db.reviews.where('ts').aboveOrEqual(startOfDay(now)).filter((r) => !r.deleted).toArray(),
     ]);
 
     // Today's new/review counts per deck (via cardId -> deckId).

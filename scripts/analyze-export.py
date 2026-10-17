@@ -38,7 +38,12 @@ path = sys.argv[1] if len(sys.argv) > 1 else "tmp/exports/stanki-export.json"
 d = json.load(open(path, encoding="utf-8"))
 decks = {x["id"]: x for x in d.get("decks", []) if not x.get("deleted")}
 cards = [c for c in d.get("cards", []) if not c.get("deleted")]
-reviews = sorted(d.get("reviews") or [], key=lambda r: r["ts"])
+# Undone reviews are tombstoned rather than dropped, so a bundle still carries
+# them; counting them would leave an undone grade in every figure below.
+reviews = sorted(
+    (r for r in (d.get("reviews") or []) if not r.get("deleted")),
+    key=lambda r: r["ts"],
+)
 now = d.get("exportedAt") or max((r["ts"] for r in reviews), default=0)
 
 print(f"file      {path}")

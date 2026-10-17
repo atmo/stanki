@@ -33,7 +33,7 @@ export function leechCounts(reviews: ReviewLog[], now = Date.now()): Map<string,
   const since = now - LEECH_WINDOW_DAYS * DAY;
   const out = new Map<string, number>();
   for (const r of reviews) {
-    if (r.ts < since || r.grade !== 'again') continue;
+    if (r.deleted || r.ts < since || r.grade !== 'again') continue;
     if (r.prevInterval < 1 && !r.deferred) continue;
     const k = leechKey(r.cardId, r.direction ?? 'forward');
     out.set(k, (out.get(k) ?? 0) + 1);
