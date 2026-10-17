@@ -7,6 +7,9 @@ const MULTI_SUFFIX = new Set([
   'co.uk', 'org.uk', 'ac.uk', 'gov.uk', 'me.uk',
   'com.au', 'net.au', 'org.au', 'co.nz', 'co.za', 'co.jp', 'co.kr', 'co.il',
   'com.br', 'com.mx', 'com.tr', 'com.cn', 'co.in', 'com.sg',
+  // Hosting suffixes, where the interesting part is the label in front: without
+  // these, every project page collapses into one "github.io" heap.
+  'github.io', 'pages.dev', 'vercel.app', 'netlify.app',
 ]);
 
 const IPV4 = /^\d{1,3}(\.\d{1,3}){3}$/;

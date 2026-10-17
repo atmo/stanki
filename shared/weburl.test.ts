@@ -39,6 +39,11 @@ describe('registrableDomain', () => {
     expect(registrableDomain('blog.example.co.uk')).toBe('example.co.uk');
   });
 
+  it('keeps the project name on a hosting suffix', () => {
+    // github.io is itself a public suffix: the site is the label in front of it.
+    expect(registrableDomain('atmo.github.io')).toBe('atmo.github.io');
+  });
+
   it('leaves an IP address whole', () => {
     expect(registrableDomain('1.2.3.4')).toBe('1.2.3.4');
   });

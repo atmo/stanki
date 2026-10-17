@@ -5,6 +5,7 @@ import { db } from '../../db/db';
 import { createDeck, getSettings, importDeck, effectiveSettings, type ExportBundle } from '../../db/repo';
 import { selectDue, itemsForCard, startOfDay } from '@shared/sm2';
 import type { Card } from '@shared/types';
+import { LinksSection } from '../links/LinksSection';
 
 /** Deck description clamped to two lines, with a more/less toggle shown only
  * when the text actually overflows. */
@@ -197,6 +198,8 @@ export function DeckList() {
           );
         })}
       </ul>
+
+      <LinksSection />
     </div>
   );
 }

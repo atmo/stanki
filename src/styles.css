@@ -323,3 +323,23 @@ textarea.input { min-height: 4.2em; max-height: 45vh; resize: none; }
 .lookup-hit { display: block; width: 100%; text-align: left; padding: 7px 10px; background: none; border: none; color: inherit; cursor: pointer; }
 .lookup-hit:hover { background: var(--panel); }
 .synonym-trail { margin: 8px 0 0; font-size: 0.9rem; }
+
+/* Links section: every url on every card, deck -> site -> link. Collapsed by
+   default — it is long, and it is reference material rather than something
+   needed on the way into a review. */
+.links-panel { margin-top: 18px; }
+.links-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 0; background: none;
+  border: none; color: inherit; cursor: pointer; text-align: left; }
+.links-head h2 { margin: 0; flex: 0 0 auto; }
+.links-head .muted { flex: 1; }
+.links-caret { color: var(--muted); }
+.link-deck { margin-top: 14px; }
+.link-deck h3 { margin: 0 0 6px; font-size: 0.98rem; }
+.link-site { margin: 8px 0 0 10px; }
+.link-site h4 { margin: 0 0 4px; font-size: 0.86rem; font-weight: 600; color: var(--muted); }
+.link-list { list-style: none; margin: 0; padding: 0 0 0 10px; display: flex; flex-direction: column; gap: 3px; }
+.link-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; }
+/* The label can be a long url, so it takes the slack and ellipsises rather than
+   pushing the count and the button off the row. */
+.link-label { flex: 1 1 12ch; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.btn-tiny { padding: 1px 7px; font-size: 0.76rem; }
