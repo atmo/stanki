@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
@@ -104,6 +104,16 @@ export function AddWord() {
     setSaved(true);
   }
 
+  // Save from anywhere in the form. The textareas need plain Enter for newlines,
+  // so the commit key is the usual ⌘/Ctrl+Enter. Guarded by the same condition as
+  // the button, so the shortcut can't save a card the button would refuse.
+  function onFormKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key !== 'Enter' || !(e.metaKey || e.ctrlKey)) return;
+    if (!front.trim() || !deckId) return;
+    e.preventDefault();
+    void save();
+  }
+
   function reset() {
     setSaved(false);
     setFront('');
@@ -133,7 +143,7 @@ export function AddWord() {
     <div className="add-screen">
       <h2 className="add-title">Add word</h2>
 
-      <div className="card-form">
+      <div className="card-form" onKeyDown={onFormKeyDown}>
         <div className="ac-wrap">
           <div className="row">
             <input
@@ -176,7 +186,12 @@ export function AddWord() {
               <option key={d.id} value={d.id}>{d.name}</option>
             ))}
           </select>
-          <button className="btn btn-primary" onClick={() => void save()} disabled={!front.trim() || !deckId}>
+          <button
+            className="btn btn-primary"
+            onClick={() => void save()}
+            disabled={!front.trim() || !deckId}
+            title="⌘↵ / Ctrl+↵"
+          >
             Save
           </button>
           <Link className="btn" to="/">Cancel</Link>
