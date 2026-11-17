@@ -35,7 +35,7 @@ body {
   position: sticky; top: 0; background: var(--bg); z-index: 10;
 }
 .brand { font-weight: 700; font-size: 1.1rem; text-decoration: none; color: var(--text); }
-.nav { display: flex; align-items: center; gap: 14px; }
+.nav { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 6px 14px; }
 .nav a { color: var(--muted); text-decoration: none; font-size: 0.95rem; }
 .nav a.active { color: var(--text); font-weight: 600; }
 
@@ -147,6 +147,9 @@ body {
 .tag-2s { flex-shrink: 0; font-size: 0.72rem; color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 0 5px; line-height: 1.5; }
 .ds-cols { display: grid; grid-template-columns: repeat(4, 40px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .ds-cols2 { display: grid; grid-template-columns: repeat(2, 52px); text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+/* Leech worklist row: lapses / ease / due / action. */
+.ds-cols3 { display: grid; grid-template-columns: 52px 44px 56px auto; align-items: center; text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.leech-deck { flex-shrink: 0; font-size: 0.75rem; color: var(--muted); }
 .ds-new { color: #93c5fd; }
 .ds-again { color: #fca5a5; }
 .ds-young { color: #86efac; }

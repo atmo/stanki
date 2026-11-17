@@ -36,6 +36,7 @@ export function Layout({ children }: { children: ReactNode }) {
           <Link to="/" className={pathname === '/' ? 'active' : ''}>Decks</Link>
           <Link to="/add" className={pathname === '/add' ? 'active' : ''}>Add</Link>
           <Link to="/stats" className={pathname === '/stats' ? 'active' : ''}>Stats</Link>
+          <Link to="/leeches" className={pathname === '/leeches' ? 'active' : ''}>Leeches</Link>
           <Link to="/settings" className={pathname === '/settings' ? 'active' : ''}>Settings</Link>
           <Link to="/about" className={pathname === '/about' ? 'active' : ''}>About</Link>
           <SyncBadge />
