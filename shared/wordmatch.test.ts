@@ -29,6 +29,40 @@ describe('wordMatcher — simple words', () => {
   });
 });
 
+describe('wordMatcher — bracketed hints on the front', () => {
+  it('ignores a hint after the word', () => {
+    expect(matchedWords('dingen (глагол)', 'Ik doe allerlei dingen')).toEqual(['dingen']);
+  });
+
+  it('ignores a hint before the word', () => {
+    expect(matchedWords('(iets) lopen', 'We gaan lopen')).toEqual(['lopen']);
+  });
+
+  it('ignores a hint in square brackets', () => {
+    expect(matchedWords('huis [gebouw]', 'Het huis is mooi')).toEqual(['huis']);
+  });
+
+  it('drops the article as well as the hint', () => {
+    expect(matchedWords('het huis (gebouw)', 'Het huis is mooi')).toEqual(['huis']);
+  });
+
+  it('ignores an unclosed hint', () => {
+    expect(matchedWords('lopen (werkwoord', 'We gaan lopen')).toEqual(['lopen']);
+  });
+
+  it('still finds a separable verb behind a hint', () => {
+    expect(matchedWords('aanhouden (politie)', 'De politie hield hem aan')).toEqual(['hield', 'aan']);
+  });
+
+  it('matches nothing when the front is only a hint', () => {
+    expect(matchedWords('(глагол)', 'Ik doe allerlei dingen')).toEqual([]);
+  });
+
+  it('still matches nothing for a phrase carrying a hint', () => {
+    expect(matchedWords('rekening houden met (idioom)', 'Je moet rekening houden met hem')).toEqual([]);
+  });
+});
+
 describe('wordMatcher — separable verbs', () => {
   it('masks the prefix and the base verb when both occur, but not "te"', () => {
     expect(matchedWords('aanhouden', 'Ik probeer hem aan te houden')).toEqual(['aan', 'houden']);

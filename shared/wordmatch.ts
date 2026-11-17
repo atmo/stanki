@@ -3,7 +3,8 @@
 // separable verb ("aanhouden") splits in a clause ("aan te houden", "hield … aan"),
 // so its prefix and base-verb forms are matched too — but only when *both* occur
 // in the sentence, so a lone base verb (a different word) or a stray preposition
-// isn't hit. Phrase (multi-word) fronts match nothing.
+// isn't hit. Bracketed hints on the front are ignored; phrase (multi-word) fronts
+// match nothing.
 import { lemmatize } from './lemma';
 import { dedupKey } from './dedup';
 
@@ -22,8 +23,19 @@ const SEPARABLE_PREFIXES = [
 
 const words = (text: string): string[] => text.toLowerCase().split(/[^\p{L}]+/u).filter(Boolean);
 
+// Bracketed hints — "dingen (глагол)", "(iets) aanhouden", "huis [gebouw]" — are
+// notes about the word, not part of it. Left in, they make every such front look
+// like a phrase, and phrases match nothing: the card would silently lose both its
+// highlighting and its spoiler masking. An unclosed bracket is stripped to the end
+// of the front, since a half-typed hint is still a hint.
+const HINT_RE = /\([^)]*\)|\[[^\]]*\]|\([^)]*$|\[[^\]]*$/g;
+
+/** The front with its bracketed hints removed. */
+const withoutHints = (front: string): string =>
+  front.replace(HINT_RE, ' ').replace(/\s+/g, ' ').trim();
+
 export function wordMatcher(front: string): Matcher {
-  const key = dedupKey(front);
+  const key = dedupKey(withoutHints(front));
   if (key.length < 2 || key.includes(' ')) return NO_MATCH; // phrase / trivial: no match
   const lemma = lemmatize(key);
 
