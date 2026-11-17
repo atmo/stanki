@@ -4,8 +4,8 @@ import { lemmatize } from '@shared/lemma';
 import { wordMatcher, NO_MATCH, type Matcher } from '@shared/wordmatch';
 import { type Card, type CardContext, type CardDirection, type CardSchedule, type Grade, cardContexts } from '@shared/types';
 import { previewIntervals, directionSchedule, DEFAULT_SETTINGS, type ReviewItem, type SrSettings } from '@shared/sm2';
-import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, getLinkedCards, missesToday, updateCard, deleteCard } from '../../db/repo';
-import { leechCount, isLeech, LEECH_WINDOW_DAYS } from '@shared/leech';
+import { reviewQueue, gradeCard, undoGrade, getDeckSettings, getDeck, getLeechCounts, getLinkedCards, missesToday, updateCard, deleteCard, buryCard, cardWorkload } from '../../db/repo';
+import { leechCount, isLeech, leechKey, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { LookupResults } from '../lookup/LookupResults';
 import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
@@ -160,6 +160,81 @@ function Answer({ text, match, reveal }: { text: string; match: Matcher; reveal:
   );
 }
 
+type LeechPrompt = {
+  card: Card;
+  direction: CardDirection;
+  lapses: number;
+  cycles: number;
+  reviews: number;
+  passed: number;
+  graduated: number;
+};
+
+/**
+ * Shown the moment a side's lapse count reaches a multiple of the threshold.
+ *
+ * Deliberately modal. A card failed this many times is not improving by being
+ * drilled — measured across the whole log, the month after a first lapse and the
+ * month after an eighth retain the same — so the one thing that must not happen
+ * is carrying on without a decision.
+ *
+ * On a second cycle the card has failed the full count again since coming back,
+ * and deleting leads.
+ */
+function LeechDialog({
+  prompt,
+  buryDays,
+  onBury,
+  onRewrite,
+  onDelete,
+  onDismiss,
+}: {
+  prompt: LeechPrompt;
+  buryDays: number;
+  onBury: () => void;
+  onRewrite: () => void;
+  onDelete: () => void;
+  onDismiss: () => void;
+}) {
+  const { card, lapses, cycles, reviews, passed, graduated } = prompt;
+  const rate = graduated ? `${Math.round((passed / graduated) * 100)}% recalled` : 'never recalled';
+  const again = cycles > 0;
+  return (
+    <div className="modal-back" role="dialog" aria-modal="true" aria-labelledby="leech-title">
+      <div className="modal">
+        <h2 id="leech-title">{again ? 'Still failing after a rest' : 'This card is not working'}</h2>
+        <p className="leech-word">{card.front}</p>
+        <p className="muted small">
+          Missed <b>{lapses}×</b> in the last {LEECH_WINDOW_DAYS} days
+          {prompt.direction === 'reverse' ? ' in the reverse direction' : ''} · {reviews} review
+          {reviews === 1 ? '' : 's'}, {rate}.
+        </p>
+        <p className="muted small">
+          {again
+            ? `It has been buried ${cycles}× before and has failed as often since coming back. More time away is unlikely to change that.`
+            : 'Repeating it rarely helps — a card at this point recalls about as well after ten lapses as after one. Change it, put it away, or let it go.'}
+        </p>
+        <div className="modal-actions">
+          {again ? (
+            <>
+              <button className="btn btn-primary danger" onClick={onDelete}>Delete it</button>
+              <button className="btn" onClick={onRewrite}>Rewrite now</button>
+              <button className="btn" onClick={onBury}>Bury {buryDays} days</button>
+            </>
+          ) : (
+            <>
+              <button className="btn btn-primary" onClick={onBury}>Bury {buryDays} days</button>
+              <button className="btn" onClick={onRewrite}>Rewrite now</button>
+              <button className="btn danger" onClick={onDelete}>Delete it</button>
+            </>
+          )}
+        </div>
+        <button className="btn btn-link" onClick={onDismiss}>Not now</button>
+      </div>
+    </div>
+  );
+}
+
 const GRADES: { grade: Grade; label: string; cls: string }[] = [
   { grade: 'again', label: 'Again', cls: 'btn-again' },
   { grade: 'hard', label: 'Hard', cls: 'btn-hard' },
@@ -186,6 +261,10 @@ export function Review() {
   // reached looks identical to one that is exceeded every day.
   const [overLimit, setOverLimit] = useState(false);
   const [leeches, setLeeches] = useState<Map<string, number>>(new Map());
+  // The card that has just crossed its lapse threshold, held until it is dealt
+  // with. Blocking on purpose: the whole point is to interrupt the grinding.
+  const [leechPrompt, setLeechPrompt] = useState<LeechPrompt | null>(null);
+  const [rewriting, setRewriting] = useState<Card | null>(null);
 
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
   const [deferred, setDeferred] = useState(0); // cards left until tomorrow this session
@@ -327,6 +406,30 @@ export function Review() {
     // the same card, so the card-change effect above wouldn't fire.
     shownAt.current = Date.now();
     revealedAt.current = null;
+
+    // Count this miss the way the leech flag does, then ask about the card when
+    // the count reaches a multiple of the threshold — once on the way up, and
+    // again every threshold after, so declining quietens it without silencing it.
+    const lapsed = g === 'again' && (item.schedule.interval >= 1 || defer);
+    if (!lapsed) return;
+    const lapses = leechCount(leeches, card.id, direction) + 1;
+    setLeeches((m) => new Map(m).set(leechKey(card.id, direction), lapses));
+    const threshold = settings.leechThreshold;
+    if (threshold <= 0 || lapses % threshold !== 0) return;
+    const work = await cardWorkload(card.id, direction);
+    setLeechPrompt({
+      card: updated,
+      direction,
+      lapses,
+      cycles: directionSchedule(updated, direction, settings).buriedCycles ?? 0,
+      ...work,
+    });
+  }
+
+  /** Take the prompted card out of the rest of this sitting, however it was dealt with. */
+  function dropPrompted(cardId: string) {
+    setQueue((q) => (q ? q.filter((i) => i.card.id !== cardId) : q));
+    setLeechPrompt(null);
   }
 
   async function undoReview() {
@@ -411,6 +514,22 @@ export function Review() {
     );
   }
 
+  // Rewriting a prompted card: it has already been graded and left the queue, so
+  // this edits it on its own rather than through the current item.
+  if (rewriting) {
+    return (
+      <div className="review">
+        <div className="review-progress">Rewriting · {deckName}</div>
+        <CardEdit
+          key={rewriting.id}
+          card={rewriting}
+          onSave={() => setRewriting(null)}
+          onCancel={() => setRewriting(null)}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="review">
       <div className="review-progress">
@@ -430,6 +549,28 @@ export function Review() {
       </div>
 
       <Toast toast={toast} onDismiss={dismissToast} />
+
+      {leechPrompt && (
+        <LeechDialog
+          prompt={leechPrompt}
+          buryDays={settings.buryDays}
+          onBury={() => {
+            void buryCard(leechPrompt.card.id, leechPrompt.direction);
+            showToast(leechPrompt.card.front, `Buried for ${settings.buryDays} days — it returns with a clean count.`);
+            dropPrompted(leechPrompt.card.id);
+          }}
+          onRewrite={() => {
+            setRewriting(leechPrompt.card);
+            setLeechPrompt(null);
+          }}
+          onDelete={() => {
+            void deleteCard(leechPrompt.card.id);
+            showToast(leechPrompt.card.front, 'Deleted.');
+            dropPrompted(leechPrompt.card.id);
+          }}
+          onDismiss={() => setLeechPrompt(null)}
+        />
+      )}
 
       <div className="card-face">
         {/* Reverse review: the prompt is the back, whose examples must not reveal

@@ -215,6 +215,30 @@ export async function getLeechCounts(now = Date.now()): Promise<Map<string, numb
   return leechCounts(reviews, now, leechResets(cards));
 }
 
+/** What a side has cost lately: reviews made and how many were recalled. The
+ * figures the bury prompt shows, so the choice is made against its real price. */
+export async function cardWorkload(
+  cardId: string,
+  direction: CardDirection,
+  days = LEECH_WINDOW_DAYS,
+  now = Date.now(),
+): Promise<{ reviews: number; passed: number; graduated: number }> {
+  const since = now - days * 86_400_000;
+  const rows = await db.reviews.where('ts').aboveOrEqual(since).toArray();
+  let reviews = 0;
+  let passed = 0;
+  let graduated = 0;
+  for (const r of rows) {
+    if (r.deleted || r.cardId !== cardId || (r.direction ?? 'forward') !== direction) continue;
+    reviews++;
+    if (r.prevInterval >= 1) {
+      graduated++;
+      if (r.grade !== 'again') passed++;
+    }
+  }
+  return { reviews, passed, graduated };
+}
+
 /**
  * Take a side out of rotation for the deck's `buryDays`, returning it with its
  * lapse count forgiven. The one action that answers a card you keep failing
