@@ -30,6 +30,7 @@ export interface SrSettings {
   leechThreshold: number; // lapses in one direction before a card is flagged (0 = off)
   againGapCards: number; // cards that must pass before a missed card returns
   againMaxPerDay: number; // misses in one day before a card is left until tomorrow
+  buryDays: number; // days a leech is taken out of rotation when buried
   bothDirectionsPerSession: boolean; // serve a card's two sides in one sitting
 }
 
@@ -67,6 +68,17 @@ export interface CardSchedule {
   // due date is deliberately left alone, so the side arrives late rather than
   // being quietly rescheduled for a reason that has nothing to do with recall.
   buriedUntil?: number;
+  // Taken out of rotation for a stretch after repeated failure, then returned
+  // with a clean count. `buriedCycles` is current state and drives the UI — a
+  // card on its second cycle has failed five more times since coming back, which
+  // is usually the moment to delete it rather than bury it again.
+  //
+  // `buriedAt` exists only to carry a stamp from the burial to the first review
+  // that follows it, which is logged as `postBurial`. The count cannot do that
+  // job: it has no time in it, so it cannot say which of a card's reviews came
+  // after which burial.
+  buriedCycles?: number;
+  buriedAt?: number;
   // "I have fixed this side": lapses at or before this time stop counting towards
   // the leech flag. Without it a card you have genuinely reworked stays branded
   // until its old failures age out of the 90-day window, which is up to three
@@ -190,6 +202,10 @@ export interface ReviewLog {
   posInSession?: number; // 1-based position within the sitting, for fatigue analysis
   overLimit?: boolean; // studied past the daily cap, rather than inside it
   deferred?: boolean; // this miss ended the card's day rather than re-queuing it
+  // The first review after a burial. Immutable history, where the card's own
+  // `buriedCycles` is only a current count: this is what makes "did a month out
+  // of rotation help?" answerable later.
+  postBurial?: boolean;
   // Undone. Kept rather than removed because merging the log is a union by id,
   // so an absent row is indistinguishable from one a peer has not seen yet —
   // dropping it locally just invites Drive's copy back on the next sync. Every

@@ -36,6 +36,11 @@ export function SettingsFields({ value: s, onChange }: { value: SrSettings; onCh
         <input type="number" className="input" min={0} max={50} value={s.leechThreshold}
           onChange={(e) => onChange('leechThreshold', Math.max(0, Math.round(Number(e.target.value))))} />
       </label>
+      <label className="field">
+        <span>Bury a leech for (days)</span>
+        <input type="number" className="input" min={1} max={365} value={s.buryDays}
+          onChange={(e) => onChange('buryDays', Math.max(1, Math.round(Number(e.target.value))))} />
+      </label>
       <label className="checkline">
         <input type="checkbox" checked={s.bothDirectionsPerSession}
           onChange={(e) => onChange('bothDirectionsPerSession', e.target.checked)} />

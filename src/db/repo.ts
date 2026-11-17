@@ -13,6 +13,7 @@ import {
   newCardState,
   selectDue,
   directionSchedule,
+  buryState,
   itemsForCard,
   startOfDay,
   endOfLocalDay,
@@ -215,6 +216,24 @@ export async function getLeechCounts(now = Date.now()): Promise<Map<string, numb
 }
 
 /**
+ * Take a side out of rotation for the deck's `buryDays`, returning it with its
+ * lapse count forgiven. The one action that answers a card you keep failing
+ * without either grinding it or throwing it away.
+ */
+export async function buryCard(
+  cardId: string,
+  direction: CardDirection,
+  now = Date.now(),
+): Promise<void> {
+  const card = await db.cards.get(cardId);
+  if (!card) return;
+  const settings = await getDeckSettings(card.deckId);
+  const buried = buryState(directionSchedule(card, direction, settings), settings.buryDays, now);
+  await db.cards.update(cardId,
+    direction === 'forward' ? { ...buried, updatedAt: now } : { reverse: buried, updatedAt: now });
+}
+
+/**
  * Record that this side has been reworked: its past lapses stop counting and the
  * flag comes back only if it is failed again.
  *
@@ -382,6 +401,11 @@ export async function gradeCard(
   // happened, this records that the card is *currently* carrying one, and it is
   // cleared by the recall that resolves it.
   next = grade === 'again' ? { ...next, heldOver: ctx?.defer || prev.heldOver } : { ...next, heldOver: undefined };
+  // The first review after a burial, marked in the log so the mechanic can be
+  // judged later. `buriedAt` only carries the stamp this far and is then spent;
+  // the card's `buriedCycles` stays, since it is what the prompt reads.
+  const postBurial = prev.buriedAt !== undefined;
+  if (postBurial) next = { ...next, buriedAt: undefined };
   const patch: Partial<Card> =
     direction === 'forward' ? { ...next, updatedAt: now } : { reverse: next, updatedAt: now };
 
@@ -425,6 +449,7 @@ export async function gradeCard(
       posInSession: ctx?.posInSession,
       overLimit: ctx?.overLimit,
       deferred: ctx?.defer,
+      postBurial: postBurial || undefined,
     });
   });
   return { card: { ...card, ...patch }, reviewId };

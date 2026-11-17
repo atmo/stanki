@@ -21,6 +21,13 @@ export const DEFAULT_SETTINGS: SrSettings = {
   leechThreshold: 5,
   againGapCards: 50,
   againMaxPerDay: 3,
+  // A month out of rotation. Chosen rather than measured: the log holds no case
+  // of a struggling card resting more than three weeks, so there was nothing to
+  // fit. What it does show is that the rest will not heal the card — an 8-to-21
+  // day gap costs about six points against the card's own average and leaves the
+  // lapse rate afterwards unchanged — so the gain here is the month of reviews
+  // reclaimed, not a better card.
+  buryDays: 30,
   bothDirectionsPerSession: false,
 };
 
@@ -81,8 +88,8 @@ export function directionSchedule(
     // heldOver, buriedUntil and leechResetAt have to come along: they are read
     // straight off the schedule during selection and review, and picking the
     // fields out by hand silently drops anything new.
-    const { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt } = card;
-    return { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt };
+    const { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt, buriedCycles, buriedAt } = card;
+    return { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt, buriedCycles, buriedAt };
   }
   return card.reverse ?? { ...newCardState(card.createdAt, settings) };
 }
@@ -274,6 +281,44 @@ export function startOfNextDay(now = Date.now()): number {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate() + 1).getTime();
 }
 
+/**
+ * Take a side out of rotation for a stretch, to come back with a clean slate.
+ *
+ * The card returns on the relearning ladder — repetitions zeroed, interval back
+ * to a day — because it will almost certainly be missed on return: a rest costs
+ * ground rather than winning it. Returning it at the interval it had would hand
+ * a card that just failed five times the schedule of one that had been passing.
+ *
+ * Ease is left alone. It records how the card has behaved, and a month on the
+ * shelf is not evidence about that.
+ *
+ * `leechResetAt` is set to the return date, so the existing forgiveness rule
+ * does the "reborn with zero lapses" part with no second mechanism: every lapse
+ * up to the moment it comes back stops counting.
+ *
+ * Steps calendar days rather than adding milliseconds, so a clock change cannot
+ * land the return on the wrong date.
+ */
+export function buryState(s: CardSchedule, days: number, now = Date.now()): CardSchedule {
+  const d = new Date(now);
+  const until = new Date(d.getFullYear(), d.getMonth(), d.getDate() + Math.max(1, Math.round(days))).getTime();
+  return {
+    ...s,
+    interval: 1,
+    repetitions: 0,
+    dueDate: until,
+    leechResetAt: until,
+    buriedAt: now,
+    buriedCycles: (s.buriedCycles ?? 0) + 1,
+    heldOver: undefined,
+    buriedUntil: undefined,
+  };
+}
+
+/** Whether this side is currently out of rotation, and when it comes back. */
+export const buriedUntilDate = (s: CardSchedule, now = Date.now()): number | undefined =>
+  s.leechResetAt !== undefined && s.leechResetAt > now ? s.leechResetAt : undefined;
+
 // Random spread applied to a day-scale interval, and the interval below which
 // there is no room to spread (a 1-day interval can only stay 1 day).
 /**
@@ -294,8 +339,10 @@ export function startOfNextDay(now = Date.now()): number {
  *   8 — every pass gains at least a day, and the grades are strictly ordered:
  *       Good clears Hard and Easy clears Good, so a better answer is never
  *       scheduled sooner
+ *   9 — a repeatedly failed side can be buried: out of rotation for buryDays,
+ *       returning on the relearning ladder with its lapse count forgiven
  */
-export const SCHEDULER_VERSION = 8;
+export const SCHEDULER_VERSION = 9;
 
 const FUZZ = 0.15;
 const MIN_FUZZ_INTERVAL = 2;

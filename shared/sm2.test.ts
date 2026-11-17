@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { effectiveSettings, deferToTomorrow, scheduleState, directionSchedule, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
-import type { Card, Grade, SrSettings } from './types';
+import { effectiveSettings, deferToTomorrow, buryState, buriedUntilDate, scheduleState, directionSchedule, schedule, newCardState, previewIntervals, selectDue, itemsForCard, startOfLocalDay, fuzzSchedule, DEFAULT_SETTINGS, type ReviewItem } from './sm2';
+import type { Card, CardSchedule, Grade, SrSettings } from './types';
 
 const NOW = 1_700_000_000_000;
 const DAY = 86_400_000;
@@ -549,5 +549,55 @@ describe('selectDue — both directions in one session', () => {
   it('serves both sides once the setting is on', () => {
     const q = selectDue(items, daily, { ...DEFAULT_SETTINGS, bothDirectionsPerSession: true }, at);
     expect(q.map((i) => i.direction).sort()).toEqual(['forward', 'reverse']);
+  });
+});
+
+describe('buryState', () => {
+  const base: CardSchedule = { interval: 12, easeFactor: 1.6, repetitions: 4, dueDate: 0 };
+  const NOW = new Date(2026, 10, 17, 14, 30).getTime();
+
+  it('sends the card away for the configured number of days, to local midnight', () => {
+    const s = buryState(base, 30, NOW);
+    expect(new Date(s.dueDate).getDate()).toBe(17);
+    expect(new Date(s.dueDate).getMonth()).toBe(11); // 17 Nov + 30d = 17 Dec
+    expect(new Date(s.dueDate).getHours()).toBe(0);
+  });
+
+  it('returns it on the relearning ladder, keeping its ease', () => {
+    const s = buryState(base, 30, NOW);
+    expect(s.interval).toBe(1);
+    expect(s.repetitions).toBe(0);
+    expect(s.easeFactor).toBe(1.6); // a month on the shelf says nothing about ease
+  });
+
+  it('forgives every lapse up to the day it comes back', () => {
+    const s = buryState(base, 30, NOW);
+    expect(s.leechResetAt).toBe(s.dueDate);
+  });
+
+  it('counts the cycles, so a second burial is distinguishable from a first', () => {
+    expect(buryState(base, 30, NOW).buriedCycles).toBe(1);
+    expect(buryState(buryState(base, 30, NOW), 30, NOW).buriedCycles).toBe(2);
+  });
+
+  it('stamps the burial time, for the review that follows it', () => {
+    expect(buryState(base, 30, NOW).buriedAt).toBe(NOW);
+  });
+
+  it('clears the day-to-day state a buried card should not carry back', () => {
+    const s = buryState({ ...base, heldOver: true, buriedUntil: NOW + 1000 }, 30, NOW);
+    expect(s.heldOver).toBeUndefined();
+    expect(s.buriedUntil).toBeUndefined();
+  });
+
+  it('never buries for less than a day', () => {
+    expect(buryState(base, 0, NOW).dueDate).toBe(new Date(2026, 10, 18).getTime());
+  });
+
+  it('reports what is still away, and what has come back', () => {
+    const s = buryState(base, 30, NOW);
+    expect(buriedUntilDate(s, NOW)).toBe(s.dueDate);
+    expect(buriedUntilDate(s, s.dueDate + 1)).toBeUndefined();
+    expect(buriedUntilDate(base, NOW)).toBeUndefined();
   });
 });
