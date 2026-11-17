@@ -308,6 +308,7 @@ code { background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-si
 .toast-why { font-size: 0.8rem; color: var(--muted); }
 .bar-held { background: #fbbf24; }
 .bar-stock { background: #f472b6; }
+.bar-leech { background: #f87171; }
 
 /* Auto-growing textareas: a floor so an empty field is not a single line, and a
    ceiling so a long answer cannot push the buttons off a phone screen. Manual

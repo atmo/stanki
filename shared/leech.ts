@@ -76,3 +76,50 @@ export function worstLeech(counts: Map<string, number>, cardId: string): number 
 
 /** A threshold of 0 turns the flag off entirely. */
 export const isLeech = (count: number, threshold: number) => threshold > 0 && count >= threshold;
+
+/** What a side was worth at the moment being sampled. Undefined means "not a
+ * side to count" — the card is gone, or its deck no longer reviews that way. */
+export type SideInfo = { threshold: number; resetAt?: number } | undefined;
+
+/**
+ * How many sides were flagged at each of the given instants.
+ *
+ * Replayed from the log rather than sampled daily like the held-over level,
+ * because a leech *is* a function of the log: the whole history is available
+ * from the first review, with nothing to backfill.
+ *
+ * A "fixed" stamp only applies from the moment it was made. Evaluating last
+ * September with a stamp made in November has to count September's lapses, or
+ * marking one card fixed today would quietly rewrite months of the chart — and
+ * the drop belongs on the day you acted.
+ */
+export function leechLevels(
+  reviews: ReviewLog[],
+  sideInfo: (cardId: string, direction: CardDirection) => SideInfo,
+  ats: number[],
+): number[] {
+  const events: { key: string; ts: number; threshold: number; resetAt: number }[] = [];
+  for (const r of reviews) {
+    if (r.deleted || r.grade !== 'again') continue;
+    if (r.prevInterval < 1 && !r.deferred) continue;
+    const direction = r.direction ?? 'forward';
+    const info = sideInfo(r.cardId, direction);
+    if (!info) continue;
+    events.push({ key: leechKey(r.cardId, direction), ts: r.ts, threshold: info.threshold, resetAt: info.resetAt ?? 0 });
+  }
+
+  return ats.map((at) => {
+    const since = at - LEECH_WINDOW_DAYS * DAY;
+    const counts = new Map<string, number>();
+    const thresholds = new Map<string, number>();
+    for (const e of events) {
+      if (e.ts > at || e.ts < since) continue;
+      if (e.resetAt <= at && e.ts <= e.resetAt) continue;
+      counts.set(e.key, (counts.get(e.key) ?? 0) + 1);
+      thresholds.set(e.key, e.threshold);
+    }
+    let n = 0;
+    for (const [k, c] of counts) if (isLeech(c, thresholds.get(k) ?? 0)) n++;
+    return n;
+  });
+}

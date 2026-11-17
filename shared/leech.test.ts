@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { leechCounts, leechResets, leechCount, worstLeech, isLeech, LEECH_WINDOW_DAYS } from './leech';
+import { leechCounts, leechResets, leechCount, leechLevels, worstLeech, isLeech, LEECH_WINDOW_DAYS } from './leech';
 import type { Card, Grade, ReviewLog } from './types';
 
 const DAY = 86_400_000;
@@ -116,5 +116,52 @@ describe('isLeech', () => {
 
   it('a threshold of 0 disables flagging entirely', () => {
     expect(isLeech(99, 0)).toBe(false);
+  });
+});
+
+describe('leechLevels', () => {
+  const side = () => ({ threshold: 3 });
+  const lapses = (cardId: string, days: number[]) =>
+    days.map((d) => log(cardId, 'again', 5, { ts: NOW - d * DAY }));
+
+  it('counts a side only from the review that reaches the threshold', () => {
+    const reviews = lapses('a', [30, 20, 10]);
+    const ats = [NOW - 25 * DAY, NOW - 15 * DAY, NOW];
+    expect(leechLevels(reviews, side, ats)).toEqual([0, 0, 1]);
+  });
+
+  it('drops a side again once its lapses age out of the window', () => {
+    const reviews = lapses('a', [100, 99, 98]);
+    expect(leechLevels(reviews, side, [NOW - 95 * DAY, NOW])).toEqual([1, 0]);
+  });
+
+  it('counts the two sides of one card separately', () => {
+    const reviews = [
+      ...lapses('a', [5, 4, 3]).map((r) => ({ ...r, direction: 'forward' as const })),
+      ...lapses('a', [5, 4, 3]).map((r) => ({ ...r, direction: 'reverse' as const })),
+    ];
+    expect(leechLevels(reviews, side, [NOW])).toEqual([2]);
+  });
+
+  it('skips sides the caller does not recognise', () => {
+    const reviews = lapses('gone', [5, 4, 3]);
+    expect(leechLevels(reviews, () => undefined, [NOW])).toEqual([0]);
+  });
+
+  it('applies a "fixed" stamp from the day it was made, not backwards', () => {
+    // Flagged a month ago, marked fixed a week ago: the past must keep its flag.
+    const reviews = lapses('a', [40, 35, 30]);
+    const info = () => ({ threshold: 3, resetAt: NOW - 7 * DAY });
+    expect(leechLevels(reviews, info, [NOW - 20 * DAY, NOW])).toEqual([1, 0]);
+  });
+
+  it('re-flags a side that keeps failing after it was marked fixed', () => {
+    const reviews = [...lapses('a', [40, 35, 30]), ...lapses('a', [5, 4, 3])];
+    const info = () => ({ threshold: 3, resetAt: NOW - 7 * DAY });
+    expect(leechLevels(reviews, info, [NOW - 6 * DAY, NOW])).toEqual([0, 1]);
+  });
+
+  it('respects a threshold of 0 as "flag off"', () => {
+    expect(leechLevels(lapses('a', [5, 4, 3]), () => ({ threshold: 0 }), [NOW])).toEqual([0]);
   });
 });

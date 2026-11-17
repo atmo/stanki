@@ -68,7 +68,10 @@ export function bucketInterval(interval: number, m: Maturity) {
   else m.mature++;
 }
 
-export type Bucket = { label: string; sub: string; full: string };
+// `end` is the last calendar day the column covers (start-of-day, and possibly
+// in the future for the current period). A flow is summed over a column; a level
+// has to be read at one instant, and this is the instant to read it at.
+export type Bucket = { label: string; sub: string; full: string; end: number };
 /** Split [start, today] into readable columns: daily for short spans, weekly for
  * medium, monthly for long — so a year is 12 bars, not 365. Returns the columns
  * plus a function mapping a timestamp to its column index (-1/out-of-range possible). */
@@ -84,7 +87,7 @@ export function bucketize(start: number, today: number): { buckets: Bucket[]; gr
     for (let i = 0; i < span; i++) {
       const t = atDay(i);
       const mo = new Date(t).getMonth();
-      buckets.push({ label: String(new Date(t).getDate()), sub: mo !== prevMonth ? monthShort(t) : '', full: fmtDay(t) });
+      buckets.push({ label: String(new Date(t).getDate()), sub: mo !== prevMonth ? monthShort(t) : '', full: fmtDay(t), end: t });
       prevMonth = mo;
     }
     return { buckets, granularity: 'day', indexOf: (ts) => dayNum(ts) - startNum };
@@ -94,7 +97,7 @@ export function bucketize(start: number, today: number): { buckets: Bucket[]; gr
     for (let i = 0; i * 7 < span; i++) {
       const t = atDay(i * 7);
       const mo = new Date(t).getMonth();
-      buckets.push({ label: String(new Date(t).getDate()), sub: mo !== prevMonth ? monthShort(t) : '', full: `Week of ${fmtDay(t)}` });
+      buckets.push({ label: String(new Date(t).getDate()), sub: mo !== prevMonth ? monthShort(t) : '', full: `Week of ${fmtDay(t)}`, end: atDay(i * 7 + 6) });
       prevMonth = mo;
     }
     return { buckets, granularity: 'week', indexOf: (ts) => Math.floor((dayNum(ts) - startNum) / 7) };
@@ -111,6 +114,7 @@ export function bucketize(start: number, today: number): { buckets: Bucket[]; gr
       label: monthShort(t),
       sub: cur.getMonth() === 0 ? String(cur.getFullYear()) : '',
       full: new Date(t).toLocaleDateString(undefined, { month: 'long', year: 'numeric' }),
+      end: new Date(cur.getFullYear(), cur.getMonth() + 1, 0).getTime(),
     });
   }
   return { buckets, granularity: 'month', indexOf: (ts) => new Date(ts).getFullYear() * 12 + new Date(ts).getMonth() - startMK };

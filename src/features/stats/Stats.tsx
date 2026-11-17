@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { Link } from 'react-router-dom';
 import { db } from '../../db/db';
 import { listSnapshots } from '../../db/snapshots';
+import { BarChart } from '../../components/BarChart';
 import { computeStats, emptyRecall, emptyBacklog, rangeStartFor, startOfDay, fmtDay, monthShort, RETENTION_BUCKETS, LATE_BUCKETS, DAY, MATURE_DAYS, FORECAST_DAYS } from './compute';
 
 // Anki's conventional target; bars are coloured against it so the curve reads at
@@ -65,30 +66,6 @@ function RangeFilter({ start, today, onChange }: { start: number; today: number;
           }}
         />
       </label>
-    </div>
-  );
-}
-
-/** A single-series vertical-bar chart; every panel's chart shares it. Columns
- * carry their own label/sub so day, week and month axes all render the same way.
- * Value on top of each bar; exact detail on hover. */
-function BarChart({ bars, max, className = '' }: { bars: { value: number; cls: string; title: string; label: string; sub: string; text?: string }[]; max: number; className?: string }) {
-  return (
-    <div className={`bar-chart ${className}`}>
-      {bars.map((b, i) => (
-        <div className="bar-col" key={i} title={b.title}>
-          <div className="bar-stack">
-            {b.value > 0 ? (
-              <>
-                <span className="bar-value">{b.text ?? b.value}</span>
-                <div className={`bar-seg ${b.cls}`} style={{ height: `${(b.value / max) * 85}%` }} />
-              </>
-            ) : null}
-          </div>
-          <span className="bar-day">{b.label}</span>
-          <span className="bar-month">{b.sub}</span>
-        </div>
-      ))}
     </div>
   );
 }
