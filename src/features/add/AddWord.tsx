@@ -1,4 +1,4 @@
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../db/db';
@@ -10,6 +10,7 @@ import type { CardContext } from '@shared/types';
 import { LookupResults } from '../lookup/LookupResults';
 import { ContextsField } from '../../components/ContextsField';
 import { AutoTextarea } from '../../components/AutoTextarea';
+import { Toast, useToast } from '../../components/Toast';
 
 export function AddWord() {
   const [params] = useSearchParams();
@@ -23,8 +24,13 @@ export function AddWord() {
   const [deckId, setDeckId] = useState('');
   const [lookupTerm, setLookupTerm] = useState(sharedText);
   const [lookups, setLookups] = useState<Lookups | null>(lookupTerm ? null : { anw: null, free: null });
-  const [saved, setSaved] = useState(false);
   const [frontFocused, setFrontFocused] = useState(false);
+  // Adding is a run, not a single act: the form stays put and a corner notice
+  // confirms the word, rather than a screen that has to be dismissed before the
+  // next one can be typed. The notice names the deck too, since that is the one
+  // thing a saved card can quietly get wrong.
+  const { toast, showToast, dismissToast } = useToast();
+  const frontRef = useRef<HTMLInputElement>(null);
 
   const decks = useLiveQuery(async () => {
     await ensureInboxDeck();
@@ -101,7 +107,9 @@ export function AddWord() {
       contexts: contexts.map((c) => ({ ...c, text: c.text.trim() })).filter((c) => c.text),
     });
     await setLastAddDeck(deckId);
-    setSaved(true);
+    showToast(front.trim(), `Added to ${deckName(deckId)}`);
+    reset();
+    frontRef.current?.focus();
   }
 
   // Save from anywhere in the form. The textareas need plain Enter for newlines,
@@ -114,8 +122,8 @@ export function AddWord() {
     void save();
   }
 
+  /** Clear the fields for the next word, keeping the deck. */
   function reset() {
-    setSaved(false);
     setFront('');
     setBack('');
     setExplanation('');
@@ -124,29 +132,18 @@ export function AddWord() {
     setLookups({ anw: null, free: null });
   }
 
-  if (saved) {
-    return (
-      <div className="add-done">
-        <h2>✓ Added</h2>
-        <p className="muted">“{front}” saved to {decks?.find((d) => d.id === deckId)?.name}.</p>
-        <div className="row">
-          <Link className="btn btn-primary" to="/">Done</Link>
-          <button className="btn" onClick={reset}>Add another</button>
-        </div>
-      </div>
-    );
-  }
-
   const term = lemmatize(lookupTerm || front);
 
   return (
     <div className="add-screen">
+      <Toast toast={toast} onDismiss={dismissToast} />
       <h2 className="add-title">Add word</h2>
 
       <div className="card-form" onKeyDown={onFormKeyDown}>
         <div className="ac-wrap">
           <div className="row">
             <input
+              ref={frontRef}
               className="input"
               placeholder="Front (word)"
               value={front}

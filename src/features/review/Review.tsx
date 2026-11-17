@@ -11,6 +11,7 @@ import { useLookup } from '../lookup/useLookup';
 import { ContextsField } from '../../components/ContextsField';
 import { SynonymsField } from '../../components/SynonymsField';
 import { AutoTextarea } from '../../components/AutoTextarea';
+import { Toast, useToast } from '../../components/Toast';
 
 interface UndoSnapshot {
   prior: Card; // the card, for its id
@@ -189,18 +190,8 @@ export function Review() {
   const [clue, setClue] = useState(false); // show a context (word spoilered) before the answer
   const [deferred, setDeferred] = useState(0); // cards left until tomorrow this session
   const [synonyms, setSynonyms] = useState<Card[]>([]);
-  // Non-blocking notice that a card was held over. A toast rather than a modal:
-  // this fires ~20 times a session, and blocking each time would undo the very
-  // interruption the position-based queue was meant to remove.
-  const [toast, setToast] = useState<{ front: string; why: string } | null>(null);
-  const toastTimer = useRef<number | null>(null);
-  useEffect(() => () => { if (toastTimer.current) window.clearTimeout(toastTimer.current); }, []);
-
-  function showToast(front: string, why: string) {
-    setToast({ front, why });
-    if (toastTimer.current) window.clearTimeout(toastTimer.current);
-    toastTimer.current = window.setTimeout(() => setToast(null), 6000);
-  }
+  // Notice that a card was held over, named so you know which one.
+  const { toast, showToast, dismissToast } = useToast();
 
   useEffect(() => {
     void (async () => {
@@ -438,12 +429,7 @@ export function Review() {
         </span>
       </div>
 
-      {toast && (
-        <div className="toast" role="status" onClick={() => setToast(null)}>
-          <strong className="toast-front">{toast.front}</strong>
-          <span className="toast-why">{toast.why}</span>
-        </div>
-      )}
+      <Toast toast={toast} onDismiss={dismissToast} />
 
       <div className="card-face">
         {/* Reverse review: the prompt is the back, whose examples must not reveal
