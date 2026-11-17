@@ -75,3 +75,49 @@ describe('leechRows', () => {
     expect(leechRows([card('a', 'missing')], [deck('d')], counts([['a', 'forward', 9]]), settings)).toEqual([]);
   });
 });
+
+describe('leechRows — buried sides', () => {
+  const NOW = 1_800_000_000_000;
+  const buried = (until: number, cycles = 1) =>
+    card('a', 'd', { leechResetAt: until, buriedCycles: cycles, dueDate: until, interval: 1 });
+
+  it('keeps a buried side on the list although its count reads zero', () => {
+    const rows = leechRows([buried(NOW + 20 * 86_400_000)], [deck('d')], counts([]), settings, NOW);
+    expect(rows).toHaveLength(1);
+    expect(rows[0].buriedUntil).toBe(NOW + 20 * 86_400_000);
+    expect(rows[0].cycles).toBe(1);
+  });
+
+  it('drops it again once it has come back and is behaving', () => {
+    const rows = leechRows([buried(NOW - 86_400_000)], [deck('d')], counts([]), settings, NOW);
+    expect(rows).toEqual([]);
+  });
+
+  it('shows a returned side that is failing again, with its cycle count', () => {
+    const rows = leechRows(
+      [buried(NOW - 86_400_000, 1)],
+      [deck('d')],
+      counts([['a', 'forward', 5]]),
+      settings,
+      NOW,
+    );
+    expect(rows).toHaveLength(1);
+    expect(rows[0].buriedUntil).toBeUndefined();
+    expect(rows[0].cycles).toBe(1);
+  });
+
+  it('puts cards still in rotation above buried ones, soonest back first', () => {
+    const rows = leechRows(
+      [
+        card('live', 'd'),
+        card('far', 'd', { leechResetAt: NOW + 30 * 86_400_000, buriedCycles: 1 }),
+        card('soon', 'd', { leechResetAt: NOW + 2 * 86_400_000, buriedCycles: 1 }),
+      ],
+      [deck('d')],
+      counts([['live', 'forward', 6]]),
+      settings,
+      NOW,
+    );
+    expect(rows.map((r) => r.card.id)).toEqual(['live', 'soon', 'far']);
+  });
+});

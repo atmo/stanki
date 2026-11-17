@@ -22,6 +22,8 @@ const DIR_TAG: Record<CardDirection, { tag: string; title: string }> = {
   reverse: { tag: '←', title: 'Reverse — shown the meaning, recalling the word' },
 };
 
+const shortDate = (t: number) => new Date(t).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+
 /** Days until due, as a short label. Negative reads as overdue. */
 function dueLabel(dueDate: number, now: number): string {
   const days = Math.round((dueDate - now) / DAY);
@@ -111,10 +113,10 @@ export function Leeches() {
           <>
             <p className="muted small">
               <b>{rows.length}</b> side{rows.length === 1 ? '' : 's'} failed past the threshold in the
-              last {LEECH_WINDOW_DAYS} days, worst first. More repetitions are the one thing that
-              reliably does not help: rewrite the back, add a context, or link the word you keep
-              confusing it with. <b>Fixed</b> starts the count again from now, so the flag returns
-              only if it is missed again.
+              last {LEECH_WINDOW_DAYS} days, worst first, followed by the ones currently buried.
+              More repetitions are the one thing that reliably does not help: rewrite the back, add
+              a context, or link the word you keep confusing it with. <b>Fixed</b> starts the count
+              again from now, so the flag returns only if it is missed again.
             </p>
             <div className="deck-stats">
               <div className="deck-stat deck-stat-head">
@@ -133,18 +135,36 @@ export function Leeches() {
                     </Link>
                     <span className="tag-2s" title={DIR_TAG[r.direction].title}>{DIR_TAG[r.direction].tag}</span>
                     <span className="leech-deck">{r.deckName}</span>
+                    {r.buriedUntil && (
+                      <span className="tag-buried" title={`Out of rotation until ${shortDate(r.buriedUntil)}, when it returns with its lapse count cleared`}>
+                        buried · back {shortDate(r.buriedUntil)}
+                      </span>
+                    )}
+                    {r.cycles > 0 && (
+                      <span className="tag-cycles" title={`Buried ${r.cycles}× before`}>
+                        cycle {r.cycles + (r.buriedUntil ? 0 : 1)}
+                      </span>
+                    )}
                   </span>
                   <span className="ds-cols3">
-                    <span className="ds-again">{r.lapses}<span className="muted">/{r.threshold}</span></span>
+                    <span className="ds-again">
+                      {r.buriedUntil ? <span className="muted">—</span> : <>{r.lapses}<span className="muted">/{r.threshold}</span></>}
+                    </span>
                     <span>{r.ease.toFixed(2)}</span>
                     <span className="muted">{dueLabel(r.dueDate, now)}</span>
-                    <button
-                      className="btn btn-link"
-                      title="Start this side's lapse count again from now"
-                      onClick={() => void markLeechFixed(r.card.id, r.direction)}
-                    >
-                      Fixed
-                    </button>
+                    {r.buriedUntil ? (
+                      // Nothing to mark fixed: its count is already cleared, and
+                      // the card is not being asked anything until it comes back.
+                      <span className="muted small">away</span>
+                    ) : (
+                      <button
+                        className="btn btn-link"
+                        title="Start this side's lapse count again from now"
+                        onClick={() => void markLeechFixed(r.card.id, r.direction)}
+                      >
+                        Fixed
+                      </button>
+                    )}
                   </span>
                 </div>
               ))}

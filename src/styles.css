@@ -150,6 +150,8 @@ body {
 /* Leech worklist row: lapses / ease / due / action. */
 .ds-cols3 { display: grid; grid-template-columns: 52px 44px 56px auto; align-items: center; text-align: right; gap: 6px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 .leech-deck { flex-shrink: 0; font-size: 0.75rem; color: var(--muted); }
+.tag-buried { flex-shrink: 0; font-size: 0.7rem; color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.4); border-radius: 6px; padding: 0 5px; white-space: nowrap; }
+.tag-cycles { flex-shrink: 0; font-size: 0.7rem; color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); border-radius: 6px; padding: 0 5px; white-space: nowrap; }
 .ds-new { color: #93c5fd; }
 .ds-again { color: #fca5a5; }
 .ds-young { color: #86efac; }
