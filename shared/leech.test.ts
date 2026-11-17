@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { leechCounts, leechCount, worstLeech, isLeech, LEECH_WINDOW_DAYS } from './leech';
-import type { Grade, ReviewLog } from './types';
+import { leechCounts, leechResets, leechCount, worstLeech, isLeech, LEECH_WINDOW_DAYS } from './leech';
+import type { Card, Grade, ReviewLog } from './types';
 
 const DAY = 86_400_000;
 const NOW = 1_700_000_000_000;
@@ -8,6 +8,49 @@ const NOW = 1_700_000_000_000;
 function log(cardId: string, grade: Grade, prevInterval: number, extra: Partial<ReviewLog> = {}): ReviewLog {
   return { id: Math.random().toString(), cardId, ts: NOW, grade, prevInterval, newInterval: 1, ...extra };
 }
+
+const card = (id: string, extra: Partial<Card> = {}): Card =>
+  ({ id, deckId: 'd', front: id, back: id, interval: 1, easeFactor: 2.5, repetitions: 1, dueDate: NOW, createdAt: 0, updatedAt: 0, ...extra }) as Card;
+
+describe('leechResets', () => {
+  it('reads a stamp from either side, and skips cards with none', () => {
+    const r = leechResets([
+      card('a', { leechResetAt: NOW }),
+      card('b', { reverse: { interval: 1, easeFactor: 2.5, repetitions: 1, dueDate: 0, leechResetAt: NOW - DAY } }),
+      card('c'),
+    ]);
+    expect([...r.keys()].sort()).toEqual(['a\nforward', 'b\nreverse']);
+    expect(r.get('b\nreverse')).toBe(NOW - DAY);
+  });
+});
+
+describe('leechCounts — "fixed" stamps', () => {
+  it('forgives lapses up to the stamp and counts the ones after it', () => {
+    const reviews = [
+      log('a', 'again', 5, { ts: NOW - 10 * DAY }),
+      log('a', 'again', 5, { ts: NOW - 5 * DAY }),
+      log('a', 'again', 5, { ts: NOW - DAY }),
+    ];
+    const resets = leechResets([card('a', { leechResetAt: NOW - 5 * DAY })]);
+    expect(leechCount(leechCounts(reviews, NOW, resets), 'a', 'forward')).toBe(1);
+  });
+
+  it('clears the side it was stamped on and leaves the other alone', () => {
+    const reviews = [
+      log('a', 'again', 5, { direction: 'forward' }),
+      log('a', 'again', 5, { direction: 'reverse' }),
+    ];
+    const resets = leechResets([card('a', { leechResetAt: NOW })]);
+    const c = leechCounts(reviews, NOW, resets);
+    expect(leechCount(c, 'a', 'forward')).toBe(0);
+    expect(leechCount(c, 'a', 'reverse')).toBe(1);
+  });
+
+  it('is a no-op without a stamp', () => {
+    const reviews = [log('a', 'again', 5)];
+    expect(leechCount(leechCounts(reviews, NOW, new Map()), 'a', 'forward')).toBe(1);
+  });
+});
 
 describe('leechCounts', () => {
   it('counts Again on a day-scale card', () => {

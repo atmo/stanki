@@ -67,6 +67,16 @@ export interface CardSchedule {
   // due date is deliberately left alone, so the side arrives late rather than
   // being quietly rescheduled for a reason that has nothing to do with recall.
   buriedUntil?: number;
+  // "I have fixed this side": lapses at or before this time stop counting towards
+  // the leech flag. Without it a card you have genuinely reworked stays branded
+  // until its old failures age out of the 90-day window, which is up to three
+  // months of being told to fix an already-fixed card.
+  //
+  // A timestamp rather than a cleared flag: it needs no second rule deciding when
+  // to lapse back, it converges under last-write-wins, and marking the same side
+  // fixed twice is harmless. The review log is left untouched — those failures
+  // did happen, and retention must keep counting them.
+  leechResetAt?: number;
 }
 
 export interface Card extends CardSchedule {

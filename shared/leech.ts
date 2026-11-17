@@ -2,7 +2,7 @@
 // stored on the card, because this is a display flag, not a scheduling decision
 // — nothing depends on every device agreeing, so a device that has not synced
 // the log simply shows fewer flags instead of scheduling differently.
-import type { CardDirection, ReviewLog } from './types';
+import type { Card, CardDirection, ReviewLog } from './types';
 
 /**
  * Only recent failures count. Most of a long-standing collection's lapses were
@@ -28,15 +28,36 @@ export const leechKey = (cardId: string, direction: CardDirection) => `${cardId}
  * Those keep a sub-day interval, so without this a card missed and postponed
  * every single day would never register a lapse at all — leaving exactly the
  * cards most worth editing as the ones the flag cannot see.
+ *
+ * `resets` carries each side's "I have fixed this" stamp (see `leechResets`):
+ * lapses up to it are forgiven, so the count starts again from the moment of the
+ * fix and the flag comes back only on fresh evidence.
  */
-export function leechCounts(reviews: ReviewLog[], now = Date.now()): Map<string, number> {
+export function leechCounts(
+  reviews: ReviewLog[],
+  now = Date.now(),
+  resets?: Map<string, number>,
+): Map<string, number> {
   const since = now - LEECH_WINDOW_DAYS * DAY;
   const out = new Map<string, number>();
   for (const r of reviews) {
     if (r.deleted || r.ts < since || r.grade !== 'again') continue;
     if (r.prevInterval < 1 && !r.deferred) continue;
     const k = leechKey(r.cardId, r.direction ?? 'forward');
+    if (r.ts <= (resets?.get(k) ?? 0)) continue;
     out.set(k, (out.get(k) ?? 0) + 1);
+  }
+  return out;
+}
+
+/** Per-side "fixed at" stamps, in the shape `leechCounts` wants. */
+export function leechResets(
+  cards: Pick<Card, 'id' | 'leechResetAt' | 'reverse'>[],
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const c of cards) {
+    if (c.leechResetAt) out.set(leechKey(c.id, 'forward'), c.leechResetAt);
+    if (c.reverse?.leechResetAt) out.set(leechKey(c.id, 'reverse'), c.reverse.leechResetAt);
   }
   return out;
 }

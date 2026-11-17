@@ -3,7 +3,7 @@ import type { Card, CardDirection, CardSchedule, Deck, Grade, ReviewDirection, R
 import { INBOX_DECK_ID, INBOX_DECK_NAME, cardContexts } from '@shared/types';
 import type { SettingsChange } from '@shared/types';
 import { dedupKey } from '@shared/dedup';
-import { leechCounts, LEECH_WINDOW_DAYS } from '@shared/leech';
+import { leechCounts, leechResets, LEECH_WINDOW_DAYS } from '@shared/leech';
 import { sameDocument } from '@shared/weburl';
 import {
   scheduleState,
@@ -207,7 +207,37 @@ export async function dailyCounts(deckId: string, now = Date.now()) {
  * fewer flags instead of behaving differently. */
 export async function getLeechCounts(now = Date.now()): Promise<Map<string, number>> {
   const since = now - LEECH_WINDOW_DAYS * 86_400_000;
-  return leechCounts(await db.reviews.where('ts').aboveOrEqual(since).filter((r) => !r.deleted).toArray(), now);
+  const [reviews, cards] = await Promise.all([
+    db.reviews.where('ts').aboveOrEqual(since).filter((r) => !r.deleted).toArray(),
+    db.cards.filter((c) => !c.deleted && (c.leechResetAt !== undefined || c.reverse?.leechResetAt !== undefined)).toArray(),
+  ]);
+  return leechCounts(reviews, now, leechResets(cards));
+}
+
+/**
+ * Record that this side has been reworked: its past lapses stop counting and the
+ * flag comes back only if it is failed again.
+ *
+ * Never called from a plain card edit. Most edits are typo fixes, and clearing
+ * the flag on any save would quietly disarm it for exactly the cards that get
+ * fiddled with most — so saying "fixed" has to be a deliberate act.
+ */
+export async function markLeechFixed(
+  cardId: string,
+  direction: CardDirection,
+  now = Date.now(),
+): Promise<void> {
+  const card = await db.cards.get(cardId);
+  if (!card) return;
+  if (direction === 'forward') {
+    await db.cards.update(cardId, { leechResetAt: now, updatedAt: now });
+    return;
+  }
+  // The reverse schedule may not exist yet; take whatever the card would be
+  // reviewed with so writing the stamp cannot invent a different schedule.
+  const settings = await getDeckSettings(card.deckId);
+  const reverse = { ...directionSchedule(card, 'reverse', settings), leechResetAt: now };
+  await db.cards.update(cardId, { reverse, updatedAt: now });
 }
 
 /** In-place Fisher-Yates shuffle. */

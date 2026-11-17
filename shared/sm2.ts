@@ -78,11 +78,11 @@ export function directionSchedule(
   settings: SrSettings = DEFAULT_SETTINGS,
 ): CardSchedule {
   if (direction === 'forward') {
-    // heldOver and buriedUntil have to come along: they are read straight off
-    // the schedule during selection and review, and picking the fields out by
-    // hand silently drops anything new.
-    const { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil } = card;
-    return { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil };
+    // heldOver, buriedUntil and leechResetAt have to come along: they are read
+    // straight off the schedule during selection and review, and picking the
+    // fields out by hand silently drops anything new.
+    const { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt } = card;
+    return { interval, easeFactor, repetitions, dueDate, heldOver, buriedUntil, leechResetAt };
   }
   return card.reverse ?? { ...newCardState(card.createdAt, settings) };
 }
